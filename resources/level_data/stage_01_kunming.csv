@@ -1,0 +1,21 @@
+# 第1关"昆明首战"波次配置
+# 格式：time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+# time: 出现时间（秒）
+# enemy_type: 敌机类型标识（ki27_fighter, ki43_hayabusa, ki21_bomber, BOSS_bomber等）
+# count: 同波敌机数量
+# formation: 编队方式（line, v_formation, diamond, swarm, solo, boss）
+# spawn_x: 生成X坐标
+# spawn_y: 生成Y坐标
+# speed_mult: 速度倍率
+# path_id: 路径ID（straight, dive, boss_enter等）
+time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+3.0,ki27_fighter,3,line,200,-50,1.0,straight
+6.0,ki27_fighter,3,line,400,-50,1.0,straight
+9.0,ki27_fighter,5,v_formation,300,-50,1.0,dive
+14.0,ki27_fighter,2,line,150,-50,0.8,straight
+14.0,ki27_fighter,2,line,450,-50,0.8,straight
+18.0,ki43_hayabusa,3,diamond,300,-50,1.2,straight
+22.0,ki21_bomber,1,solo,300,-80,0.6,straight
+28.0,ki27_fighter,4,swarm,300,-50,1.0,dive
+32.0,ki43_hayabusa,4,v_formation,300,-50,1.1,straight
+38.0,BOSS_bomber,1,boss,300,-150,0.5,boss_enter
