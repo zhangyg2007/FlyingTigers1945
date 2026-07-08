@@ -1,0 +1,20 @@
+# Godot 4
+.godot/
+*.import
+export_presets.cfg
+
+# 操作系统
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# 大型二进制（用 Git LFS 管理 Sprite 音频）
+*.psd
+*.ai
+
+# TRAE 临时文件
+.trae-html-share-packages/
