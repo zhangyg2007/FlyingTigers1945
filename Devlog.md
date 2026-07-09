@@ -278,6 +278,177 @@ PM 整改要求"CharacterBody2D + AnimatedSprite2D + CollisionShape2D"。但 `pl
 
 ---
 
+# M2-A: CSV 关卡波次生成 + BOSS 战基础 + 第 1 关可玩原型骨架
+
+**日期**: 2026-07-09
+**任务来源**: PM `docs/M1_acceptance_report_v2.md` 第六节 M2 任务
+**任务范围**: Code 任务 — CSV 关卡波次生成 + BOSS 状态机弹幕模式（接口层）+ 前 3 关可玩原型（第 1 关骨架先做）
+
+## 任务目标
+
+M1 整改重验通过（Code A），进入 M2。本阶段（M2-A）聚焦"接口补齐 + 第 1 关端到端流程跑通"，为 M2-C（其余两关）和 M2-D（BOSS 弹幕调优）打基础。
+
+## 完成内容
+
+### 1. SpawnManager 接口补齐（14 处不一致）
+
+**文件**: [autoload/spawn_manager.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/autoload/spawn_manager.gd)
+
+原脚本与 LevelBase / CSVParser / 实际 CSV 数据格式严重脱节，14 处接口不一致全部修复：
+
+- 顶部注释：CSV 目录改为 `res://resources/level_data/`，格式示例改用真实 CSV 字段顺序
+- `Formation` 枚举新增 `BOSS`
+- `STAGE_DATA_DIR` 改为 `"res://resources/level_data/"`
+- `_init_enemy_scene_map()` 重写：使用真实机型名（ki27_fighter / ki43_hayabusa / ki21_bomber / BOSS_bomber），全部映射到 enemy_fighter.tscn 占位（待 M2-D 拆分独立场景）
+- `_init_path_map()` 重写：key 改为 String（straight / dive / sine / zigzag / curve_left / curve_right / boss_enter），value 暂为 null（M2-D 路径资源评估后补）
+- `load_stage_config()` 重写：委托 CSVParser 解析，入参兼容纯 stage_id（`stage_01_kunming`）和完整路径（`res://...csv`）
+- `_generate_default_waves()` 修改：去掉 `wave_index` 字段，`path_id` 改 String，`enemy_type` 改用真实机型名
+- `_spawn_wave()` / `_spawn_single_enemy()` / `spawn_enemy()` 签名：`path_id: int` 改 `path_id: String`
+- 新增 `spawn_wave(enemy_type, count, formation, spawn_x, spawn_y, speed_mult, path_id)` 公开方法（供 LevelBase._spawn_wave L288 调用）
+- 新增 `get_wave_configs() -> Array[Dictionary]` 公开方法（供 LevelBase._load_wave_config L243 调用）
+- `_parse_formation()` 新增 `"boss"` 分支
+- `_calculate_formation_positions()` 新增 `Formation.BOSS` 分支
+
+### 2. GameManager 关卡管理接口补齐
+
+**文件**: [autoload/game_manager.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/autoload/game_manager.gd)
+
+LevelBase 和 BossBase 依赖的接口缺失，全部补齐：
+
+- 新增信号：`player_died()` / `boss_defeated_signal()`
+- 新增字段：`current_stage_id` / `current_stage_name` / `current_stage_metadata` / `last_level_result`
+- 新增常量：`STAGE_CONFIG_PATH = "res://resources/level_data/stage_config.json"` / `LEVEL_SCENE_DIR = "res://levels/"`
+- 重写难度倍率方法（`get_bullet_speed_multiplier()` 等）：优先从 `current_stage_metadata` 读取，回退到 `difficulty` 枚举匹配
+- 新增关卡管理方法：
+  - `load_stage(stage_id) -> bool`：加载关卡元数据
+  - `_load_stage_metadata(stage_id) -> Dictionary`：读取 stage_config.json
+  - `get_all_stage_ids() -> Array[String]`
+  - `next_stage() -> String`：返回下一关 ID
+  - `boss_defeated()`：通知 BOSS 被击败（发射 `boss_defeated_signal`）
+  - `notify_player_died()`：发射 `player_died` 信号
+  - `set_level_result(data)` / `get_level_result() -> Dictionary`：关卡结算数据存取（result_screen.gd 依赖）
+  - `goto_scene(path)`：场景跳转封装
+- `reset_game()` 重置新增字段
+
+### 3. EnemyBase setup/apply_difficulty 补齐
+
+**文件**: [scenes/enemies/enemy_base.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/enemies/enemy_base.gd)
+
+SpawnManager 在 `_spawn_single_enemy` 中调用 `enemy.setup(config)` 和 `enemy.apply_difficulty(hp_mult)`，原未实现会被静默跳过：
+
+- 新增内部字段：`_enemy_type_id` / `_index_in_wave` / `_total_in_wave`
+- 新增 `setup(config: Dictionary)`：从 SpawnManager 接收 enemy_type / speed_mult / path_id / index_in_wave / total_in_wave，应用速度倍率，尝试加载路径资源
+- 新增 `apply_difficulty(hp_mult: float)`：HP 乘倍率
+- 新增 `_try_load_path_resource(path_id: String)`：加载 `res://resources/paths/path_<id>.tres`（路径资源暂缺，安全跳过）
+- 新增读取方法 `get_enemy_type_id()` / `get_index_in_wave()` / `get_total_in_wave()`
+- `reset_state()` 重置新增字段
+
+### 4. BossBase P0 修复 + 软引用改造
+
+**文件**: [scenes/bosses/boss_base.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/bosses/boss_base.gd)
+
+发现与 player_base.gd 相同的 P0 信号 bug：
+
+- **P0 修复**：删除 L97 `body_entered.connect(_on_body_entered)` — `CharacterBody2D` 无 `body_entered` 信号（该信号属于 Area2D），运行时会 `_ready` 中断
+- `@onready` 改为软引用模式（避免节点不存在时 `_ready` 中断）：
+  ```gdscript
+  @onready var animation_player: AnimationPlayer = $AnimationPlayer if has_node("AnimationPlayer") else null
+  ```
+- **P0 修复**：`_spawn_explosion()` 中 `PoolManager.get_object("explosion_large")` 参数类型错误（签名要求 PackedScene，传了 String），改为 `get_object_by_path(scene_path)`
+- `_on_body_entered` 函数加注释说明当前未连接信号，待 M2-D 添加 Hitbox Area2D 子节点后接入
+- 继承改造（`extends EnemyBase`）+ StateMachine 接入延后到 M2-D
+
+### 5. LevelBase 自动 start_level + 跳转路径修正
+
+**文件**: [levels/level_base.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/levels/level_base.gd)
+
+- `_ready()` 末尾自动调用 `start_level()`（M2 简化：场景加载后立即开始，无需按键触发）
+- **P0 修复**：`_goto_result_scene()` 跳转路径 `res://scenes/ui/level_result.tscn` → `res://scenes/ui/result_screen.tscn`（实际脚本文件名为 `result_screen.gd`，对应场景应为 `result_screen.tscn`）
+- **P0 修复**：`_load_wave_config()` 中 `CSVParser.has_method("parse_wave_config")` — `CSVParser` 是 `class_name` 声明的类，不能对类名调用实例方法 `has_method`（GDScript 编译期 Parse Error）。改为直接调用 static 函数 `CSVParser.parse_wave_config(path)`
+
+### 6. 新建场景（3 个）
+
+#### [scenes/bosses/boss_bomber.tscn](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/bosses/boss_bomber.tscn) — 第 1 关 BOSS 场景
+- `CharacterBody2D` + `Sprite2D`（enemy_ki21_bomber.png）+ `CollisionShape2D`（RectangleShape2D 80x60）
+- 挂载 `boss_base.gd`，配置 phase_hps=[150,200] / max_hp=350 / collision_layer=8(Layer4) / collision_mask=4(Layer2 PlayerBullet)
+
+#### [levels/stage_01_kunming.tscn](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/levels/stage_01_kunming.tscn) — 第 1 关主场景
+- `Node` 挂载 `level_base.gd`
+- 配置：`level_id="01_kunming"` / `level_name="昆明首战"` / `wave_config_path="res://resources/level_data/stage_01_kunming.csv"` / `boss_scene_path="res://scenes/bosses/boss_bomber.tscn"` / `bgm_path="bgm_stage_01.ogg"`
+
+#### [scenes/ui/result_screen.tscn](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/ui/result_screen.tscn) — 结算界面场景
+- `CanvasLayer`（layer=20）挂载 `result_screen.gd`
+- 节点结构（全部设 `unique_name_in_owner=true`，匹配 `@onready var xxx = %NodeName`）：
+  - `Background`（ColorRect，半透明黑底 0.85）
+  - `CenterContainer` / `VBoxContainer`
+    - `TitleLabel`（"STAGE CLEAR"）
+    - `ScoreLabel`（%ScoreLabel）
+    - `KillCountLabel`（%KillCountLabel）
+    - `AccuracyLabel`（%AccuracyLabel）
+    - `RankSprite`（%RankSprite，TextureRect 160x160 占位）+ `RankLabel`（%RankLabel，96pt 评级文字）
+    - `ButtonRow`（HBoxContainer）→ `NextButton`（%NextButton）/ `RetryButton`（%RetryButton）/ `MenuButton`（%MenuButton）
+
+### 7. 资源导入处理
+
+M1 遗留的 PNG 资源加载问题（`No loader found for resource`）根因是 `.godot/imported/` 下缺少 `.ctex` 缓存（只有 `.md5`）。本次通过 `Godot --headless --import` 批量扫描导入 65 个 PNG，生成 `.ctex` 缓存，运行时验证不再报资源加载错误。
+
+## 真 Bug 修复汇总（P0）
+
+| # | 文件 | 位置 | Bug | 修复 |
+|---|------|------|-----|------|
+| 1 | boss_base.gd | L97 `_ready()` | `body_entered.connect(...)` — CharacterBody2D 无此信号 | 删除连接，加注释说明 |
+| 2 | boss_base.gd | `_spawn_explosion()` | `PoolManager.get_object("explosion_large")` 参数类型错（应 PackedScene，传了 String） | 改用 `get_object_by_path(scene_path)` |
+| 3 | level_base.gd | `_goto_result_scene()` | 跳转路径 `level_result.tscn` 不存在 | 改为 `result_screen.tscn` |
+| 4 | level_base.gd | `_load_wave_config()` | `CSVParser.has_method(...)` 对 class_name 类调用实例方法（Parse Error） | 直接调用 static 函数 |
+| 5 | boss_base.gd | `@onready` | `$AnimationPlayer` 节点不存在时 _ready 中断 | 改为 `$X if has_node("X") else null` 软引用 |
+
+## 验证结果
+
+### 语法检查（`Godot --headless --check-only --script`）
+
+| 脚本 | 真实语法 bug | 备注 |
+|------|--------------|------|
+| spawn_manager.gd | ✅ 无 | 剩余 "PoolManager not found" 是 check-only 不加载 autoload 的预期行为 |
+| game_manager.gd | ✅ 无 | 剩余 "SaveManager not found" 同上 |
+| enemy_base.gd | ✅ 无 | 完全无错误 |
+| boss_base.gd | ✅ 无 | 修复 get_object 参数类型 bug 后通过 |
+| level_base.gd | ✅ 无 | 修复 CSVParser.has_method Parse Error 后通过 |
+
+### 运行时验证（`Godot res://levels/stage_01_kunming.tscn --quit-after 5000`）
+
+| 验证项 | 结果 | 日志证据 |
+|--------|------|----------|
+| 关卡加载 | ✅ | `[LevelBase] 创建 0 层视差背景` |
+| CSV 波次解析 | ✅ | `[CSVParser] 成功解析 10 条波次配置` |
+| SpawnManager 配置加载 | ✅ | `SpawnManager: 加载关卡 'stage_01_kunming'，共 10 波。` |
+| LevelBase 关卡启动 | ✅ | `[LevelBase] 关卡 '昆明首战' 开始!` |
+| 波次按时间触发生成 | ✅ | GDScript backtrace 显示调用链 LevelBase._check_and_spawn_waves → _spawn_wave → SpawnManager.spawn_wave → spawn_enemy → _spawn_single_enemy → PoolManager.get_object |
+| BOSS 出场触发 | ✅ | `[LevelBase] BOSS 'BOSS_bomber' 出场!`（38 秒波次触发） |
+| BOSS 战斗过程 | ⏳ 未验证 | 测试场景无玩家，BOSS 不会被击杀 |
+| 关卡结算跳转 | ⏳ 未验证 | 依赖 BOSS 被击败 |
+
+### 已知运行时限制（非 bug）
+
+- **PoolManager 池容量 20 在密集波次下不够**：测试场景无玩家击杀敌人，敌人也不会自动销毁，导致池满后无法生成新敌人（`WARNING: 池已满（20/20），无法创建新对象`）。在真实游戏中，玩家击杀敌人或敌人飞出屏幕销毁后，池会有流动性。M2-D 可考虑动态扩容或增大默认容量。
+
+## 遗留问题（M2 后续跟进）
+
+| 编号 | 问题 | 优先级 | 处理时机 |
+|------|------|--------|----------|
+| M2-E1 | PoolManager 池容量 20 在密集波次下不够 | P2 | M2-D 调优或动态扩容 |
+| M2-E2 | BOSS 战斗与结算流程需玩家场景接入后端到端验证 | P1 | M2-C 玩家场景接入后验证 |
+| M2-E3 | BOSS JSON 配置文件 + 弹幕模式调优 | P1 | M2-D |
+| M2-E4 | stage_02_rangoon + stage_03 CSV/JSON 待补齐 | P1 | M2-C |
+| M2-E5 | BossBase 继承 EnemyBase + StateMachine 接入 | P2 | M2-D |
+| M2-E6 | 路径资源 `res://resources/paths/path_<id>.tres` 待创建 | P3 | M2-D 评估后决定 |
+
+## 协作说明
+
+- 本次仅修改 Code 部门文件（autoload/ / scenes/ / levels/）。`assets/` 和 `DesignLog.md` 是 Design 部门改动，由 Design agent 自行提交
+- 本地 commit 后等待用户用 Trae IDE push 同步到远程，供 PM M2 验收
+
+---
+
 ## 本地提交记录
 
 ### 提交 1 — M1 整改成果本地 commit

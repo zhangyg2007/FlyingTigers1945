@@ -62,10 +62,10 @@ var player_ref: Node2D = null
 var is_active: bool = false
 
 # ============================================================
-# 节点引用
+# 节点引用（软引用：节点不存在时为 null，避免 _ready 中断）
 # ============================================================
-@onready var animation_player: AnimationPlayer = $AnimationPlayer
-@onready var collision_shape: CollisionShape2D = $CollisionShape2D
+@onready var animation_player: AnimationPlayer = $AnimationPlayer if has_node("AnimationPlayer") else null
+@onready var collision_shape: CollisionShape2D = $CollisionShape2D if has_node("CollisionShape2D") else null
 @onready var hit_flash: Sprite2D = $HitFlash if has_node("HitFlash") else null
 ## 视觉根节点（用于受击闪烁等效果）
 @onready var visual_root: Node2D = $VisualRoot if has_node("VisualRoot") else self
@@ -93,8 +93,10 @@ func _ready() -> void:
 	if phase_attack_intervals.size() > 0:
 		attack_timer = phase_attack_intervals[0]
 
-	# 连接body_entered信号（接触伤害）
-	var _conn = body_entered.connect(_on_body_entered)
+	# 注：CharacterBody2D 没有 body_entered 信号（该信号属于 Area2D）。
+	# BOSS与玩家的碰撞检测应通过 Area2D 子节点（Hitbox）实现，
+	# 当前未添加 Hitbox 子节点，_on_body_entered 暂为空调用。
+	# 待 M2-D 重构时添加 Hitbox Area2D 并连接信号。
 
 	# 查找玩家
 	_find_player()
@@ -304,20 +306,23 @@ func _die() -> void:
 
 ## 生成爆炸效果
 func _spawn_explosion() -> void:
-	# 尝试从对象池获取爆炸效果
-	if PoolManager.has_method("get_object"):
-		var explosion = PoolManager.get_object("explosion_large")
-		if explosion:
-			explosion.global_position = global_position
-			get_parent().add_child(explosion)
+	# 尝试从对象池获取爆炸效果（get_object_by_path 接受 String 路径）
+	var explosion_scene_path: String = "res://scenes/effects/explosion_large.tscn"
+	var explosion: Node = null
+	if PoolManager.has_method("get_object_by_path"):
+		explosion = PoolManager.get_object_by_path(explosion_scene_path)
+	if explosion == null:
+		# 对象池不可用或池满，回退直接实例化
+		var explosion_scene = load(explosion_scene_path)
+		if explosion_scene == null:
 			return
+		explosion = explosion_scene.instantiate()
 
-	# 如果没有对象池，直接实例化
-	var explosion_scene = load("res://scenes/effects/explosion_large.tscn")
-	if explosion_scene:
-		var explosion = explosion_scene.instantiate()
+	if explosion != null:
 		explosion.global_position = global_position
-		get_parent().add_child(explosion)
+		# 若对象池已添加到场景树则 get_parent() 非空，避免重复 add_child
+		if explosion.get_parent() == null:
+			get_parent().add_child(explosion)
 
 
 ## 掉落战利品
@@ -338,6 +343,9 @@ func _drop_loot() -> void:
 # 碰撞处理
 # ============================================================
 
+## 玩家与BOSS碰撞时的接触伤害处理
+## 注：当前未连接信号（CharacterBody2D 无 body_entered 信号）。
+## 待 M2-D 添加 Hitbox Area2D 子节点后，由其 area_entered/body_entered 信号触发。
 func _on_body_entered(body: Node2D) -> void:
 	# 碰撞到玩家时造成接触伤害
 	if body.has_method("take_damage") and body.collision_layer & (1 << 0):

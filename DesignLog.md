@@ -85,9 +85,63 @@ PM 发布 `docs/M1_acceptance_report_v2.md`，Design 部门评级 **C（限期 5
 | UI | 15 | 32x32 ~ 1920x1080 |
 | **合计** | **69** | **—** |
 
-### 待 PM 重验
+### PM 重验结果：通过
 
-修复后的文件已写入本地 `assets/sprites/` 目录，等待 Trae IDE 执行 git push 到远程仓库后，由 PM Agent 进行第二轮验收。
+PM 第二轮验收（`docs/M1_acceptance_report_v2.md` 更新）：
+- Design 评级：**C → A**
+- 65/65 PNG 确认为 RGBA 模式，Alpha 通道 0~255
+- 全部尺寸符合 Design Spec
+- Minor：子弹 Sprite 32x32 vs 规范 8x24，可在 Godot 中通过缩放修正
+- **M1 里程碑通过，项目进入 M2**
+
+---
+
+## 2026-07-09 — M2 背景场景包 + 前3个BOSS（启动）
+
+### 任务范围（Design Spec 7.2）
+
+- 前6关 4层视差背景（Stage 1~6，每关 Layer 1~4 = 24 张）
+- 前3个BOSS的2阶段Sprite（Boss 1~3，每阶段1张 = 6 张）
+
+### 设计规范参考
+
+- Design Spec 3.1：背景分层标准（4层视差，512x2048px）
+- Design Spec 3.2：每关色调、氛围、关键视觉元素
+- Design Spec 2.3：BOSS 三阶段Sprite规范（512x512px）
+
+### 交付物
+
+**前 6 关视差背景（24 文件，512x2048px each）**
+
+| 关卡 | 目录 | 色调 | 氛围 | 4层文件 |
+|------|------|------|------|---------|
+| Stage 1 昆明 | `backgrounds/stage_01_kunming/` | 黄绿暖色 | 高原清晨 | bg_kunming_far / mid / near / ground |
+| Stage 2 仰光 | `backgrounds/stage_02_rangoon/` | 橙红夕阳 | 热带黄昏 | bg_rangoon_far / mid / near / ground |
+| Stage 3 怒江 | `backgrounds/stage_03_salween/` | 深绿暗沉 | 峡谷阴郁 | bg_salween_far / mid / near / ground |
+| Stage 4 驼峰 | `backgrounds/stage_04_hump/` | 冷蓝白 | 雪山严寒 | bg_hump_far / mid / near / ground |
+| Stage 5 桂林 | `backgrounds/stage_05_guilin/` | 金黄黄昏 | 喀斯特壮美 | bg_guilin_far / mid / near / ground |
+| Stage 6 衡阳 | `backgrounds/stage_06_hengyang/` | 暗红火焰 | 城市废墟夜战 | bg_hengyang_far / mid / near / ground |
+
+**前 3 个 BOSS Sprite（6 文件，512x512px each）**
+
+| 关卡 | BOSS 名称 | Phase 1（常规形态） | Phase 2（展开形态） |
+|------|----------|-------------------|-------------------|
+| Stage 1 昆明 | 九七重爆领队 | boss_cruiser_phase1 | boss_cruiser_phase2 |
+| Stage 2 仰光 | 妙高号重巡 | boss_nachi_phase1 | boss_nachi_phase2 |
+| Stage 3 怒江 | 筑波浮桥要塞 | boss_fortress_phase1 | boss_fortress_phase2 |
+
+### 处理流程
+
+1. 图片生成工具输出 JPEG → 重命名为 `.png`
+2. Python/Pillow 批量转码：JPEG → PNG-32 RGBA（白色背景转透明）
+3. 同步缩放到规范尺寸：背景 512x2048 / BOSS 512x512
+4. PNG 二进制头验证：30/30 全部 RGBA，尺寸 100% 符合
+
+### 验证结果
+
+- 背景：24/24 PNG-32 RGBA，512x2048 ✅
+- BOSS：6/6 PNG-32 RGBA，512x512 ✅
+- 文件体积：背景 942~2147KB，BOSS 251~386KB ✅
 
 ---
 

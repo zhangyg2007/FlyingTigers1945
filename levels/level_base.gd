@@ -90,6 +90,10 @@ func _ready() -> void:
 	# 准备完毕
 	print("[LevelBase] 关卡 '%s' 准备完毕，波次数: %d" % [level_name, wave_configs.size()])
 
+	# 自动开始关卡（M2阶段简化：场景加载后立即开始，无需按键触发）
+	# 未来如有"按任意键开始"需求，可移除此行改为外部调用 start_level()
+	start_level()
+
 
 func _process(delta: float) -> void:
 	if not is_level_active or is_level_ended:
@@ -239,14 +243,10 @@ func _load_wave_config() -> void:
 			wave_configs = SpawnManager.get_wave_configs()
 			return
 
-	# 直接使用CSVParser解析
-	if CSVParser.has_method("parse_wave_config"):
-		wave_configs = CSVParser.parse_wave_config(wave_config_path)
-	else:
-		# 内联解析逻辑（作为后备方案）
-		var parser_script := load("res://scripts/csv_parser.gd")
-		if parser_script:
-			wave_configs = parser_script.parse_wave_config(wave_config_path)
+	# 直接使用CSVParser.parse_wave_config（static 方法，可直接通过类名调用）
+	# 注：CSVParser 是 class_name 声明的类，parse_wave_config 是 static func，
+	# 不能对类名调用 has_method（实例方法），故直接调用 static 函数。
+	wave_configs = CSVParser.parse_wave_config(wave_config_path)
 
 	# 按时间排序
 	wave_configs = _sort_waves_by_time(wave_configs)
@@ -590,13 +590,13 @@ func _goto_result_scene() -> void:
 		"boss_defeated": boss_defeated,
 	}
 
-	# 通过GameManager保存并跳转
+	# 通过GameManager保存并跳转（场景文件名为 result_screen.tscn，对应 result_screen.gd）
 	if GameManager.has_method("set_level_result"):
 		GameManager.set_level_result(result_data)
-		GameManager.goto_scene("res://scenes/ui/level_result.tscn")
+		GameManager.goto_scene("res://scenes/ui/result_screen.tscn")
 	else:
 		# 后备方案：直接切换场景
-		get_tree().change_scene_to_file("res://scenes/ui/level_result.tscn")
+		get_tree().change_scene_to_file("res://scenes/ui/result_screen.tscn")
 
 
 ## 重新开始当前关卡

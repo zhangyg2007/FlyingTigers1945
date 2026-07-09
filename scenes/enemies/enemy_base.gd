@@ -55,6 +55,15 @@ var _shoot_timer: float = 0.0
 ## 射击间隔（秒），子类覆盖
 var _shoot_interval: float = 2.0
 
+## 敌机类型标识（由 SpawnManager.setup 传入，如 "ki27_fighter"）
+var _enemy_type_id: String = ""
+
+## 编队内索引（由 SpawnManager.setup 传入）
+var _index_in_wave: int = 0
+
+## 编队总数（由 SpawnManager.setup 传入）
+var _total_in_wave: int = 1
+
 
 func _ready() -> void:
 	# 设置碰撞层：Layer4 = Enemy
@@ -289,6 +298,9 @@ func reset_state() -> void:
 	_path_progress = 0.0
 	_shoot_timer = 0.0
 	_has_path = move_path != null
+	_enemy_type_id = ""
+	_index_in_wave = 0
+	_total_in_wave = 1
 	position = Vector2.ZERO
 	velocity = Vector2.ZERO
 	set_process(true)
@@ -309,3 +321,73 @@ func set_bullet_scenes(scenes: Array[PackedScene]) -> void:
 ## 设置爆炸特效场景
 func set_explosion_scene(scene: PackedScene) -> void:
 	_explosion_scene = scene
+
+
+## ============================================================
+## SpawnManager 集成接口
+## ============================================================
+
+## 由 SpawnManager 在生成敌人时调用，传入波次配置参数
+## [param config]: 字典，可含字段：
+##   - enemy_type (String): 敌机类型标识（如 "ki27_fighter"）
+##   - speed_mult (float): 速度倍率
+##   - path_id (String): 路径标识（如 "straight"/"dive"/"boss_enter"）
+##   - index_in_wave (int): 编队内索引
+##   - total_in_wave (int): 编队总数
+func setup(config: Dictionary) -> void:
+	# 应用速度倍率
+	var speed_mult: float = config.get("speed_mult", 1.0)
+	speed *= speed_mult
+
+	# 存储类型与编队信息（子类可读取用于行为差异化）
+	_enemy_type_id = config.get("enemy_type", "")
+	_index_in_wave = config.get("index_in_wave", 0)
+	_total_in_wave = config.get("total_in_wave", 1)
+
+	# 路径处理：path_id 为字符串标识，"straight" 表示直线下移
+	# 非 straight 路径需要加载 res://resources/paths/ 下的 Curve2D 资源
+	# 当前路径资源尚未创建，非 straight 路径暂时回退为直线
+	var path_id: String = config.get("path_id", "straight")
+	if path_id != "straight" and path_id != "":
+		var path_res: Resource = _try_load_path_resource(path_id)
+		if path_res != null:
+			move_path = path_res
+			_has_path = true
+		else:
+			# 路径资源不存在，保持直线下移（已在 _ready 中设置 _has_path）
+			pass
+
+	# 重新初始化 HP（应用 setup 前的基础值，apply_difficulty 会再乘倍率）
+	current_hp = hp
+
+
+## 应用难度倍率到 HP（由 SpawnManager 在 setup 后调用）
+## [param hp_mult]: HP 倍率（如 Easy=1.0, Hard=1.3~1.5）
+func apply_difficulty(hp_mult: float) -> void:
+	hp = maxi(1, int(round(float(hp) * hp_mult)))
+	current_hp = hp
+
+
+## 尝试加载路径资源
+## [param path_id]: 路径标识字符串（如 "dive"/"sine"/"boss_enter"）
+## [return]: Curve2D 资源，加载失败返回 null
+func _try_load_path_resource(path_id: String) -> Resource:
+	var path: String = "res://resources/paths/path_" + path_id + ".tres"
+	if ResourceLoader.exists(path):
+		return load(path)
+	return null
+
+
+## 获取敌机类型标识（供子类或调试读取）
+func get_enemy_type_id() -> String:
+	return _enemy_type_id
+
+
+## 编队内索引（供子类实现编队差异化行为，如领头机 vs 翼机）
+func get_index_in_wave() -> int:
+	return _index_in_wave
+
+
+## 编队总数
+func get_total_in_wave() -> int:
+	return _total_in_wave

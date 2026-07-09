@@ -25,6 +25,12 @@ signal game_over()
 ## 当前关卡通过
 signal stage_complete(stage_index: int)
 
+## 玩家死亡（生命耗尽）— LevelBase 监听此信号强制结束关卡
+signal player_died()
+
+## BOSS被击败 — 触发关卡结算流程
+signal boss_defeated_signal()
+
 # ============================================================
 # 枚举：游戏状态
 # ============================================================
@@ -99,6 +105,18 @@ var difficulty: Difficulty = Difficulty.EASY
 
 ## 是否处于无敌状态
 var is_invincible: bool = false
+
+## 当前关卡字符串标识（如 "01_kunming"，与 stage_config.json 的 stage_id 一致）
+var current_stage_id: String = ""
+
+## 当前关卡显示名（如 "昆明首战"，从 stage_config.json 读取）
+var current_stage_name: String = ""
+
+## 当前关卡元数据（从 stage_config.json 读取，含 bgm/bg_layers/scroll_speed/boss_type/duration/easy/hard）
+var current_stage_metadata: Dictionary = {}
+
+## 上一次关卡结算数据（由 LevelBase 调用 set_level_result 写入）
+var last_level_result: Dictionary = {}
 
 # ============================================================
 # 内部变量
@@ -285,7 +303,12 @@ func start_invincible(duration: float) -> void:
 
 
 ## 获取难度对应的敌弹速度倍率
+## 优先从当前关卡 metadata 的 easy/hard 字段读取，无 metadata 时回退到全局默认值
 func get_bullet_speed_multiplier() -> float:
+	var mult := _get_stage_difficulty_field("bullet_speed_mult", -1.0)
+	if mult >= 0.0:
+		return mult
+	# 回退：无关卡 metadata 时用全局默认
 	match difficulty:
 		Difficulty.HARD:
 			return 1.3
@@ -294,16 +317,43 @@ func get_bullet_speed_multiplier() -> float:
 
 
 ## 获取难度对应的敌人HP倍率
+## 优先从当前关卡 metadata 的 easy/hard 字段读取，无 metadata 时回退到全局默认值
 func get_enemy_hp_multiplier() -> float:
+	var mult := _get_stage_difficulty_field("enemy_hp_mult", -1.0)
+	if mult >= 0.0:
+		return mult
+	# 回退：无关卡 metadata 时用全局默认
 	match difficulty:
 		Difficulty.HARD:
 			return 1.5
 		_:
 			return 1.0
 
+
+## 获取当前关卡 BOSS 攻击间隔倍率（无 metadata 时回退到 1.0）
+func get_boss_attack_interval_multiplier() -> float:
+	return _get_stage_difficulty_field("boss_attack_interval_mult", 1.0)
+
+
+## 从 current_stage_metadata 中按当前难度读取指定字段
+## [param field]: 字段名（如 "enemy_hp_mult"）
+## [param fallback]: 字段缺失时的回退值
+func _get_stage_difficulty_field(field: String, fallback: float) -> float:
+	if current_stage_metadata.is_empty():
+		return fallback
+	var diff_key: String = "easy" if difficulty == Difficulty.EASY else "hard"
+	var diff_data: Dictionary = current_stage_metadata.get(diff_key, {})
+	return diff_data.get(field, fallback)
+
 # ============================================================
 # 关卡管理
 # ============================================================
+
+## 关卡配置 JSON 文件路径（含全部关卡元数据）
+const STAGE_CONFIG_PATH: String = "res://resources/level_data/stage_config.json"
+
+## 关卡场景目录（level_base.gd 挂载的 .tscn）
+const LEVEL_SCENE_DIR: String = "res://levels/"
 
 ## 进入下一关
 func advance_stage() -> void:
@@ -316,6 +366,121 @@ func advance_stage() -> void:
 ## 设置指定关卡
 func set_stage(stage_index: int) -> void:
 	current_stage = clampi(stage_index, 0, MAX_STAGE)
+
+
+## 加载关卡元数据并设置当前关卡
+## [param stage_id]: 关卡字符串标识（如 "01_kunming"，与 stage_config.json 的 stage_id 一致）
+## [return]: true=加载成功，false=找不到关卡配置
+## 注：此方法只加载元数据，不切换场景。场景切换由 next_stage/goto_scene 负责。
+func load_stage(stage_id: String) -> bool:
+	var metadata: Dictionary = _load_stage_metadata(stage_id)
+	if metadata.is_empty():
+		push_error("[GameManager] 找不到关卡配置: %s" % stage_id)
+		return false
+
+	current_stage_id = stage_id
+	current_stage_name = metadata.get("stage_name", stage_id)
+	current_stage_metadata = metadata
+	print("[GameManager] 已加载关卡 '%s'（%s）" % [stage_id, current_stage_name])
+	return true
+
+
+## 从 stage_config.json 读取指定关卡的元数据
+func _load_stage_metadata(stage_id: String) -> Dictionary:
+	if not FileAccess.file_exists(STAGE_CONFIG_PATH):
+		push_error("[GameManager] stage_config.json 不存在: %s" % STAGE_CONFIG_PATH)
+		return {}
+
+	var file: FileAccess = FileAccess.open(STAGE_CONFIG_PATH, FileAccess.READ)
+	if file == null:
+		push_error("[GameManager] 无法打开 stage_config.json")
+		return {}
+
+	var text: String = file.get_as_text()
+	file.close()
+
+	var json: JSON = JSON.new()
+	var err: int = json.parse(text)
+	if err != OK:
+		push_error("[GameManager] stage_config.json 解析失败: %s" % json.get_error_message())
+		return {}
+
+	var data: Dictionary = json.data
+	var stages: Array = data.get("stages", [])
+	for stage in stages:
+		if stage.get("stage_id", "") == stage_id:
+			return stage
+
+	return {}
+
+
+## 获取所有关卡 ID 列表（从 stage_config.json 读取）
+func get_all_stage_ids() -> Array[String]:
+	var ids: Array[String] = []
+	if not FileAccess.file_exists(STAGE_CONFIG_PATH):
+		return ids
+
+	var file: FileAccess = FileAccess.open(STAGE_CONFIG_PATH, FileAccess.READ)
+	if file == null:
+		return ids
+	var text: String = file.get_as_text()
+	file.close()
+
+	var json: JSON = JSON.new()
+	if json.parse(text) != OK:
+		return ids
+
+	var data: Dictionary = json.data
+	for stage in data.get("stages", []):
+		ids.append(stage.get("stage_id", ""))
+	return ids
+
+
+## 进入下一关（加载下一关元数据 + 切换场景）
+## 注：关卡场景路径约定为 res://levels/stage_<stage_id>.tscn
+func next_stage() -> void:
+	advance_stage()
+	# 查找下一关的 stage_id
+	var all_ids: Array[String] = get_all_stage_ids()
+	if current_stage < all_ids.size():
+		var next_id: String = all_ids[current_stage]
+		load_stage(next_id)
+		goto_scene(LEVEL_SCENE_DIR + "stage_" + next_id + ".tscn")
+
+
+## BOSS被击败回调（由 BossBase 调用）
+## 触发 boss_defeated_signal 信号，LevelBase 监听后启动结算流程
+func boss_defeated() -> void:
+	print("[GameManager] BOSS已被击败，触发关卡结算信号")
+	boss_defeated_signal.emit()
+
+
+## 玩家死亡回调（由 PlayerBase 在生命耗尽时调用）
+## 触发 player_died 信号，LevelBase 监听后强制结束关卡
+func notify_player_died() -> void:
+	print("[GameManager] 玩家死亡信号已发射")
+	player_died.emit()
+
+
+## 保存关卡结算数据（由 LevelBase 在关卡结束时调用）
+func set_level_result(data: Dictionary) -> void:
+	last_level_result = data
+	print("[GameManager] 关卡结算数据已保存: %s" % str(data))
+
+
+## 获取上一次关卡结算数据（由 result_screen 读取展示）
+func get_level_result() -> Dictionary:
+	return last_level_result
+
+
+## 切换到指定场景
+## [param path]: 场景资源路径（如 "res://scenes/ui/level_result.tscn"）
+func goto_scene(path: String) -> void:
+	if not ResourceLoader.exists(path):
+		push_error("[GameManager] 场景文件不存在: %s" % path)
+		return
+	print("[GameManager] 切换场景: %s" % path)
+	get_tree().change_scene_to_file(path)
 
 # ============================================================
 # 重置
@@ -331,6 +496,11 @@ func reset_game() -> void:
 	is_invincible = false
 	_invincible_timer = 0.0
 	game_state = State.MENU
+	# 关卡元数据也一并重置
+	current_stage_id = ""
+	current_stage_name = ""
+	current_stage_metadata = {}
+	last_level_result = {}
 
 	score_changed.emit(score)
 	lives_changed.emit(lives)

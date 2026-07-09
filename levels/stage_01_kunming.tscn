@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://levels/level_base.gd" id="1_script"]
+
+[node name="Stage01Kunming" type="Node"]
+script = ExtResource("1_script")
+level_id = "01_kunming"
+level_name = "昆明首战"
+wave_config_path = "res://resources/level_data/stage_01_kunming.csv"
+bg_scroll_speed = 80.0
+boss_scene_path = "res://scenes/bosses/boss_bomber.tscn"
+bgm_path = "bgm_stage_01.ogg"
