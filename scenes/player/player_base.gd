@@ -163,8 +163,8 @@ func _ready() -> void:
 		_hitbox.body_entered.connect(_on_hitbox_body_entered)
 		_hitbox.area_entered.connect(_on_hitbox_area_entered)
 
-	# 连接主body的碰撞信号
-	body_entered.connect(_on_body_entered)
+	# 注：CharacterBody2D 没有 body_entered 信号（该信号属于 Area2D）。
+	# 玩家与敌机的碰撞由 Hitbox(Area2D) 的信号处理，无需在主 body 上连接。
 
 	# 初始化倾斜角度
 	_current_tilt = 0.0
@@ -178,11 +178,8 @@ func _physics_process(delta: float) -> void:
 	# 处理移动
 	_handle_movement(delta)
 
-	# 处理射击
+	# 处理射击（含蓄力累计，见 _handle_shooting 内部逻辑）
 	_handle_shooting(delta)
-
-	# 处理蓄力
-	_handle_charge(delta)
 
 	# 处理炸弹输入
 	_handle_bomb_input()

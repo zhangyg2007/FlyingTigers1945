@@ -560,30 +560,34 @@ func _update_bomb_flash(delta: float) -> void:
 ## 调试指令处理
 ## ============================================================
 
-## 处理数字键调试指令
+## 处理数字键调试指令（每帧轮询项）
 func _handle_debug_keys() -> void:
-	# 1: 生成普通敌机
+	# ui_page_up 使用 is_action_just_pressed（边沿检测），可保留每帧轮询
 	if Input.is_action_just_pressed("ui_page_up"):
 		_spawn_test_enemy("normal")
 
-	# 使用数字键（需在项目设置中映射或使用ui_开头的内置动作）
-	# Godot 4.7 中数字键没有默认action，使用物理键码检测
-	var keys_pressed: PackedInt64Array = Input.get_pressed_physical_keycodes()
 
-	for key_code: int in keys_pressed:
-		if Input.is_physical_key_pressed(key_code):
-			match key_code:
-				KEY_1:
-					_spawn_test_enemy("normal")
-				KEY_2:
-					_spawn_test_enemy("fast")
-				KEY_3:
-					_spawn_test_enemy("boss")
-				KEY_4:
-					_trigger_bomb()
-				KEY_5:
-					_power_level = (_power_level % 4) + 1
-					print("[TestStage] Power等级切换为: %d" % _power_level)
+## 通过 _input 事件处理一次性按键（边沿检测）
+## 避免 is_physical_key_pressed 的电平检测导致每帧重复触发
+func _input(event: InputEvent) -> void:
+	if not (event is InputEventKey):
+		return
+	var key_event: InputEventKey = event as InputEventKey
+	if not key_event.pressed or key_event.echo:
+		return
+
+	match key_event.physical_keycode:
+		KEY_1:
+			_spawn_test_enemy("normal")
+		KEY_2:
+			_spawn_test_enemy("fast")
+		KEY_3:
+			_spawn_test_enemy("boss")
+		KEY_4:
+			_trigger_bomb()
+		KEY_5:
+			_power_level = (_power_level % 4) + 1
+			print("[TestStage] Power等级切换为: %d" % _power_level)
 
 
 ## 更新调试信息输出
@@ -595,22 +599,25 @@ func _update_debug_info(delta: float) -> void:
 
 	# 更新HUD标签
 	if _debug_label != null:
-		_debug_label.text = (
+		# 注意：GDScript 4.7 中"圆括号内多行相邻字符串拼接 + % 格式化"会触发
+		# "Expected closing ')' after grouping expression" 解析错误。
+		# 故先以 + 显式拼接构造格式串，再单独执行 % 格式化。
+		var fmt: String = (
 			"FPS: %d\n"
-			"Score: %d\n"
-			"Lives: %d | Bombs: %d | Power: %d\n"
-			"Enemies: %d | Bullets: %d\n"
-			"[1]普通敌机 [2]快速敌机 [3]BOSS [4]炸弹 [5]Power"
-			% [
-				Engine.get_frames_per_second(),
-				_score,
-				_lives,
-				_bombs,
-				_power_level,
-				_test_enemies.size(),
-				_test_bullets.size()
-			]
+			+ "Score: %d\n"
+			+ "Lives: %d | Bombs: %d | Power: %d\n"
+			+ "Enemies: %d | Bullets: %d\n"
+			+ "[1]普通敌机 [2]快速敌机 [3]BOSS [4]炸弹 [5]Power"
 		)
+		_debug_label.text = fmt % [
+			Engine.get_frames_per_second(),
+			_score,
+			_lives,
+			_bombs,
+			_power_level,
+			_test_enemies.size(),
+			_test_bullets.size()
+		]
 
 
 ## 打印调试信息到控制台

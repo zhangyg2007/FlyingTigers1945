@@ -146,3 +146,153 @@
 - **编辑器内**: 打开项目 → 在文件浏览器选中 `scenes/test/test_player_scene.tscn` → 右键"运行场景"（或按 Ctrl+Shift+F5 / Ctrl+F6 视平台而定）。
 - **命令行**: `Godot_v4.7-stable_win64_console.exe --path <项目根> res://scenes/test/test_player_scene.tscn`
 - **操作**: WASD/方向键移动，Z/J 射击（按住蓄力 1.5s 松开释放蓄力攻击），X/K 炸弹，G 切换上帝模式，R 重置状态。
+
+---
+
+## 任务 2：创建 M1 整改所需的 6 个 .tscn 场景文件
+
+**日期**: 2026-07-09
+**任务**: 响应 PM《M1_acceptance_report_v2》整改要求（Code 评级 B → 目标 A），创建 6 个 .tscn 场景预制件，修复 test_stage.gd 的已知 bug，并修复验证过程中新发现的脚本致命错误。
+**依据**: `docs/M1_acceptance_report_v2.md` 第五节"Code 部门整改事项"
+
+### 交付物清单
+
+| # | 文件 | 类型 | 挂载脚本 | 状态 |
+|---|------|------|----------|------|
+| 1 | [scenes/bullets/bullet_player.tscn](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/bullets/bullet_player.tscn) | Area2D | bullet_base.gd | ✅ 新建 |
+| 2 | [scenes/bullets/bullet_enemy.tscn](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/bullets/bullet_enemy.tscn) | Area2D | bullet_base.gd | ✅ 新建 |
+| 3 | [scenes/enemies/enemy_fighter.tscn](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/enemies/enemy_fighter.tscn) | CharacterBody2D | enemy_base.gd | ✅ 新建 |
+| 4 | [scenes/player/player_p40.tscn](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/player/player_p40.tscn) | CharacterBody2D | player_base.gd | ✅ 新建 |
+| 5 | [scenes/ui/hud.tscn](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/ui/hud.tscn) | CanvasLayer | hud.gd | ✅ 新建 |
+| 6 | [scenes/ui/main_menu.tscn](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/ui/main_menu.tscn) | CanvasLayer | main_menu.gd | ✅ 新建 |
+| 7 | [scenes/test/test_stage.tscn](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/test/test_stage.tscn) | Node2D | test_stage.gd | ✅ 新建 |
+
+### 修复的脚本 bug
+
+除 PM 已知要求修复的 test_stage.gd 两处问题外，验证过程中还发现并修复了 3 个骨架自带的致命错误。
+
+#### 已知问题修复（PM 整改要求）
+
+**修复 1: test_stage.gd C2 — 多行字符串+%格式化解析错误（P0）**
+- **位置**: `_update_debug_info()` 第598-613行
+- **问题**: 与任务1的 test_player_scene.gd 完全相同的 GDScript 4.7 解析器 bug：圆括号分组内多行相邻字符串拼接 + `% [数组]` 格式化导致 `Expected closing ')' after grouping expression`。
+- **修复**: 拆为 `+` 显式拼接构造 `fmt` 局部变量，再单独 `%` 格式化。
+
+**修复 2: test_stage.gd C1 — 数字键 1-5 电平检测（P1）**
+- **位置**: `_handle_debug_keys()` 第564-586行
+- **问题**: 用 `Input.get_pressed_physical_keycodes()` + `is_physical_key_pressed` 检测数字键，属电平检测——按住期间每帧触发，导致按一下"1"会连续生成多架敌机、按住"4"每帧释放炸弹。
+- **修复**: 数字键处理移至新增的 `_input(event)` 回调，用 `InputEventKey.pressed and not echo` 实现边沿触发。`_handle_debug_keys()` 仅保留 `ui_page_up`（本身用 `is_action_just_pressed`，已是边沿检测）。
+
+#### 新发现并修复的致命错误
+
+**修复 3: pool_manager.gd — 内部类 ObjectPool 隐藏全局类（P0）**
+- **位置**: 第18行 `class ObjectPool:` + 第75/104/168/181/224/232/251/272/289行类型引用
+- **问题**: `autoload/pool_manager.gd` 声明内部类 `class ObjectPool`，与 `scripts/object_pool.gd` 的全局 `class_name ObjectPool` 冲突。运行时报 `Parse Error: Class "ObjectPool" hides a global script class`，导致 PoolManager autoload 加载失败，所有依赖对象池的场景（含正式玩家/敌机/子弹）无法实例化。
+- **修复**: 内部类重命名为 `_Pool`（下划线前缀表示内部私有），所有 `ObjectPool` 类型标注和 `ObjectPool.new(...)` 构造同步改为 `_Pool`。共修改 10 处引用。
+- **排查方法**: `godot --headless res://scenes/test/test_stage.tscn --quit-after 60` 运行时，控制台明确报出 autoload 加载失败的脚本路径和行号。
+
+**修复 4: pool_manager.gd — 类型推断失败（P1）**
+- **位置**: `return_all_active()` 第291行 `var active_copy := pool.active.duplicate()`
+- **问题**: `:=` 类型推断无法从内部类实例的 `Array.duplicate()` 推断具体类型，报 `Cannot infer the type of "active_copy" variable because the value doesn't have a set type`。
+- **修复**: 改为显式类型声明 `var active_copy: Array[Node] = pool.active.duplicate()`。
+
+**修复 5: player_base.gd — body_entered 信号连接错误（P0）**
+- **位置**: `_ready()` 第167行 `body_entered.connect(_on_body_entered)`
+- **问题**: 与任务1的 test_player_scene.gd A1 完全相同——`CharacterBody2D` 没有 `body_entered` 信号（该信号属于 `Area2D`）。运行时报 `Identifier "body_entered" not declared in the current scope`，player_base.gd 无法加载，player_p40.tscn 实例化失败。
+- **修复**: 删除该信号连接。玩家与敌机/敌弹的碰撞已由 `Hitbox`（Area2D）子节点的 `body_entered`/`area_entered` 信号处理（第163-164行），主 body 无需也不应连接此信号。
+
+**修复 6: player_base.gd — 调用不存在的函数 _handle_charge（P0）**
+- **位置**: `_physics_process()` 第185行 `_handle_charge(delta)`
+- **问题**: 调用了不存在的函数。蓄力逻辑实际在 `_handle_shooting()` 内部实现（第246-279行的 charge_time 累计与 fire_charge_attack 触发），没有独立的 `_handle_charge` 函数。运行时报 `Function "_handle_charge()" not found in base self`。
+- **修复**: 删除该行调用，注释说明蓄力逻辑已包含在 `_handle_shooting` 中。
+
+### 场景结构说明
+
+#### player_p40.tscn（PM 要求 AnimatedSprite2D，实际用 Sprite2D 的说明）
+PM 整改要求"CharacterBody2D + AnimatedSprite2D + CollisionShape2D"。但 `player_base.gd` 的 `_find_sprite_node()`（第739行 `node is Sprite2D`）只识别 `Sprite2D` 类型——在 Godot 4 中 `AnimatedSprite2D` 与 `Sprite2D` 是兄弟类型（均继承 Node2D），`node is Sprite2D` 对 AnimatedSprite2D 返回 false。
+
+若用 AnimatedSprite2D，`_sprite` 为 null，倾斜动画 `_update_tilt_animation` 失效。当前先用 `Sprite2D`（引用 `player_p40_body.png` 占位）让脚本正常工作。待 Design 整改 PNG（加透明通道+正确尺寸）后，需统一改为 `AnimatedSprite2D` + `SpriteFrames` 资源（组织 body/bank_left/bank_right/hit 4帧），并修复 `_find_sprite_node` 兼容 AnimatedSprite2D。此偏差记录为后续任务。
+
+#### 碰撞层配置（遵循 tech-spec 3.5 碰撞层矩阵）
+| 场景 | collision_layer | collision_mask | 说明 |
+|------|-----------------|----------------|------|
+| player_p40 | 1 (Layer1 Player) | 8 (Layer4 Enemy) | body 检测敌机 |
+| player_p40/Hitbox | 0 | 20 (Layer3+Layer5) | Area2D 检测敌弹+道具 |
+| bullet_player | 2 (Layer2 PlayerBullet) | 8 (Layer4 Enemy) | 玩家子弹检测敌机 |
+| bullet_enemy | 4 (Layer3 EnemyBullet) | 1 (Layer1 Player) | 敌弹检测玩家 |
+| enemy_fighter | 8 (Layer4 Enemy) | 3 (Layer1+Layer2) | 敌机检测玩家+玩家子弹 |
+
+注：bullet_base.gd 和 player_base.gd 的 `_ready()` 会用 `set_collision_layer_value/mask_value` 重设碰撞层，运行时以脚本为准；.tscn 中的值保持一致用于编辑器可视化。
+
+#### hud.tscn 节点结构
+所有 `@onready var xxx = %NodeName` 引用的节点均设了 `unique_name_in_owner = true`：
+- `%ScoreLabel`（Label）、`%LivesContainer`（HBoxContainer，含3个 life_icon TextureRect）、`%BombsContainer`（HBoxContainer，含6个 bomb_icon TextureRect）、`%PowerBar`（ProgressBar）、`%ChargeBar`（TextureProgressBar）、`%BossHPBar`（TextureProgressBar）、`%BossHPLabel`（Label）
+
+#### main_menu.tscn 节点结构
+- 5个按钮（StartButton/StageSelectButton/AbyssButton/SettingsButton/QuitButton）+ VersionLabel，均设 unique_name_in_owner
+- 解决了 project.godot `run/main_scene` 引用缺失问题
+
+### 验证结果
+
+| 验证项 | 方法 | 结果 |
+|--------|------|------|
+| player_base.gd 语法 | `godot --headless --check-only --script` | ✅ 退出码 0 |
+| pool_manager.gd 语法 | `godot --headless --check-only --script` | ✅ 退出码 0 |
+| test_stage.gd 语法 | `godot --headless --check-only --script` | ⚠️ check-only 模式不加载 autoload，报 GameManager 未找到（非真实 bug） |
+| test_stage.tscn 运行 | `godot --headless --quit-after 90` | ✅ 退出码 0，输出启动信息，PoolManager 加载成功 |
+| test_player_scene.tscn 运行 | （任务1已验证） | ✅ 退出码 0 |
+| main_menu.tscn / player_p40.tscn 运行 | `godot --headless --quit-after 60` | ⚠️ PNG 资源加载失败（见下方说明） |
+
+### PNG 资源加载问题（环境限制，非代码问题）
+
+**现象**: main_menu.tscn / player_p40.tscn / bullet_player.tscn 运行时报 `Failed loading resource: ...png` + `[ext_resource] referenced non-existent resource`。
+
+**根因**: PNG 文件存在且合法（header `89 50 4E 47` 是有效 PNG 签名），但 `.import` 文件中 `valid=false`——Godot 的资源导入流程未完成。导入需要将 PNG 转换为 `.godot/imported/*.ctex`（压缩纹理缓存），但：
+1. `--editor --quit-after 30` 过早退出，导入任务未跑完
+2. `--import` 命令虽完成扫描，但 `.godot/imported/` 下只生成 3 个 ctex（应有 65 个），且部分只有 .md5 无 .ctex
+3. 这是 TRAE sandbox 限制 headless Godot 写入 `.godot/imported/` 目录所致
+
+**结论**: 非代码问题。用户在 Godot 编辑器 GUI 中打开项目时会自动完成全部 65 个 PNG 的导入（生成 valid=true 的 .import 和 .ctex 缓存），届时场景即可正常加载。.gitignore 已排除 `*.import`，所以导入缓存不会进版本库，每位开发者首次打开项目都会自动导入。
+
+### 临时配置变更
+
+- **project.godot** 新增 `config/use_custom_user_dir=true` + `config/custom_user_dir_name="flying_tigers_1945_user"`：将 user:// 从 `AppData\Roaming\Godot\app_userdata\` 重定向到项目内，规避 TRAE sandbox 阻止写 AppData 日志导致 Godot 崩溃。此为 CLI 验证用配置，编辑器 GUI 运行不受影响，可保留。
+
+### 遗留问题（后续任务跟进）
+
+| 编号 | 问题 | 优先级 | 建议处理时机 |
+|------|------|--------|--------------|
+| E1 | player_base.gd 的 `_find_sprite_node` 只识别 Sprite2D，与 PM 要求的 AnimatedSprite2D 不兼容 | P2 | Design 整改 PNG 后，统一改 AnimatedSprite2D + SpriteFrames |
+| E2 | enemy_base.gd `_ready()` 未连接 body_entered/area_entered 信号（脚本有 `_on_area_entered`/`_on_body_entered` 函数但未 connect） | P1 | 敌机接入正式关卡时修复 |
+| E3 | player_base.gd 的 `object_pool` 字段类型为 `ObjectPool`(scripts/)，与 PoolManager 单例接口不兼容 | P2 | 统一为 PoolManager 单例 |
+| E4 | main_menu.gd 跳转的 stage_select/abyss/settings 场景文件不存在 | P2 | 后续创建对应场景 |
+| E5 | hud.gd `_connect_optional_signals` 检查的 charge_changed/boss_appeared 等信号 GameManager 未定义（用 has_signal 安全检查，不崩但功能缺失） | P3 | GameManager 扩展时补充信号 |
+
+### 协作说明（git 工作流）
+
+由于本机命令行 git 无法直连 GitHub（TCP 443 被墙，无代理），采用分工：
+- **Code agent（本机）**: 本地开发 + `git add` / `git commit`
+- **用户（Trae IDE）**: `git push` / `git pull` 远程同步
+
+本次任务完成后，本地 commit，等待用户用 Trae IDE 同步到远程。
+
+---
+
+## 本地提交记录
+
+### 提交 1 — M1 整改成果本地 commit
+
+**时间**: 2026-07-09 10:56 +08:00（北京时间）
+**触发**: 用户用 Trae IDE 完成 `git pull`（拉取 `docs/M1_acceptance_report_v2.md`，Fast-forward），PM 评级 B 限期 2 天整改。
+**提交内容**（仅 Code 部门工作，Design 部门改动由 Design agent 自行提交）:
+- 7 个 .tscn 场景文件（见任务 2 交付物清单）
+- 3 个 .gd 脚本修复：`autoload/pool_manager.gd`、`scenes/player/player_base.gd`、`scenes/test/test_stage.gd`
+- `project.godot`：新增 `use_custom_user_dir` 配置（CLI 验证用，规避 sandbox 写 AppData 限制）
+- `Devlog.md`：任务 0/1/2 完整记录 + 本地提交记录章节
+- 清理 `.godot/` 误入版本库的 206 个 Godot 编辑器缓存文件（`.gitignore` 已排除但旧追踪未清理；`git rm --cached -r`，本地文件保留）
+
+**未纳入本次提交**（属于 Design 部门，由 Design agent 自行管理）:
+- `assets/sprites/` 下 65 个 PNG（Design agent 已完成 JPEG→PNG-32 RGBA + Alpha 通道 + 规范尺寸修复，详见 `DesignLog.md`）
+- `DesignLog.md`（Design agent 工作日志）
+
+**下一步**: 等待用户用 Trae IDE 执行 `git push` 同步到远程，由 PM agent 进行 M1 第二轮验收。

@@ -15,7 +15,8 @@ extends Node
 # ============================================================
 
 ## 单个对象池的数据
-class ObjectPool:
+## 注：重命名为 _Pool 避免与 scripts/object_pool.gd 的全局 class_name ObjectPool 冲突
+class _Pool:
 	## 对应的 PackedScene 资源
 	var scene: PackedScene
 
@@ -71,7 +72,7 @@ func register_pool(scene: PackedScene, max_size: int) -> void:
 		push_warning("PoolManager: 场景 '%s' 已注册，跳过重复注册。" % key)
 		return
 
-	var pool := ObjectPool.new(scene, max_size)
+	var pool := _Pool.new(scene, max_size)
 	_pools[key] = pool
 
 
@@ -100,7 +101,7 @@ func get_object(scene: PackedScene, parent: Node = null) -> Node:
 		push_warning("PoolManager: 场景 '%s' 未注册，自动注册（容量20）。" % key)
 		register_pool(scene, 20)
 
-	var pool: ObjectPool = _pools[key]
+	var pool: _Pool = _pools[key]
 	var obj: Node = null
 
 	# 优先从可用队列中取
@@ -164,7 +165,7 @@ func return_object(obj: Node) -> void:
 	elif obj is Node:
 		# 兜底：遍历所有活跃池查找
 		for pool_key in _pools:
-			var pool: ObjectPool = _pools[pool_key]
+			var pool: _Pool = _pools[pool_key]
 			if obj in pool.active:
 				key = pool_key
 				break
@@ -177,7 +178,7 @@ func return_object(obj: Node) -> void:
 		obj.queue_free()
 		return
 
-	var pool: ObjectPool = _pools[key]
+	var pool: _Pool = _pools[key]
 
 	# 从活跃集合中移除
 	var idx: int = pool.active.find(obj)
@@ -220,7 +221,7 @@ func get_pool_size(scene: PackedScene) -> int:
 	var key: String = scene.resource_path
 	if not _pools.has(key):
 		return 0
-	var pool: ObjectPool = _pools[key]
+	var pool: _Pool = _pools[key]
 	return pool.available.size() + pool.active.size()
 
 
@@ -228,7 +229,7 @@ func get_pool_size(scene: PackedScene) -> int:
 func get_pool_stats() -> Dictionary:
 	var stats := {}
 	for key in _pools:
-		var pool: ObjectPool = _pools[key]
+		var pool: _Pool = _pools[key]
 		stats[key] = {
 			"available": pool.available.size(),
 			"active": pool.active.size(),
@@ -247,7 +248,7 @@ func clear_pool(scene: PackedScene) -> void:
 	if not _pools.has(key):
 		return
 
-	var pool: ObjectPool = _pools[key]
+	var pool: _Pool = _pools[key]
 
 	# 释放所有可用对象
 	for obj in pool.available:
@@ -268,7 +269,7 @@ func clear_pool(scene: PackedScene) -> void:
 ## 清理所有池，释放全部对象
 func cleanup() -> void:
 	for key in _pools:
-		var pool: ObjectPool = _pools[key]
+		var pool: _Pool = _pools[key]
 		for obj in pool.available:
 			if is_instance_valid(obj):
 				obj.queue_free()
@@ -286,9 +287,9 @@ func cleanup() -> void:
 ## 适用于关卡切换时批量回收
 func return_all_active() -> void:
 	for key in _pools:
-		var pool: ObjectPool = _pools[key]
+		var pool: _Pool = _pools[key]
 		# 复制一份活跃列表，因为return_object会修改原列表
-		var active_copy := pool.active.duplicate()
+		var active_copy: Array[Node] = pool.active.duplicate()
 		for obj in active_copy:
 			if is_instance_valid(obj):
 				return_object(obj)

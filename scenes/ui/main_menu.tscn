@@ -1,0 +1,68 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/main_menu.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/ui_main_menu_bg.png" id="2_bg"]
+
+[node name="MainMenu" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_script")
+
+[node name="Background" type="TextureRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_bg")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = -120.0
+offset_right = 120.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="StartButton" type="Button" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "开始游戏"
+
+[node name="StageSelectButton" type="Button" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "关卡选择"
+
+[node name="AbyssButton" type="Button" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "深渊模式"
+
+[node name="SettingsButton" type="Button" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "设置"
+
+[node name="QuitButton" type="Button" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "退出游戏"
+
+[node name="VersionLabel" type="Label" parent="."]
+unique_name_in_owner = true
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -80.0
+offset_top = -30.0
+grow_horizontal = 0
+grow_vertical = 0
+text = "v1.0.0"
+horizontal_alignment = 2

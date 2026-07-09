@@ -14,6 +14,9 @@ config/name="Flying Tigers 1945"
 config/description="A vertical scrolling shooter game set in WWII China-Burma theater"
 run/main_scene="res://scenes/ui/main_menu.tscn"
 config/auto_accept_quit=false
+; 临时：user:// 重定向到项目内，避免 sandbox 阻止写 AppData 日志（CI/CLI 验证用）
+config/use_custom_user_dir=true
+config/custom_user_dir_name="flying_tigers_1945_user"
 config/features=PackedStringArray("4.7")
 boot_splash/bg_color=Color(0.059, 0.078, 0.098, 1)
 boot_splash/show_image=false
