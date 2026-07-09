@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://levels/level_base.gd" id="1_script"]
+
+[node name="Stage03Salween" type="Node"]
+script = ExtResource("1_script")
+level_id = "03_salween"
+level_name = "怒江天险"
+wave_config_path = "res://resources/level_data/stage_03_salween.csv"
+bg_scroll_speed = 90.0
+boss_scene_path = "res://scenes/bosses/boss_fortress.tscn"
+bgm_path = "bgm_stage_03.ogg"

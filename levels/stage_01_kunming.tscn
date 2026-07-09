@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://levels/level_base.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/player/player_p40.tscn" id="2_player"]
 
 [node name="Stage01Kunming" type="Node"]
 script = ExtResource("1_script")
@@ -10,3 +11,6 @@ wave_config_path = "res://resources/level_data/stage_01_kunming.csv"
 bg_scroll_speed = 80.0
 boss_scene_path = "res://scenes/bosses/boss_bomber.tscn"
 bgm_path = "bgm_stage_01.ogg"
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(540, 1620)

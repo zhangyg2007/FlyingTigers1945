@@ -145,6 +145,84 @@ PM 第二轮验收（`docs/M1_acceptance_report_v2.md` 更新）：
 
 ---
 
+## 2026-07-09 — M2 视角修正 + 命名对齐 + M1 遗留修复
+
+### 问题来源
+
+PM M2 验收报告 + `docs/M2_correction_perspective_plan.md` + `docs/M2_perspective_correction_prompts.md`：
+1. 背景图视角错误（侧视风景 → 应为纯俯角顶视地面）
+2. Boss 2/3 视角错误（混合视角 → 应为纯俯角甲板顶视）
+3. BOSS 命名与 GDD 不对齐
+4. Stage 3 目录名风格不一致
+
+### 修正内容
+
+**1. 背景重绘（24 张，纯俯角顶视）**
+
+- Stage 1 昆明：3 张重绘（far/mid/near，ground 保留），黄绿暖色高原俯视
+- Stage 2 仰光：4 张重绘，港口/伊洛瓦底江顶视，黄昏暖色
+- Stage 3 怒江：4 张重绘，`bg_salween_*` → `bg_nujiang_*`（配合目录重命名），峡谷/江面俯视
+- Stage 4 驼峰：4 张重绘，雪山冰川顶视
+- Stage 5 桂林：4 张重绘，喀斯特峰林/漓江俯视
+- Stage 6 衡阳：4 张重绘，城市废墟夜战俯视
+
+**2. BOSS 视角修正（4 张）**
+
+- `boss_cruiser_phase1/2`（原 boss_nachi）：重绘为纯俯角妙高号重巡甲板顶视
+- `boss_fortress_phase1/2`：重绘为纯俯角浮桥要塞甲板顶视
+
+**3. 命名对齐**
+
+| 原名 | 新名 | 原因 |
+|------|------|------|
+| `boss_cruiser_phase1/2` | `boss_bomber_phase1/2` | Stage 1 BOSS 为九七重爆，非巡洋舰 |
+| `boss_nachi_phase1/2` | `boss_cruiser_phase1/2` | Stage 2 BOSS 为妙高号重巡 |
+| `stage_03_salween/` | `stage_03_nujiang/` | 统一使用中文拼音命名 |
+
+**4. M1 遗留修复**
+
+- 子弹 Sprite 缩放：`bullet_player_yellow` 32x32→8x24，`bullet_enemy_red` 32x32→8x24，`bullet_missile` 64x64→16x32
+- 螺旋桨旋转帧补全：4 架战机各 1 张 sprite strip（P-40/P-51: 512x128, P-38: 576x128, B-25: 640x144）
+
+**5. BOSS 变形动画帧序列（3 张）**
+
+- `boss_bomber_transform.png`：九七重爆 phase1→phase2 过渡（6 帧单张）
+- `boss_cruiser_transform.png`：妙高号重巡 phase1→phase2 过渡
+- `boss_fortress_transform.png`：浮桥要塞 phase1→phase2 过渡
+
+### 验证结果
+
+- 全部 106 个 PNG 文件验证通过：PNG-32 RGBA，尺寸 100% 符合规范 ✅
+- 0 个 JPG 残留 ✅
+- 0 个 RGB（无 Alpha）文件 ✅
+
+---
+
+## 2026-07-09 — M2 背景二次重绘（参考截图校准视角）
+
+### 问题来源
+
+用户提供 iFighter 2 / Strikers 1945 实机截图作为参考。截图显示：背景是纯卫星地图式的正上方俯视地面，完全无天空、无地平线，所有建筑/车辆/船只只看到顶面。上一轮修正虽有改善，但仍不够"极端"。
+
+### 修正措施
+
+重新生成全部 23 张背景（kunming_ground 保留），提示词核心约束改为：
+- `Satellite map view from directly above`（卫星地图正上方俯视）
+- `Zero sky, zero horizon, zero clouds`（零天空、零地平线、零云）
+- `Entire image is ground surface only`（整个画面只有地面）
+- 每层设定具体海拔高度（5000m/2000m/500m/100m）以控制缩放层级
+- 所有物体描述使用顶视特征（如 `trees as round green canopy circles from above`、`buildings as rectangular roofs from above`）
+
+### 清理
+
+- 删除 `stage_03_nujiang/` 下残留的 4 个 `bg_salween_*` 旧文件及对应 `.import`
+
+### 验证
+
+24/24 背景 PNG-32 RGBA，512x2048 ✅（23 张重绘 + 1 张保留）
+
+---
+
 ## 备注
 
 - 所有文件命名严格遵循 `snake_case` 规范，符合 Master Interface Spec 4.1

@@ -1,0 +1,19 @@
+{
+  "boss_id": "boss_nachi",
+  "boss_name": "妙高号重巡",
+  "max_hp": 700,
+  "phase_hps": [300, 400],
+  "phase_attack_intervals": [1.3, 0.9],
+  "phase_bullets": [
+    ["spiral_shoot", "aimed_shoot"],
+    ["spiral_shoot", "turret_fire", "aimed_shoot"]
+  ],
+  "phase_sprites": [
+    "res://assets/sprites/boss/boss_nachi_phase1.png",
+    "res://assets/sprites/boss/boss_nachi_phase2.png"
+  ],
+  "move_speed": 70.0,
+  "contact_damage": 15,
+  "entry_target_y": 180.0,
+  "drop_count": 4
+}

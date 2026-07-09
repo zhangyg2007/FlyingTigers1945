@@ -23,15 +23,23 @@ class _Pool:
 	## 池的最大容量
 	var max_size: int
 
+	## 自动扩容上限（池满时自动扩容到此上限为止，0 表示不自动扩容）
+	var auto_expand_limit: int = 0
+
+	## 每次自动扩容的增量
+	var expand_increment: int = 20
+
 	## 当前可用对象队列（未激活的）
 	var available: Array[Node] = []
 
 	## 当前活跃（借出）对象集合
 	var active: Array[Node] = []
 
-	func _init(p_scene: PackedScene, p_max_size: int) -> void:
+	func _init(p_scene: PackedScene, p_max_size: int, p_auto_expand_limit: int = 0) -> void:
 		scene = p_scene
 		max_size = p_max_size
+		# 默认自动扩容上限为初始容量的 3 倍（至少能扩容 2 次）
+		auto_expand_limit = p_auto_expand_limit if p_auto_expand_limit > 0 else p_max_size * 3
 
 # ============================================================
 # 公开变量
@@ -65,24 +73,25 @@ const POWERUP_POOL_SIZE: int = 15
 
 ## 注册一个对象池
 ## [param scene]: 要池化的 PackedScene
-## [param max_size]: 池的最大容量
-func register_pool(scene: PackedScene, max_size: int) -> void:
+## [param max_size]: 池的初始最大容量
+## [param auto_expand_limit]: 自动扩容上限（0 或负数表示使用默认值 = max_size * 3）
+func register_pool(scene: PackedScene, max_size: int, auto_expand_limit: int = 0) -> void:
 	var key: String = scene.resource_path
 	if _pools.has(key):
 		push_warning("PoolManager: 场景 '%s' 已注册，跳过重复注册。" % key)
 		return
 
-	var pool := _Pool.new(scene, max_size)
+	var pool := _Pool.new(scene, max_size, auto_expand_limit)
 	_pools[key] = pool
 
 
 ## 通过场景路径字符串注册对象池（便捷方法）
-func register_pool_by_path(scene_path: String, max_size: int) -> bool:
+func register_pool_by_path(scene_path: String, max_size: int, auto_expand_limit: int = 0) -> bool:
 	var scene: PackedScene = load(scene_path) as PackedScene
 	if scene == null:
 		push_error("PoolManager: 无法加载场景 '%s'" % scene_path)
 		return false
-	register_pool(scene, max_size)
+	register_pool(scene, max_size, auto_expand_limit)
 	return true
 
 # ============================================================
@@ -112,8 +121,14 @@ func get_object(scene: PackedScene, parent: Node = null) -> Node:
 		var total_count: int = pool.available.size() + pool.active.size()
 		if total_count < pool.max_size:
 			obj = scene.instantiate()
+		elif total_count < pool.auto_expand_limit:
+			# 池已满但未达自动扩容上限，自动扩容后实例化
+			var new_max: int = min(pool.max_size + pool.expand_increment, pool.auto_expand_limit)
+			print("[PoolManager] 自动扩容 '%s': %d → %d (上限 %d)" % [key, pool.max_size, new_max, pool.auto_expand_limit])
+			pool.max_size = new_max
+			obj = scene.instantiate()
 		else:
-			push_warning("PoolManager: 场景 '%s' 池已满（%d/%d），无法创建新对象。" % [key, total_count, pool.max_size])
+			push_warning("PoolManager: 场景 '%s' 池已满且达自动扩容上限（%d/%d），无法创建新对象。" % [key, total_count, pool.auto_expand_limit])
 			return null
 
 	if obj == null:
@@ -216,13 +231,29 @@ func get_available_count(scene: PackedScene) -> int:
 	return _pools[key].available.size()
 
 
-## 获取指定场景的池总大小
+## 获取指定场景的池总大小（当前容量，非上限）
 func get_pool_size(scene: PackedScene) -> int:
 	var key: String = scene.resource_path
 	if not _pools.has(key):
 		return 0
 	var pool: _Pool = _pools[key]
 	return pool.available.size() + pool.active.size()
+
+
+## 获取指定场景的池当前最大容量（可能已被自动扩容）
+func get_pool_capacity(scene: PackedScene) -> int:
+	var key: String = scene.resource_path
+	if not _pools.has(key):
+		return 0
+	return _pools[key].max_size
+
+
+## 获取指定场景的池自动扩容上限
+func get_pool_auto_expand_limit(scene: PackedScene) -> int:
+	var key: String = scene.resource_path
+	if not _pools.has(key):
+		return 0
+	return _pools[key].auto_expand_limit
 
 
 ## 获取所有池的统计信息（用于调试）
@@ -234,9 +265,51 @@ func get_pool_stats() -> Dictionary:
 			"available": pool.available.size(),
 			"active": pool.active.size(),
 			"max_size": pool.max_size,
+			"auto_expand_limit": pool.auto_expand_limit,
 			"total": pool.available.size() + pool.active.size()
 		}
 	return stats
+
+
+## ============================================================
+## 容量管理方法
+## ============================================================
+
+## 手动设置池容量（覆盖当前 max_size，不影响 auto_expand_limit）
+## [param scene]: 要调整的 PackedScene
+## [param new_max_size]: 新的最大容量
+func set_pool_capacity(scene: PackedScene, new_max_size: int) -> void:
+	var key: String = scene.resource_path
+	if not _pools.has(key):
+		push_warning("PoolManager: 场景 '%s' 未注册，无法设置容量。" % key)
+		return
+	_pools[key].max_size = maxi(1, new_max_size)
+
+
+## 手动扩容池（增加指定数量到 max_size）
+## [param scene]: 要扩容的 PackedScene
+## [param additional_size]: 增加的容量
+func expand_pool(scene: PackedScene, additional_size: int) -> void:
+	var key: String = scene.resource_path
+	if not _pools.has(key):
+		push_warning("PoolManager: 场景 '%s' 未注册，无法扩容。" % key)
+		return
+	var pool: _Pool = _pools[key]
+	pool.max_size += maxi(1, additional_size)
+	# 如果手动扩容后超过自动扩容上限，同步提升上限
+	if pool.max_size > pool.auto_expand_limit:
+		pool.auto_expand_limit = pool.max_size
+
+
+## 设置自动扩容上限
+## [param scene]: 要配置的 PackedScene
+## [param new_limit]: 新的自动扩容上限（0 表示禁用自动扩容）
+func set_auto_expand_limit(scene: PackedScene, new_limit: int) -> void:
+	var key: String = scene.resource_path
+	if not _pools.has(key):
+		push_warning("PoolManager: 场景 '%s' 未注册，无法设置扩容上限。" % key)
+		return
+	_pools[key].auto_expand_limit = maxi(0, new_limit)
 
 # ============================================================
 # 清理

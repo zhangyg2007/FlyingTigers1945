@@ -134,6 +134,10 @@ var _invincible_blink_timer: Timer = null
 
 
 func _ready() -> void:
+	# 加入 "player" 组，便于 BOSS/敌机/道具等通过 get_nodes_in_group("player") 查找
+	if not is_in_group("player"):
+		add_to_group("player")
+
 	# 初始化运行时状态
 	lives = max_lives
 	bombs = 3

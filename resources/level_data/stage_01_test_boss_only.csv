@@ -1,0 +1,4 @@
+# 测试用CSV：仅BOSS波，1秒触发，用于端到端验证
+# 格式：time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+1.0,BOSS_bomber,1,boss,540,-150,0.5,boss_enter

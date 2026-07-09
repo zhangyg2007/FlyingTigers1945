@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scenes/bosses/boss_base.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/sprites/enemy/enemy_ki21_bomber.png" id="2_tex"]
+[ext_resource type="Texture2D" path="res://assets/sprites/boss/boss_cruiser_phase1.png" id="2_tex"]
 [ext_resource type="PackedScene" path="res://scenes/bullets/bullet_enemy.tscn" id="3_bullet"]
 
 [sub_resource type="RectangleShape2D" id="4_shape"]
@@ -16,11 +16,14 @@ move_speed = 60.0
 bullet_scene = ExtResource("3_bullet")
 contact_damage = 10
 entry_target_y = 200.0
+boss_config_path = "res://resources/boss_data/boss_bomber.json"
+phase_sprites = Array[String](["res://assets/sprites/boss/boss_cruiser_phase1.png", "res://assets/sprites/boss/boss_cruiser_phase2.png"])
 collision_layer = 8
 collision_mask = 4
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("2_tex")
+scale = Vector2(0.4, 0.4)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("4_shape")

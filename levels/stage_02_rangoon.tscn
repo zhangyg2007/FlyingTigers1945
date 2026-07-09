@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://levels/level_base.gd" id="1_script"]
+
+[node name="Stage02Rangoon" type="Node"]
+script = ExtResource("1_script")
+level_id = "02_rangoon"
+level_name = "仰光保卫战"
+wave_config_path = "res://resources/level_data/stage_02_rangoon.csv"
+bg_scroll_speed = 85.0
+boss_scene_path = "res://scenes/bosses/boss_nachi.tscn"
+bgm_path = "bgm_stage_02.ogg"

@@ -1,0 +1,19 @@
+{
+  "boss_id": "boss_fortress",
+  "boss_name": "筑波浮桥要塞",
+  "max_hp": 1200,
+  "phase_hps": [500, 700],
+  "phase_attack_intervals": [1.2, 0.8],
+  "phase_bullets": [
+    ["missile_volley", "spiral_shoot"],
+    ["missile_volley", "spiral_shoot", "fan_shoot", "aimed_shoot"]
+  ],
+  "phase_sprites": [
+    "res://assets/sprites/boss/boss_fortress_phase1.png",
+    "res://assets/sprites/boss/boss_fortress_phase2.png"
+  ],
+  "move_speed": 50.0,
+  "contact_damage": 20,
+  "entry_target_y": 160.0,
+  "drop_count": 5
+}

@@ -1,0 +1,19 @@
+# 第2关"仰光保卫战"波次配置
+# 格式：time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+# BOSS: BOSS_nachi（妙高号重巡）
+# 难度：中（速度倍率1.1~1.4，波次密度比第1关高）
+time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+2.5,ki27_fighter,4,line,200,-50,1.1,straight
+5.0,ki27_fighter,4,line,400,-50,1.1,straight
+8.0,ki43_hayabusa,3,diamond,300,-50,1.3,straight
+11.0,ki27_fighter,5,v_formation,300,-50,1.0,dive
+14.0,ki21_bomber,2,line,200,-80,0.7,straight
+14.0,ki21_bomber,2,line,400,-80,0.7,straight
+18.0,ki43_hayabusa,4,v_formation,300,-50,1.2,dive
+22.0,ki27_fighter,6,swarm,300,-50,1.1,straight
+26.0,ki43_hayabusa,3,diamond,200,-50,1.3,straight
+26.0,ki43_hayabusa,3,diamond,400,-50,1.3,straight
+30.0,ki21_bomber,3,v_formation,300,-80,0.8,dive
+34.0,ki43_hayabusa,5,swarm,300,-50,1.4,straight
+38.0,ki27_fighter,4,line,300,-50,1.2,straight
+42.0,BOSS_nachi,1,boss,300,-150,0.5,boss_enter

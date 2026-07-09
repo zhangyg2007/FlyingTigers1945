@@ -1,0 +1,19 @@
+{
+  "boss_id": "boss_bomber",
+  "boss_name": "九七重爆领队",
+  "max_hp": 350,
+  "phase_hps": [150, 200],
+  "phase_attack_intervals": [1.5, 1.0],
+  "phase_bullets": [
+    ["fan_shoot"],
+    ["turret_fire", "fan_shoot"]
+  ],
+  "phase_sprites": [
+    "res://assets/sprites/boss/boss_cruiser_phase1.png",
+    "res://assets/sprites/boss/boss_cruiser_phase2.png"
+  ],
+  "move_speed": 60.0,
+  "contact_damage": 10,
+  "entry_target_y": 200.0,
+  "drop_count": 3
+}
