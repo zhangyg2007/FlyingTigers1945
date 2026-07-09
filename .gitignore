@@ -16,6 +16,13 @@ desktop.ini
 *.psd
 *.ai
 
+# 临时文件（测试日志、运行日志、测试输出）
+*.log
+*_result.txt
+
+# Python 缓存
+__pycache__/
+
 # TRAE 临时文件
 .trae-html-share-packages/
 
