@@ -18,3 +18,7 @@ desktop.ini
 
 # TRAE 临时文件
 .trae-html-share-packages/
+
+# 临时日志和结果文件
+*.log
+*_result.txt
