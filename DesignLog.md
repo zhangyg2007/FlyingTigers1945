@@ -339,6 +339,23 @@ BOSS 文件体积从 200-300KB 降至 137-180KB（透明背景生效）✅
 
 ---
 
+## 2026-07-10 — M2 P3 遗留清理
+
+### 问题来源
+
+`docs/M2_P1_acceptance_report.md` P3 遗留（不阻塞 M3）。
+
+### 修复
+
+- `boss_fortress_phase1` — 重新生成，prompt 强制 `absolutely nothing outside the platform, completely blank transparent white`，消除底部蓝色水纹
+- `ui_player_card_*` x4 — 重新生成，prompt 强调 `Minimalist flat design. No watermarks, no signatures`，消除右下角 AI 水印
+
+### 验证
+
+5/5 PNG-32 RGBA ✅
+
+---
+
 ## 备注
 
 - 所有文件命名严格遵循 `snake_case` 规范，符合 Master Interface Spec 4.1

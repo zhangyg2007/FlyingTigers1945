@@ -963,3 +963,100 @@ else:
 - 所有修改通过端到端运行验证，无语法错误
 - M2-B/C/D 的 P1/P2 问题已全部闭环，可进入 M3
 - 本地修改完毕，等待用户用 Trae IDE commit + push 同步到远程
+
+---
+
+## 任务 7：M2 遗留 P3 修复（进入 M3 前收尾）
+
+**日期**: 2026-07-10
+**任务**: 创建 3 个缺失场景，消除 M2 遗留的 P3 资源缺失 ERROR + 修复 result_screen.gd 的 Parse Error
+**文档参考**: `docs/M2_P1_acceptance_report.md` 第三节遗留问题
+
+### 1. 创建 3 个缺失场景
+
+#### 1.1 explosion_large.tscn（BOSS 死亡爆炸特效）
+
+**文件**: [scenes/effects/explosion_large.tscn](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/effects/explosion_large.tscn) + [explosion_large.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/effects/explosion_large.gd)（新建）
+
+**设计**:
+- `Sprite2D` 根节点 + `explosion_large.gd` 脚本
+- 纹理：`fx_explosion_large.png`（Design 已交付）
+- 动画：Tween 驱动的缩放(0.2→2.5→0)+ 淡出(1.0→0.0)，0.8 秒后 `queue_free()`
+- 加法混合模式（`BLEND_MODE_ADD`）实现亮光效果
+- 兼容 `EnemyBase._spawn_explosion()` 的 `start()` 调用约定
+
+**接口对齐**:
+- `boss_base.gd._spawn_explosion()` 通过 `PoolManager.get_object_by_path()` 获取 → 自动注册池 → 实例化后调 `start()`
+- `enemy_base.gd._spawn_explosion()` 通过 `instantiate()` 实例化后检查 `has_method("start")` → 调用 `start()`
+
+#### 1.2 powerup.tscn（BOSS 掉落道具）
+
+**文件**: [scenes/powerups/powerup.tscn](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/powerups/powerup.tscn)（新建）
+
+**设计**:
+- `Area2D` 根节点 + `powerup_base.gd` 脚本（复用现有基类）
+- 纹理：`powerup_p.png`（POWER 道具，Design 已交付）
+- 碰撞层：Layer5=PowerUp(16) / 检测 Layer1=Player(1)
+- `CircleShape2D` radius=16.0（拾取判定圈）
+- 子节点：`Sprite2D` + `CollisionShape2D`（匹配 `PowerupBase._ready()` 的 `@onready var _sprite: Sprite2D = $Sprite2D` 约定）
+
+**接口对齐**:
+- `boss_base.gd._drop_loot()` 通过 `load("res://scenes/powerups/powerup.tscn")` 加载 → `instantiate()` → `add_child()`
+- `PowerupBase` 自动处理下落/浮动动画/拾取效果/屏幕外销毁
+
+#### 1.3 missile_enemy.tscn（BOSS 追踪导弹）
+
+**文件**: [scenes/bullets/missile_enemy.tscn](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/bullets/missile_enemy.tscn)（新建）
+
+**设计**:
+- `Area2D` 根节点 + `bullet_base.gd` 脚本（复用现有基类）
+- 纹理：`bullet_missile.png`（Design 已交付）
+- 属性：`speed=250` / `damage=3` / `is_player_bullet=false` / `screen_margin=100`
+- 碰撞层：Layer3=EnemyBullet(4) / 检测 Layer1=Player(1)
+- `CircleShape2D` radius=6.0（略大于普通子弹的 4.0）
+
+**接口对齐**:
+- `boss_base.gd._spawn_missile()` 通过 `load("res://scenes/bullets/missile_enemy.tscn")` 加载 → `PoolManager.get_object()` 获取 → 设置 `direction`/`speed`/`damage` 属性
+- `BulletBase._process()` 使用 `position += direction.normalized() * speed * delta` 移动
+
+### 2. 修复 result_screen.gd Parse Error（预存 bug）
+
+**文件**: [scenes/ui/result_screen.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/ui/result_screen.gd)
+
+**问题**: L232 `tween_method()` 使用了 Godot 4.x 早期的 lambda 单参数形式，Godot 4.7 要求 `tween_method(method, from, to, duration)` 四参数形式，导致 Parse Error: "Too few arguments for tween_method() call. Expected at least 4 but received 1."
+
+**修复**:
+- 将 lambda 改为独立方法 `_set_roll_score_text(current_value: float)`
+- `tween_method(_set_roll_score_text, 0.0, float(target_score), duration)`
+- 新增 `_set_roll_score_text` 方法更新 `score_label.text`
+
+### 3. 验证结果
+
+运行 `Godot --headless --quit-after 2400 res://scenes/test/test_boss_flow.tscn`，确认：
+
+| 验证项 | 结果 | 说明 |
+|--------|------|------|
+| explosion_large.tscn 加载 | ✅ | `PoolManager: 场景 'explosion_large.tscn' 未注册，自动注册（容量20）` |
+| powerup.tscn 加载 | ✅ | BOSS 掉落道具无 ERROR |
+| missile_enemy.tscn 加载 | ✅ | BOSS 导弹无 ERROR |
+| result_screen.gd Parse Error | ✅ | 无 Parse Error |
+| 5/5 端到端测试 | ✅ | 关卡加载/玩家接入/BOSS出场/击杀/结算跳转全部 PASS |
+| ERROR 数量 | ✅ | **0 个 ERROR**（M2 遗留 P3 全部清零） |
+
+### 4. M2 遗留问题闭环状态
+
+| 编号 | 问题 | 优先级 | 状态 |
+|------|------|--------|------|
+| M2-E7 | `explosion_large.tscn` 资源缺失 | P3 | ✅ 已创建 |
+| M2-E8 | `powerup.tscn` 资源缺失 | P3 | ✅ 已创建 |
+| M2-E9 | BOSS body 碰撞玩家接触伤害未实现 | P3 | ⏳ M3 评估（玩家用 Hitbox Area2D 检测，不触发 body 碰撞） |
+| M2-E10 | BOSS 弹幕参数为占位值 | P3 | ⏳ M3 配合 PM 试玩后调优 |
+| M2-E11 | missile_enemy.tscn 资源缺失 | P3 | ✅ 已创建 |
+| 新发现 | result_screen.gd tween_method Parse Error | P1 | ✅ 已修复（Godot 4.7 API 变更） |
+
+## 协作说明
+
+- 本次创建 3 个新场景 + 1 个新脚本 + 修复 1 个 Parse Error
+- 所有 ERROR 和 Parse Error 全部清零，端到端测试 5/5 PASS
+- M2 遗留 P3 资源缺失问题已全部解决，可进入 M3
+- 本地修改完毕，等待用户用 Trae IDE commit + push 同步到远程

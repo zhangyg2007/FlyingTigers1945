@@ -229,10 +229,17 @@ func _play_score_roll_animation(target_score: int) -> void:
 	_score_tween.set_parallel(false)
 
 	# 使用tween_method实现分数递增效果
+	# Godot 4.7: tween_method(method, from, to, duration) 四参数形式
 	_score_tween.tween_method(
-		func(current_value: float) -> void:
-			score_label.text = "%08d" % int(current_value)
-	).from(0.0).to(float(target_score)).set_duration(duration).set_trans(Tween.TRANS_LINEAR)
+		_set_roll_score_text, 0.0, float(target_score), duration
+	).set_trans(Tween.TRANS_LINEAR)
+
+
+## 分数滚动回调（tween_method 调用）
+## [param current_value] 当前分数值（0~target_score）
+func _set_roll_score_text(current_value: float) -> void:
+	if score_label != null:
+		score_label.text = "%08d" % int(current_value)
 
 
 func _play_rank_appear_animation() -> void:

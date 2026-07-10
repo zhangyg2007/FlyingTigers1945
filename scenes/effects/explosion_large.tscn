@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/effects/explosion_large.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/effects/fx_explosion_large.png" id="2_tex"]
+
+[node name="ExplosionLarge" type="Sprite2D"]
+texture = ExtResource("2_tex")
+script = ExtResource("1_script")

@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/bullets/bullet_base.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bullets/bullet_missile.png" id="2_tex"]
+
+[sub_resource type="CircleShape2D" id="3_shape"]
+radius = 6.0
+
+[node name="MissileEnemy" type="Area2D"]
+script = ExtResource("1_script")
+speed = 250.0
+damage = 3
+is_player_bullet = false
+screen_margin = 100.0
+collision_layer = 4
+collision_mask = 1
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_tex")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("3_shape")
