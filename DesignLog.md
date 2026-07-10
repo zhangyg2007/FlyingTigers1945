@@ -223,6 +223,90 @@ PM M2 验收报告 + `docs/M2_correction_perspective_plan.md` + `docs/M2_perspec
 
 ---
 
+## 2026-07-10 — M2 BCD 验收 P0/P1 修复 + 玩家选择 UI
+
+### 问题来源
+
+PM 发布 `docs/M2_BCD_acceptance_report.md`，Design 评级 B+，4 个 P0 + 1 个 P1 视角问题。
+
+### P0 修复（4 项）
+
+| 文件 | 问题 | 修正 |
+|------|------|------|
+| `bg_rangoon_far.png` | 高斜角鸟瞰 | 重绘为卫星地图纯俯视，强调 90° 正上方、zero sky/zero horizon |
+| `bg_hump_far.png` | 侧面风景画 | 重绘为雪山顶面俯视纹理，白色雪面 + 灰岩 + 蓝色冰裂缝 |
+| `boss_fortress_phase1.png` | 等距斜视角 | 重绘为 90° 正上方俯视浮台甲板，炮塔/雷达仅显示顶面圆盘 |
+| `boss_fortress_phase2.png` | 斜视角 | 重绘为正上方俯视展开形态，中心红色能量核心 + 机械臂顶视 |
+
+### P1 修复（1 项）
+
+| 文件 | 问题 | 修正 |
+|------|------|------|
+| `boss_cruiser_phase2.png` | 与 Phase1 视角不一致 | 重绘为与 Phase1 一致的 90° 俯视甲板，武器系统仅显示顶面 |
+
+### 新增资产：玩家选择 UI（4 张）
+
+| 文件 | 尺寸 | 内容 |
+|------|------|------|
+| `ui_player_card_p40.png` | 200x320 | P-40 战鹰卡片：顶视战机 + 名称 + 属性条 |
+| `ui_player_card_p51.png` | 200x320 | P-51 野马卡片 |
+| `ui_player_card_p38.png` | 200x320 | P-38 闪电卡片 |
+| `ui_player_card_b25.png` | 200x320 | B-25 米切尔卡片 |
+
+风格：深绿底 + 做旧黄边框 + 军用字体 + 俯视战机图 + FIRE POWER/SPEED/ARMOR 属性条
+
+### 验证
+
+9/9 修复+新增文件 PNG-32 RGBA 验证通过 ✅
+boss/ + backgrounds/ 目录 0 JPG 残留 ✅
+
+### 风格一致性说明
+
+所有 Sprite（player/enemy/boss/backgrounds/ui）统一使用 AI 生成 + Pillow 转码 PNG-32 RGBA 工作流，确保像素精度一致。
+
+---
+
+## 2026-07-10 — Stage 1 背景重新规划
+
+### 需求来源
+
+用户直接反馈：
+- `bg_kunming_near` 应为机场停机坪开场（3 架 P40 横放 + 地勤员 + 油桶），1-2 秒展示后飞出
+- 去掉 far 层（全览地图），不需要机场跑道
+- 地面房屋/河流/道路保持 mid 层比例
+- 地图后期显示滇池 + 中式小渔船
+- 地图最后进入绿树高山区域（Boss 战）
+- 绘图风格与参考图（iFighter 1945 实机截图）一致：暗色调写实俯视 + 光影质感
+
+### 新结构（5 层替代原 4 层）
+
+| 层 | 文件 | 内容 | 用途 |
+|---|---|---|---|
+| 开场 | `bg_kunming_near` | 机场停机坪：3 架 P40 横放左侧 + 地勤员 + 油桶 + 油车 | 1-2 秒展示 |
+| 主体 | `bg_kunming_mid` | 昆明城市顶视：灰瓦屋顶群 + 蟠龙江 + 土路 + 农田 | 主游戏区域 |
+| 前景 | `bg_kunming_ground` | 红土地面纹理：干草 + 碎石 + 农沟 | 视差最近层 |
+| 后期 | `bg_kunming_lake` | 滇池湖面 + 中式木船渔网 + 芦苇岸 | 关卡后半段 |
+| Boss | `bg_kunming_mountain` | 西山密林覆盖 + 岩石露头 + 小径 | Boss 战区域 |
+
+### 变更
+
+- 删除 `bg_kunming_far.png`（不再需要）
+- 重绘 `bg_kunming_near` / `bg_kunming_mid` / `bg_kunming_ground`
+- 新增 `bg_kunming_lake` / `bg_kunming_mountain`
+
+### 验证
+
+5/5 PNG-32 RGBA，512x2048，0 JPG 残留 ✅
+
+### 注意
+
+Code 部门需要更新 Stage 1 的 ParallaxBackground 配置：
+- 原来 4 层（far/mid/near/ground）→ 现在 5 层（near→mid→ground→lake→mountain）
+- `near` 层仅显示 1-2 秒后切换到 `mid`
+- `mountain` 层在 Boss 出现时启用
+
+---
+
 ## 备注
 
 - 所有文件命名严格遵循 `snake_case` 规范，符合 Master Interface Spec 4.1

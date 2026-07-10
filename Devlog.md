@@ -701,3 +701,173 @@ M1 遗留的 PNG 资源加载问题（`No loader found for resource`）根因是
 - 本次仅修改 Code 部门文件（autoload/ / scenes/bosses/ / scenes/test/ / scenes/player/ / levels/ / resources/ / scripts/）
 - `assets/sprites/boss/` 下的 BOSS Sprite PNG 由 Design 部门交付，本次任务3仅引用其路径
 - 本地 commit 后等待用户用 Trae IDE push 同步到远程，供 PM M2-C/D 验收
+
+---
+
+## 任务 4：M2-B/C/D 验收遗留 P2 修复
+
+**日期**: 2026-07-10
+**任务**: PM M2-B/C/D 验收通过（Code A-），处理 1 项 P2 遗留 + 临时文件清理
+**文档参考**: `docs/M2_BCD_acceptance_report.md` 第五节"整改要求"
+
+### 1. P2 修复：stage_config.json stage_03 bg_layers 命名对齐
+
+**文件**: [resources/level_data/stage_config.json](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/resources/level_data/stage_config.json)
+
+**问题**: Design 在 M2-B 阶段已将 stage_03 的背景目录从 `stage_03_salween/` 重命名为 `stage_03_nujiang/`，对应 PNG 文件也从 `bg_salween_*.png` 改为 `bg_nujiang_*.png`（见 `assets/sprites/backgrounds/stage_03_nujiang/`）。但 Code 侧 `stage_config.json` 中 stage_03 的 `bg_layers` 仍引用旧名 `bg_salween_*`，运行时背景加载会失败。
+
+**修复**:
+```diff
+- "bg_layers": ["bg_salween_far", "bg_salween_mid", "bg_salween_near", "bg_salween_ground"],
++ "bg_layers": ["bg_nujiang_far", "bg_nujiang_mid", "bg_nujiang_near", "bg_nujiang_ground"],
+```
+
+**验证**:
+- `assets/sprites/backgrounds/stage_03_nujiang/` 下 4 个文件全部存在：`bg_nujiang_far/mid/near/ground.png`
+- JSON 语法正确（3 关配置完整，无尾逗号）
+- 其他关卡 bg_layers 未受影响（kunming / rangoon 保持原样）
+
+### 2. 临时文件清理
+
+**问题**: PM 报告第三节"临时文件管理: C"指出根目录存在 6 个不应提交的临时文件。
+
+**清理**（全部从工作区删除）:
+- `stage01_stdout.log` / `stage01_stderr.log` / `stage01_all.log` / `stage01_run.log`（M2-A 阶段运行时验证产生）
+- `boss_flow_test.log`（M2-D 阶段 BOSS 流程测试产生）
+- `test_boss_flow_result.txt`（任务5端到端验证结果文件）
+
+**`.gitignore` 状态确认**: `.gitignore` 第 19-21 行和第 29-31 行已包含 `*.log` 和 `*_result.txt` 规则（重复 2 次，不影响功能）。`git ls-files --cached` 确认这些文件从未被 git 追踪，故无需 `git rm --cached`，直接删除工作区文件即可。
+
+### 3. 未处理的 P3 遗留
+
+| 编号 | 问题 | 严重度 | 说明 | 处理时机 |
+|------|------|--------|------|----------|
+| M2-E11 | boss_bomber.json/tscn 的 sprite 引用 `boss_cruiser_phase1.png` 而非 `boss_bomber_phase1.png` | P3 | 命名不一致但功能正常（Design 已交付对应文件，路径正确可加载）。需 Design 与 Code 协调统一命名 | M3 统一命名时处理 |
+
+**说明**: PM 报告将此列为 P3，不阻塞当前进度。boss_bomber.tscn 引用的 `boss_cruiser_phase1.png` 实际存在且可加载，仅文件名与 BOSS 逻辑名不一致。M3 时由 Design 重命名 PNG 后 Code 同步更新引用即可。
+
+## 协作说明
+
+- 本次仅修改 1 个 Code 文件（`resources/level_data/stage_config.json`）+ 删除 6 个临时文件
+- 本地修改完毕，等待用户用 Trae IDE commit + push 同步到远程
+
+---
+
+## 任务 5：Trae IDE M2 代码评审整改
+
+**日期**: 2026-07-10
+**任务**: 根据 `docs/M2 任务代码整体评审报告.md`（评级 A），修复 7 项代码质量/架构/性能改进建议
+**文档参考**: `docs/M2 任务代码整体评审报告.md` 第二~六节
+
+### 1. 架构改进
+
+#### 1.1 BossBase 状态机加入场景树
+
+**文件**: [scenes/bosses/boss_base.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/bosses/boss_base.gd)
+
+**问题**: `_state_machine = StateMachine.new()` 创建后未 `add_child`，通过手动调用 `_state_machine.current_state().update(delta)` 驱动，违背 Godot 节点生命周期规范。
+
+**修复**:
+- `_init_state_machine()` 中新增 `add_child(_state_machine)`，让 StateMachine 通过自身 `_process` 自动驱动状态更新
+- `_process(delta)` 中移除手动 `update` 调用，仅保留 `spiral_angle` 累积和屏幕外保护
+- 新增屏幕外检测安全网（`global_position.y > viewport + 400` 时拉回），弥补不调用 `super._process()` 导致的屏幕外检测缺失
+
+#### 1.2 EnemyBase.object_pool 字段移除
+
+**文件**: [scenes/enemies/enemy_base.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/enemies/enemy_base.gd)
+
+**问题**: `var object_pool: ObjectPool = null` 字段类型为 `ObjectPool`（scripts/object_pool.gd），但实际对象池操作已通过 `PoolManager` 单例完成，从无赋值路径，导致 `_return_to_pool()` 始终走 `queue_free()`。
+
+**修复**:
+- 移除 `object_pool` 字段声明
+- `_return_to_pool()` 改为直接调用 `PoolManager.return_object(self)`（内部自动判断是否属于已注册池，不属于则直接 `queue_free`）
+
+### 2. 代码质量修复
+
+#### 2.1 EnemyBase 碰撞信号连接
+
+**文件**: [scenes/enemies/enemy_base.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/enemies/enemy_base.gd)
+
+**问题**: `_on_area_entered`/`_on_body_entered` 回调已定义但 `_ready()` 中未连接 Hitbox 信号，导致敌机碰撞检测失效。
+
+**修复**: 在 `_ready()` 末尾添加信号连接：
+```gdscript
+if has_node("Hitbox"):
+    var hitbox: Area2D = $Hitbox
+    if not hitbox.area_entered.is_connected(_on_area_entered):
+        hitbox.area_entered.connect(_on_area_entered)
+    if not hitbox.body_entered.is_connected(_on_body_entered):
+        hitbox.body_entered.connect(_on_body_entered)
+```
+
+#### 2.2 SpawnManager BOSS 场景映射更新
+
+**文件**: [autoload/spawn_manager.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/autoload/spawn_manager.gd)
+
+**问题**: `_enemy_scene_map` 中 BOSS 类型映射到 `enemy_fighter.tscn` 占位，但实际已创建 `boss_bomber.tscn`/`boss_nachi.tscn`/`boss_fortress.tscn`。
+
+**修复**:
+```gdscript
+_enemy_scene_map["BOSS_bomber"] = "res://scenes/bosses/boss_bomber.tscn"
+_enemy_scene_map["BOSS_nachi"] = "res://scenes/bosses/boss_nachi.tscn"
+_enemy_scene_map["BOSS_cruiser"] = "res://scenes/bosses/boss_nachi.tscn"  # 别名
+_enemy_scene_map["BOSS_fortress"] = "res://scenes/bosses/boss_fortress.tscn"
+```
+
+#### 2.3 LevelBase._get_enemy_scene_path 委托 SpawnManager
+
+**文件**: [levels/level_base.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/levels/level_base.gd)
+
+**问题**: 硬编码路径 `ki27_fighter → res://scenes/enemies/ki27_fighter.tscn`（文件不存在），与 SpawnManager 的映射不一致。
+
+**修复**: 优先委托给 `SpawnManager._get_enemy_scene_path()`，后备硬编码路径统一改为 `enemy_fighter.tscn`（实际存在的场景）。
+
+### 3. 性能优化
+
+#### 3.1 BOSS 弹幕使用对象池
+
+**文件**: [scenes/bosses/boss_base.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/bosses/boss_base.gd)
+
+**问题**: `_spawn_bullet`/`_spawn_missile` 直接 `instantiate()`，BOSS 弹幕每秒生成大量子弹，效率低下。
+
+**修复**: 改为优先通过 `PoolManager.get_object()` 获取子弹/导弹，对象池不可用或池满时回退直接实例化。PoolManager 会自动 `add_child` 和 `reset_state`，后续设置 direction/speed/damage 覆盖重置值。
+
+#### 3.2 场景切换时清理对象池
+
+**文件**: [levels/level_base.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/levels/level_base.gd)
+
+**问题**: `end_level()`/`force_end_level()` 未调用 `PoolManager.return_all_active()`，场景切换可能导致内存泄漏或残留对象。
+
+**修复**: 在 `end_level()` 和 `force_end_level()` 中 `_stop_bgm()` 之后、`level_cleared.emit()` 之前添加：
+```gdscript
+if PoolManager.has_method("return_all_active"):
+    PoolManager.return_all_active()
+```
+
+### 4. 验证结果
+
+运行 `Godot --headless --quit-after 2400 res://scenes/test/test_boss_flow.tscn`，确认：
+
+| 验证项 | 结果 | 日志证据 |
+|--------|------|----------|
+| 状态机加入场景树 | ✅ | `[BOSS] 状态机初始化完成，当前状态: enter` |
+| BOSS 出场信号 | ✅ | `[TestBossFlow] ✅ 收到 boss_appeared 信号，BOSS 已出场` |
+| BOSS 被击败 | ✅ | `[BOSS] 已被击败!` |
+| 对象池清理 | ✅ | `PoolManager: 所有活跃对象已归还。` |
+| level_cleared 信号 | ✅ | `[TestBossFlow] ✅ 收到 level_cleared 信号（结算跳转链路验证通过）` |
+| 语法正确性 | ✅ | 无 Parse Error / SCRIPT ERROR（仅 P3 资源缺失 ERROR） |
+
+### 5. 未处理的评审建议（M3 范围）
+
+| 评审建议 | 原因 | 处理时机 |
+|----------|------|----------|
+| `explosion_large.tscn` 资源缺失 | 需创建新场景 | M3 |
+| `powerup.tscn` 资源缺失 | 需创建新场景 | M3 |
+| 所有敌机共用 `enemy_fighter.tscn` | 需拆分机型场景 | M3-D |
+| 路径资源 `.tres` 未创建 | 需创建 Curve2D 资源 | M3 |
+
+## 协作说明
+
+- 本次修改 4 个 Code 文件（boss_base.gd / enemy_base.gd / spawn_manager.gd / level_base.gd）
+- 所有修改均通过端到端运行验证，无语法错误
+- 本地修改完毕，等待用户用 Trae IDE commit + push 同步到远程

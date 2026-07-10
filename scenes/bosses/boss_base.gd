@@ -64,7 +64,7 @@ var player_ref: Node2D = null
 ## 是否已激活（入场完成后开始攻击）
 var is_active: bool = false
 
-## 状态机实例（内部组合，不 add_child 避免自动 _process 冲突）
+## 状态机实例（作为子节点加入场景树，由其 _process 自动驱动状态更新）
 var _state_machine: StateMachine = null
 
 ## BOSS Sprite 引用（用于阶段切换时替换纹理）
@@ -187,12 +187,16 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	# 完全覆盖 EnemyBase._process（不调用 super._process）
 	# EnemyBase._process 做直线下移+弹幕射击+屏幕外归还，BOSS 不需要这些
-	# 委托给状态机处理当前状态的 update
-	if _state_machine != null and _state_machine.current_state() != null:
-		_state_machine.current_state().update(delta)
+	# StateMachine 已作为子节点加入场景树，其 _process 会自动调用当前状态的 update
+	# 此处只处理 BOSS 自身的每帧逻辑
 
 	# 螺旋角度累积（用于 spiral_shoot 模式，所有状态都累积）
 	spiral_angle += delta * 120.0  # 每秒旋转120度
+
+	# 屏幕外保护：防止 BOSS 意外飞出屏幕（正常情况下不会触发，作为安全网）
+	var viewport_y: float = get_viewport_rect().size.y
+	if global_position.y > viewport_y + 400.0:
+		global_position.y = viewport_y - 100.0
 
 
 # ============================================================
@@ -201,6 +205,7 @@ func _process(delta: float) -> void:
 
 func _init_state_machine() -> void:
 	_state_machine = StateMachine.new()
+	add_child(_state_machine)  # 加入场景树，让 StateMachine._process 自动驱动状态更新
 	_state_machine.add_state(STATE_ENTER, BossStateEnter.new(self))
 	_state_machine.add_state(STATE_IDLE, BossStateIdle.new(self))
 	_state_machine.add_state(STATE_ATTACK, BossStateAttack.new(self))
@@ -606,11 +611,21 @@ func _match_attack_pattern(pattern_name: String) -> void:
 
 
 ## 创建一颗敌方子弹
+## 优先通过 PoolManager 获取（支持对象池复用），回退到直接实例化
 func _spawn_bullet(pos: Vector2, dir: Vector2, speed: float, damage: int = 1) -> void:
 	if bullet_scene == null:
 		return
 
-	var bullet: Node2D = bullet_scene.instantiate()
+	var bullet: Node2D = null
+	# 优先通过对象池获取（PoolManager 会自动注册池并 add_child）
+	if PoolManager.has_method("get_object"):
+		bullet = PoolManager.get_object(bullet_scene) as Node2D
+	# 对象池不可用或池满，回退直接实例化
+	if bullet == null:
+		bullet = bullet_scene.instantiate()
+		if bullet.get_parent() == null:
+			get_parent().add_child(bullet)
+
 	bullet.global_position = pos
 	# 设置子弹方向和速度
 	if bullet.has_method("setup"):
@@ -625,17 +640,25 @@ func _spawn_bullet(pos: Vector2, dir: Vector2, speed: float, damage: int = 1) ->
 	bullet.collision_mask = 0
 	bullet.collision_mask |= (1 << 0)  # Layer1 = Player
 
-	get_parent().add_child(bullet)
-
 
 ## 创建一颗导弹
+## 优先通过 PoolManager 获取（支持对象池复用），回退到直接实例化
 func _spawn_missile(pos: Vector2, dir: Vector2, speed: float) -> void:
 	if missile_scene == null:
 		missile_scene = load("res://scenes/bullets/missile_enemy.tscn")
 	if missile_scene == null:
 		return
 
-	var missile: Node2D = missile_scene.instantiate()
+	var missile: Node2D = null
+	# 优先通过对象池获取
+	if PoolManager.has_method("get_object"):
+		missile = PoolManager.get_object(missile_scene) as Node2D
+	# 对象池不可用或池满，回退直接实例化
+	if missile == null:
+		missile = missile_scene.instantiate()
+		if missile.get_parent() == null:
+			get_parent().add_child(missile)
+
 	missile.global_position = pos
 	if missile.has_method("setup"):
 		missile.setup(dir.normalized(), speed, 3)
@@ -646,8 +669,6 @@ func _spawn_missile(pos: Vector2, dir: Vector2, speed: float) -> void:
 	missile.collision_layer |= (1 << 2)  # Layer3 = EnemyBullet
 	missile.collision_mask = 0
 	missile.collision_mask |= (1 << 0)  # Layer1 = Player
-
-	get_parent().add_child(missile)
 
 
 ## 获取朝向玩家的方向

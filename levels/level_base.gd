@@ -152,6 +152,10 @@ func end_level() -> void:
 	# 停止BGM
 	_stop_bgm()
 
+	# 场景切换前清理对象池（归还所有活跃对象，避免内存泄漏/残留）
+	if PoolManager.has_method("return_all_active"):
+		PoolManager.return_all_active()
+
 	# 发射关卡通关信号
 	level_cleared.emit()
 
@@ -168,6 +172,11 @@ func force_end_level() -> void:
 	set_process(false)
 	set_physics_process(false)
 	_stop_bgm()
+
+	# 场景切换前清理对象池
+	if PoolManager.has_method("return_all_active"):
+		PoolManager.return_all_active()
+
 	print("[LevelBase] 关卡 '%s' 强制结束" % level_name)
 
 
@@ -333,16 +342,21 @@ func _spawn_enemies_direct(
 
 
 ## 获取敌机场景路径
+## 优先委托给 SpawnManager（保持映射一致性），后备硬编码路径
 func _get_enemy_scene_path(enemy_type: String) -> String:
+	# 优先委托给 SpawnManager 的映射表（单一数据源，避免不一致）
+	if SpawnManager.has_method("_get_enemy_scene_path"):
+		return SpawnManager._get_enemy_scene_path(enemy_type)
+	# 后备：硬编码路径（仅当 SpawnManager 不可用时使用）
 	match enemy_type:
 		"ki27_fighter":
-			return "res://scenes/enemies/ki27_fighter.tscn"
+			return "res://scenes/enemies/enemy_fighter.tscn"
 		"ki43_hayabusa":
-			return "res://scenes/enemies/ki43_hayabusa.tscn"
+			return "res://scenes/enemies/enemy_fighter.tscn"
 		"ki21_bomber":
-			return "res://scenes/enemies/ki21_bomber.tscn"
+			return "res://scenes/enemies/enemy_fighter.tscn"
 		_:
-			return "res://scenes/enemies/%s.tscn" % enemy_type
+			return "res://scenes/enemies/enemy_fighter.tscn"
 
 
 ## 获取编队偏移数组

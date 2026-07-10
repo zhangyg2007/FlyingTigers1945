@@ -42,7 +42,7 @@
       "stage_id": "03_salween",
       "stage_name": "怒江天险",
       "bgm": "bgm_stage_03.ogg",
-      "bg_layers": ["bg_salween_far", "bg_salween_mid", "bg_salween_near", "bg_salween_ground"],
+      "bg_layers": ["bg_nujiang_far", "bg_nujiang_mid", "bg_nujiang_near", "bg_nujiang_ground"],
       "scroll_speed": 90.0,
       "boss_type": "boss_fortress",
       "duration": 55.0,

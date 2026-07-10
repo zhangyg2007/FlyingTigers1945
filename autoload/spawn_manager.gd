@@ -156,10 +156,11 @@ func _init_enemy_scene_map() -> void:
 	_enemy_scene_map["zero"] = placeholder
 	_enemy_scene_map["ohka"] = placeholder
 	_enemy_scene_map["d3a_val"] = placeholder
-	# BOSS 类型（待 scenes/bosses/ 下补全 BOSS 场景）
-	_enemy_scene_map["BOSS_bomber"] = placeholder
-	_enemy_scene_map["BOSS_cruiser"] = placeholder
-	_enemy_scene_map["BOSS_fortress"] = placeholder
+	# BOSS 类型 → 精确映射到 scenes/bosses/ 下的 BOSS 场景
+	_enemy_scene_map["BOSS_bomber"] = "res://scenes/bosses/boss_bomber.tscn"
+	_enemy_scene_map["BOSS_nachi"] = "res://scenes/bosses/boss_nachi.tscn"
+	_enemy_scene_map["BOSS_cruiser"] = "res://scenes/bosses/boss_nachi.tscn"  # 别名：Design 命名对齐后 boss_nachi = boss_cruiser
+	_enemy_scene_map["BOSS_fortress"] = "res://scenes/bosses/boss_fortress.tscn"
 
 	# 旧版兼容（防止其他脚本用 scout/fighter 等旧名调用）
 	_enemy_scene_map["scout"] = placeholder

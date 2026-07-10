@@ -31,9 +31,6 @@ signal enemy_hit()
 ## 当前生命值（运行时）
 var current_hp: int = 0
 
-## 对象池引用（可选）
-var object_pool: ObjectPool = null
-
 ## 道具场景数组（从中随机选取掉落）
 var _powerup_scenes: Array[PackedScene] = []
 
@@ -75,6 +72,15 @@ func _ready() -> void:
 
 	current_hp = hp
 	_has_path = move_path != null
+
+	# 连接 Hitbox Area2D 信号（如果场景中存在 Hitbox 子节点）
+	# CharacterBody2D 没有 body_entered/area_entered 信号，需要 Area2D 子节点检测碰撞
+	if has_node("Hitbox"):
+		var hitbox: Area2D = $Hitbox
+		if not hitbox.area_entered.is_connected(_on_area_entered):
+			hitbox.area_entered.connect(_on_area_entered)
+		if not hitbox.body_entered.is_connected(_on_body_entered):
+			hitbox.body_entered.connect(_on_body_entered)
 
 
 func _process(delta: float) -> void:
@@ -283,11 +289,13 @@ func _find_sprite(node: Node) -> Sprite2D:
 
 
 ## 归还到对象池
+## 优先通过 PoolManager 归还（如果对象由 PoolManager 创建），否则直接释放
 func _return_to_pool() -> void:
 	set_process(false)
 	set_physics_process(false)
-	if object_pool != null:
-		object_pool.return_object(self)
+	# 通过 PoolManager 归还（内部会判断是否属于已注册池，不属于则直接 queue_free）
+	if PoolManager.has_method("return_object"):
+		PoolManager.return_object(self)
 	else:
 		queue_free()
 
