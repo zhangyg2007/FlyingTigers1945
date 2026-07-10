@@ -1,9 +1,10 @@
 # Flying Tigers 1945 — Design 部门 M3 专属任务安排
 
-> **版本**: v1.0  
-> **日期**: 2026-07-10  
+> **版本**: v1.1  
+> **日期**: 2026-07-11  
 > **接收人**: Design Agent  
 > **关联文档**: `docs/M3_task_breakdown.md`（总体分解）、`docs/design-spec/design-spec.html`（美术规范）
+> **必读**: `docs/design_art_style_guide.md`（**美术风格规范 v1.0 — 基于用户参考图提炼，立即生效**）
 
 ---
 
