@@ -4,7 +4,7 @@
       "stage_id": "01_kunming",
       "stage_name": "昆明首战",
       "bgm": "bgm_stage_01.ogg",
-      "bg_layers": ["bg_kunming_far", "bg_kunming_mid", "bg_kunming_near", "bg_kunming_ground"],
+      "bg_layers": ["bg_kunming_mountain", "bg_kunming_lake", "bg_kunming_mid", "bg_kunming_near", "bg_kunming_ground"],
       "scroll_speed": 80.0,
       "boss_type": "boss_bomber",
       "duration": 45.0,

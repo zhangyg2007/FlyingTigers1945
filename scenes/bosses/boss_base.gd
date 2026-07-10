@@ -663,7 +663,10 @@ func _spawn_missile(pos: Vector2, dir: Vector2, speed: float) -> void:
 	if missile.has_method("setup"):
 		missile.setup(dir.normalized(), speed, 3)
 	else:
-		missile.velocity = dir.normalized() * speed
+		if "direction" in missile:
+			missile["direction"] = dir.normalized()
+		if "speed" in missile:
+			missile["speed"] = speed
 
 	missile.collision_layer = 0
 	missile.collision_layer |= (1 << 2)  # Layer3 = EnemyBullet
