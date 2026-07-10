@@ -307,6 +307,38 @@ Code 部门需要更新 Stage 1 的 ParallaxBackground 配置：
 
 ---
 
+## 2026-07-10 — M2 BCD v2 验收修复
+
+### 问题来源
+
+PM 发布 `docs/M2_BCD_acceptance_report_v2.md`，Design B-，7 个问题。
+
+### 修复内容
+
+**P0（1 项）**
+- `bg_hump_far` — 重绘为 orthophoto 正射卫星图风格（零透视、零消失点、纯 nadir 俯视）
+
+**P1（3 项）**
+- `bg_rangoon_far` — 同上 orthophoto 风格重绘
+- `bg_kunming_mountain` — 同上 orthophoto 风格重绘（树冠顶面 + 等高线纹理）
+- `boss_fortress_phase1/2` + `boss_cruiser_phase2` — 改用扁平 2D 像素风格，prompt 强制 `Clean transparent background - NO water, NO background`，解决海水烘焙进精灵问题
+
+**P2（2 项）**
+- `ui_player_card_*` x4 — 修正错别字 + 尺寸从 200x320 调整为 256x256
+- `boss_fortress_phase1` AI 水印 — 通过重新生成解决（扁平风格无水印）
+
+### 风格调整
+
+背景图统一采纳 PM 建议：**orthophoto/卫星正射图风格**，关键词 `orthographic projection, zero perspective, zero vanishing point, nadir view, GIS satellite map`
+BOSS 精灵统一为：**扁平 2D 风格 + 纯透明背景**，避免 AI 生成器添加环境元素
+
+### 验证
+
+10/10 PNG-32 RGBA，尺寸正确，0 JPG 残留 ✅
+BOSS 文件体积从 200-300KB 降至 137-180KB（透明背景生效）✅
+
+---
+
 ## 备注
 
 - 所有文件命名严格遵循 `snake_case` 规范，符合 Master Interface Spec 4.1

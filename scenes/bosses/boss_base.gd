@@ -350,8 +350,11 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 	if "damage" in area:
 		damage = area["damage"]
 	take_damage(damage)
-	# 子弹命中后销毁
-	area.queue_free()
+	# 子弹命中后销毁（走 BulletBase._destroy 支持对象池归还，避免绕过池化逻辑）
+	if area.has_method("_destroy"):
+		area._destroy()
+	else:
+		area.queue_free()
 
 # ============================================================
 # JSON 配置加载
@@ -612,6 +615,7 @@ func _match_attack_pattern(pattern_name: String) -> void:
 
 ## 创建一颗敌方子弹
 ## 优先通过 PoolManager 获取（支持对象池复用），回退到直接实例化
+## BulletBase（Area2D）使用 direction + speed 属性移动，无 velocity 属性
 func _spawn_bullet(pos: Vector2, dir: Vector2, speed: float, damage: int = 1) -> void:
 	if bullet_scene == null:
 		return
@@ -627,13 +631,13 @@ func _spawn_bullet(pos: Vector2, dir: Vector2, speed: float, damage: int = 1) ->
 			get_parent().add_child(bullet)
 
 	bullet.global_position = pos
-	# 设置子弹方向和速度
-	if bullet.has_method("setup"):
-		bullet.setup(dir.normalized(), speed, damage)
-	else:
-		bullet.velocity = dir.normalized() * speed
-		if "damage" in bullet:
-			bullet["damage"] = damage
+	# BulletBase 使用 direction + speed 属性移动（Area2D 无 velocity 属性）
+	if "direction" in bullet:
+		bullet["direction"] = dir.normalized()
+	if "speed" in bullet:
+		bullet["speed"] = speed
+	if "damage" in bullet:
+		bullet["damage"] = damage
 	# 设置碰撞层为Layer3=EnemyBullet
 	bullet.collision_layer = 0
 	bullet.collision_layer |= (1 << 2)  # Layer3
@@ -643,6 +647,7 @@ func _spawn_bullet(pos: Vector2, dir: Vector2, speed: float, damage: int = 1) ->
 
 ## 创建一颗导弹
 ## 优先通过 PoolManager 获取（支持对象池复用），回退到直接实例化
+## BulletBase（Area2D）使用 direction + speed 属性移动，无 velocity 属性
 func _spawn_missile(pos: Vector2, dir: Vector2, speed: float) -> void:
 	if missile_scene == null:
 		missile_scene = load("res://scenes/bullets/missile_enemy.tscn")
@@ -660,13 +665,13 @@ func _spawn_missile(pos: Vector2, dir: Vector2, speed: float) -> void:
 			get_parent().add_child(missile)
 
 	missile.global_position = pos
-	if missile.has_method("setup"):
-		missile.setup(dir.normalized(), speed, 3)
-	else:
-		if "direction" in missile:
-			missile["direction"] = dir.normalized()
-		if "speed" in missile:
-			missile["speed"] = speed
+	# BulletBase 使用 direction + speed 属性移动（Area2D 无 velocity 属性）
+	if "direction" in missile:
+		missile["direction"] = dir.normalized()
+	if "speed" in missile:
+		missile["speed"] = speed
+	if "damage" in missile:
+		missile["damage"] = 3
 
 	missile.collision_layer = 0
 	missile.collision_layer |= (1 << 2)  # Layer3 = EnemyBullet
