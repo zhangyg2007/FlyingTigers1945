@@ -8,6 +8,29 @@
     ["spiral_shoot", "aimed_shoot"],
     ["spiral_shoot", "turret_fire", "aimed_shoot"]
   ],
+  "bullet_params": {
+    "spiral_shoot": {
+      "arms_base": 3,
+      "arms_per_phase": 1,
+      "bullets_per_arm": 2,
+      "speed_base": 180.0,
+      "speed_per_phase": 20.0,
+      "damage": 1
+    },
+    "aimed_shoot": {
+      "count_base": 1,
+      "count_per_phase": 1,
+      "speed_base": 320.0,
+      "spread_offset_deg": 5.0,
+      "damage": 2
+    },
+    "turret_fire": {
+      "speed_base": 280.0,
+      "speed_per_phase": 40.0,
+      "damage": 2,
+      "aim_on_center": true
+    }
+  },
   "phase_sprites": [
     "res://assets/sprites/boss/boss_nachi_phase1.png",
     "res://assets/sprites/boss/boss_nachi_phase2.png"

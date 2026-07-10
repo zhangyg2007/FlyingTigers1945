@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/enemies/enemy_base.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemy/enemy_d3a_val.png" id="2_tex"]
+
+[sub_resource type="RectangleShape2D" id="3_shape"]
+size = Vector2(32, 32)
+
+[node name="EnemyD3aVal" type="CharacterBody2D"]
+script = ExtResource("1_script")
+hp = 3
+speed = 90.0
+score_value = 150
+drop_chance = 0.25
+collision_layer = 8
+collision_mask = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_tex")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("3_shape")

@@ -70,6 +70,10 @@ var _state_machine: StateMachine = null
 ## BOSS Sprite 引用（用于阶段切换时替换纹理）
 var _boss_sprite: Sprite2D = null
 
+## 弹幕参数表（从 JSON bullet_params 字段加载，key=弹幕模式名，value=参数字典）
+## 未配置的模式使用 _get_bullet_param 中的默认值
+var _bullet_params: Dictionary = {}
+
 # ============================================================
 # 节点引用（软引用：节点不存在时为 null，避免 _ready 中断）
 # ============================================================
@@ -401,8 +405,23 @@ func _load_boss_config(path: String) -> void:
 		contact_damage = int(data["contact_damage"])
 	if data.has("entry_target_y"):
 		entry_target_y = float(data["entry_target_y"])
+	# 加载弹幕参数表（M3-A: 可配置子弹数/速度/角度等）
+	if data.has("bullet_params"):
+		_bullet_params = data["bullet_params"] as Dictionary
 
-	print("[BOSS] 已加载配置: %s (HP=%d, 阶段数=%d)" % [path, max_hp, phase_hps.size()])
+	print("[BOSS] 已加载配置: %s (HP=%d, 阶段数=%d, 弹幕参数: %d 种)" % [path, max_hp, phase_hps.size(), _bullet_params.size()])
+
+
+## 获取弹幕参数（带默认值回退）
+## [param pattern] 弹幕模式名（如 "fan_shoot"）
+## [param key] 参数键（如 "count_base"）
+## [param default_value] 默认值（JSON 未配置时返回）
+func _get_bullet_param(pattern: String, key: String, default_value: Variant) -> Variant:
+	if _bullet_params.has(pattern):
+		var params: Dictionary = _bullet_params[pattern]
+		if params.has(key):
+			return params[key]
+	return default_value
 
 
 ## 根据当前阶段索引更新 Sprite 纹理（信号回调）
@@ -692,12 +711,14 @@ func _get_direction_to_player() -> Vector2:
 
 ## 扇形散射：从BOSS位置向下方扇形区域发射多颗子弹
 func fan_shoot() -> void:
-	var bullet_count: int = 5 + current_phase * 2  # 阶段1:5颗, 阶段2:7颗
-	var spread_angle: float = 60.0  # 总扇形角度
+	# 从 JSON bullet_params 读取参数，未配置则使用默认值
+	var bullet_count: int = int(_get_bullet_param("fan_shoot", "count_base", 5)) + current_phase * int(_get_bullet_param("fan_shoot", "count_per_phase", 2))
+	var spread_angle: float = float(_get_bullet_param("fan_shoot", "spread_angle", 60.0))
 	var start_angle: float = -spread_angle / 2.0
 	var angle_step: float = spread_angle / float(bullet_count - 1)
 	var base_direction := Vector2.DOWN
-	var bullet_speed: float = 200.0 + current_phase * 30.0
+	var bullet_speed: float = float(_get_bullet_param("fan_shoot", "speed_base", 200.0)) + current_phase * float(_get_bullet_param("fan_shoot", "speed_per_phase", 30.0))
+	var damage: int = int(_get_bullet_param("fan_shoot", "damage", 1))
 
 	for i in range(bullet_count):
 		var angle_deg := start_angle + angle_step * i
@@ -708,7 +729,7 @@ func fan_shoot() -> void:
 			(i - bullet_count / 2.0) * 12.0,
 			40.0
 		)
-		_spawn_bullet(global_position + spawn_offset, dir, bullet_speed)
+		_spawn_bullet(global_position + spawn_offset, dir, bullet_speed, damage)
 
 
 ## 定点射击：从多个炮台位置依次发射精准子弹
@@ -726,23 +747,28 @@ func turret_fire() -> void:
 	var turret_pos: Vector2 = turret_offsets[turret_index % turret_offsets.size()]
 	turret_index += 1
 
+	# 从 JSON 读取速度和伤害参数
+	var bullet_speed: float = float(_get_bullet_param("turret_fire", "speed_base", 280.0)) + current_phase * float(_get_bullet_param("turret_fire", "speed_per_phase", 40.0))
+	var damage: int = int(_get_bullet_param("turret_fire", "damage", 2))
+	var aim_on_center: bool = bool(_get_bullet_param("turret_fire", "aim_on_center", true))
+
 	# 炮台向下方发射高速子弹
 	var dir := Vector2.DOWN
-	var bullet_speed: float = 280.0 + current_phase * 40.0
-	_spawn_bullet(global_position + turret_pos, dir, bullet_speed, 2)
+	_spawn_bullet(global_position + turret_pos, dir, bullet_speed, damage)
 
 	# 如果是中央炮台，额外发射一颗瞄准子弹
-	if turret_index % turret_offsets.size() == 0:
+	if aim_on_center and turret_index % turret_offsets.size() == 0:
 		var aim_dir := _get_direction_to_player()
-		_spawn_bullet(global_position + Vector2(0, 55), aim_dir, bullet_speed * 0.9, 2)
+		_spawn_bullet(global_position + Vector2(0, 55), aim_dir, bullet_speed * 0.9, damage)
 
 
 ## 导弹齐射：发射多枚追踪导弹
 func missile_volley() -> void:
-	var missile_count: int = 3 + current_phase * 2  # 阶段1:3枚, 阶段2:5枚
+	# 从 JSON 读取参数
+	var missile_count: int = int(_get_bullet_param("missile_volley", "count_base", 3)) + current_phase * int(_get_bullet_param("missile_volley", "count_per_phase", 2))
 	var base_dir := Vector2.DOWN
-	var spread: float = 15.0  # 散布角度（度）
-	var missile_speed: float = 150.0
+	var spread: float = float(_get_bullet_param("missile_volley", "spread_deg", 15.0))  # 散布角度（度）
+	var missile_speed: float = float(_get_bullet_param("missile_volley", "speed_base", 150.0))
 
 	for i in range(missile_count):
 		var angle_offset := deg_to_rad((i - missile_count / 2.0) * spread / missile_count)
@@ -756,9 +782,11 @@ func missile_volley() -> void:
 
 ## 螺旋弹幕：沿螺旋轨迹连续发射子弹
 func spiral_shoot() -> void:
-	var arms: int = 3 + current_phase  # 螺旋臂数量
-	var bullets_per_arm: int = 2
-	var bullet_speed: float = 180.0 + current_phase * 20.0
+	# 从 JSON 读取参数
+	var arms: int = int(_get_bullet_param("spiral_shoot", "arms_base", 3)) + current_phase * int(_get_bullet_param("spiral_shoot", "arms_per_phase", 1))
+	var bullets_per_arm: int = int(_get_bullet_param("spiral_shoot", "bullets_per_arm", 2))
+	var bullet_speed: float = float(_get_bullet_param("spiral_shoot", "speed_base", 180.0)) + current_phase * float(_get_bullet_param("spiral_shoot", "speed_per_phase", 20.0))
+	var damage: int = int(_get_bullet_param("spiral_shoot", "damage", 1))
 
 	for arm in range(arms):
 		var arm_offset := float(arm) * (360.0 / float(arms))
@@ -766,24 +794,27 @@ func spiral_shoot() -> void:
 			var angle := spiral_angle + arm_offset + b * 15.0
 			var rad := deg_to_rad(angle)
 			var dir := Vector2(cos(rad), sin(rad))
-			_spawn_bullet(global_position + Vector2(0, 30), dir, bullet_speed)
+			_spawn_bullet(global_position + Vector2(0, 30), dir, bullet_speed, damage)
 
 
 ## 瞄准玩家射击：计算玩家方向，发射高速精准弹
 func aimed_shoot() -> void:
 	var aim_dir := _get_direction_to_player()
-	var bullet_speed: float = 320.0
-	var bullet_count: int = 1 + current_phase  # 阶段1:1颗, 阶段2:2颗
+	# 从 JSON 读取参数
+	var bullet_speed: float = float(_get_bullet_param("aimed_shoot", "speed_base", 320.0))
+	var bullet_count: int = int(_get_bullet_param("aimed_shoot", "count_base", 1)) + current_phase * int(_get_bullet_param("aimed_shoot", "count_per_phase", 1))
+	var spread_offset_deg: float = float(_get_bullet_param("aimed_shoot", "spread_offset_deg", 5.0))
+	var damage: int = int(_get_bullet_param("aimed_shoot", "damage", 2))
 
 	for i in range(bullet_count):
 		# 轻微偏移角度，让弹幕不完全重叠
-		var offset_angle := deg_to_rad((i - bullet_count / 2.0) * 5.0)
+		var offset_angle := deg_to_rad((i - bullet_count / 2.0) * spread_offset_deg)
 		var dir := aim_dir.rotated(offset_angle)
 		var spawn_pos := global_position + Vector2(
 			(i - bullet_count / 2.0) * 15.0,
 			40.0
 		)
-		_spawn_bullet(spawn_pos, dir, bullet_speed, 3)
+		_spawn_bullet(spawn_pos, dir, bullet_speed, damage)
 
 # ============================================================
 # 辅助方法

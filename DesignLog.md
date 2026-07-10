@@ -356,6 +356,41 @@ BOSS 文件体积从 200-300KB 降至 137-180KB（透明背景生效）✅
 
 ---
 
+## 2026-07-10 — M3-A: 资源补齐
+
+### 任务来源
+
+`docs/M3_design_assignment.md` M3-A 阶段（资源补齐）。
+
+### 交付物
+
+**爆炸帧序列（5 张，256x256）**
+
+| 文件 | 内容 |
+|------|------|
+| `fx_explosion_large_01.png` | 爆炸初期：白色闪光 + 橙色火环开始扩展 |
+| `fx_explosion_large_02.png` | 火球扩大：橙黄核心 + 冲击波环 + 碎片 |
+| `fx_explosion_large_03.png` | 火球巅峰：大红火球 + 黑烟环 + 大量碎片 |
+| `fx_explosion_large_04.png` | 火球衰减：深红暗化 + 灰烟扩展 + 碎片下落 |
+| `fx_explosion_large_05.png` | 消散：灰烟散去 + 红橙余烬淡出 |
+
+**敌方导弹（1 张，64x128）**
+- `missile_enemy.png`：银灰弹体 + 橙红尾焰，俯视角
+
+**道具重做（3 张，48x48，原 32x32 升级）**
+- `powerup_p.png`：火力提升（红色 P 字 + 金属胶囊 + 微发光）
+- `powerup_b.png`：炸弹补充（蓝色 B 字 + 炸弹图标 + 微发光）
+- `powerup_coin.png`：金砖加分（金色硬币 + 金字 + 金属光泽）
+
+**敌机 hitbox_ref 确认**
+- 10 种敌机全部已有 body + hitbox_ref，无需补齐 ✅
+
+### 验证
+
+9/9 PNG-32 RGBA，尺寸 100% 符合 M3 任务文档规格 ✅
+
+---
+
 ## 备注
 
 - 所有文件命名严格遵循 `snake_case` 规范，符合 Master Interface Spec 4.1

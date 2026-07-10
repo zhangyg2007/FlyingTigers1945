@@ -1060,3 +1060,117 @@ else:
 - 所有 ERROR 和 Parse Error 全部清零，端到端测试 5/5 PASS
 - M2 遗留 P3 资源缺失问题已全部解决，可进入 M3
 - 本地修改完毕，等待用户用 Trae IDE commit + push 同步到远程
+
+---
+
+## 任务 8：M3-A 基础修复 + 资源补齐
+
+**日期**: 2026-07-10
+**任务**: 根据 `docs/M3_task_breakdown.md` 执行 M3-A 任务（A-C1~A-C4）
+**文档参考**: `docs/M3_task_breakdown.md` 第三节 M3-A 任务清单 + `docs/M3_event_system_design.md` 隐藏事件设计
+
+### 1. A-C1: 补齐缺失 .tscn 场景（已在任务 7 完成）
+
+已在上一轮任务 7 完成：`explosion_large.tscn` / `powerup.tscn` / `missile_enemy.tscn`，本任务跳过。
+
+### 2. A-C2: 敌机拆分（10 个独立场景）
+
+**新建文件**: [scenes/enemies/](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/enemies/) 下 10 个 .tscn
+
+将原共用 `enemy_fighter.tscn` 的 10 种敌机拆分为独立场景，根据 GDD 设计差异化参数：
+
+| 敌机场景 | HP | 速度 | 分值 | 掉落率 | 碰撞框 | 纹理 |
+|----------|-----|------|------|--------|--------|------|
+| enemy_ki27_fighter.tscn | 2 | 100 | 100 | 0.2 | 28x28 | enemy_ki27_fighter.png |
+| enemy_ki43_hayabusa.tscn | 3 | 120 | 150 | 0.25 | 28x28 | enemy_ki43_hayabusa.png |
+| enemy_a6m_zero.tscn | 4 | 130 | 200 | 0.3 | 28x28 | enemy_a6m_zero.png |
+| enemy_ki61_hien.tscn | 4 | 110 | 200 | 0.3 | 32x32 | enemy_ki61_hien.png |
+| enemy_ki84_hayate.tscn | 5 | 140 | 250 | 0.35 | 32x32 | enemy_ki84_hayate.png |
+| enemy_ki21_bomber.tscn | 6 | 60 | 300 | 0.4 | 40x40 | enemy_ki21_bomber.png |
+| enemy_d3a_val.tscn | 3 | 90 | 150 | 0.25 | 32x32 | enemy_d3a_val.png |
+| enemy_ki45_toryu.tscn | 6 | 80 | 250 | 0.35 | 36x36 | enemy_ki45_toryu.png |
+| enemy_j7w_shinden.tscn | 5 | 160 | 300 | 0.4 | 32x32 | enemy_j7w_shinden.png |
+| enemy_ohka_kamikaze.tscn | 1 | 200 | 100 | 0.1 | 24x24 | enemy_ohka_kamikaze.png |
+
+**SpawnManager 映射表更新**: [autoload/spawn_manager.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/autoload/spawn_manager.gd) L137-172
+
+- 10 种敌机从 placeholder 改为精确场景路径
+- 新增别名映射：`zero` → `enemy_a6m_zero.tscn`，`ohka` → `enemy_ohka_kamikaze.tscn`
+- 保留旧版兼容（scout/fighter/bomber/ace → placeholder）
+
+### 3. A-C3: BOSS 弹幕参数调优
+
+**修改文件**:
+- [resources/boss_data/boss_bomber.json](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/resources/boss_data/boss_bomber.json)
+- [resources/boss_data/boss_nachi.json](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/resources/boss_data/boss_nachi.json)
+- [resources/boss_data/boss_fortress.json](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/resources/boss_data/boss_fortress.json)
+- [scenes/bosses/boss_base.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/bosses/boss_base.gd)
+
+**改造内容**:
+
+1. **JSON 格式扩展**: 新增 `bullet_params` 字段，每个弹幕模式可配置参数：
+```json
+"bullet_params": {
+  "fan_shoot": {
+    "count_base": 5,
+    "count_per_phase": 2,
+    "spread_angle": 60.0,
+    "speed_base": 200.0,
+    "speed_per_phase": 30.0,
+    "damage": 1
+  }
+}
+```
+
+2. **boss_base.gd 改造**:
+   - 新增 `_bullet_params: Dictionary` 字段存储弹幕参数
+   - `_load_boss_config()` 读取 `bullet_params` 字段
+   - 新增 `_get_bullet_param(pattern, key, default_value)` 辅助方法（带默认值回退）
+   - 5 个弹幕函数（fan_shoot/turret_fire/missile_volley/spiral_shoot/aimed_shoot）全部改为从 `_get_bullet_param` 读取参数
+
+3. **boss_bomber.json 修正**: `phase_sprites` 从占位 `boss_cruiser_phase1/2.png` 改为正确 `boss_bomber_phase1/2.png`（Design 已交付）
+
+**可配置参数清单**:
+
+| 弹幕模式 | 可配置参数 |
+|----------|-----------|
+| fan_shoot | count_base, count_per_phase, spread_angle, speed_base, speed_per_phase, damage |
+| turret_fire | speed_base, speed_per_phase, damage, aim_on_center |
+| missile_volley | count_base, count_per_phase, spread_deg, speed_base, damage |
+| spiral_shoot | arms_base, arms_per_phase, bullets_per_arm, speed_base, speed_per_phase, damage |
+| aimed_shoot | count_base, count_per_phase, speed_base, spread_offset_deg, damage |
+
+### 4. A-C4: 语法检查 + 冒烟测试
+
+运行 `Godot --headless --quit-after 2400 res://scenes/test/test_boss_flow.tscn`，确认：
+
+| 验证项 | 结果 | 日志证据 |
+|--------|------|----------|
+| JSON 弹幕参数加载 | ✅ | `[BOSS] 已加载配置: boss_bomber.json (HP=350, 阶段数=2, 弹幕参数: 2 种)` |
+| 状态机自动驱动 | ✅ | `[BOSS] 状态机初始化完成，当前状态: enter` |
+| BOSS 出场→击败→结算 | ✅ | 5/5 PASS |
+| 对象池清理 | ✅ | `PoolManager: 所有活跃对象已归还。` |
+| ERROR / Parse Error | ✅ | 0 个 |
+
+### 5. M3-A 任务完成状态
+
+| 任务编号 | 任务 | 状态 |
+|----------|------|------|
+| A-C1 | 补齐缺失 .tscn 场景 | ✅ 已完成（任务 7） |
+| A-C2 | 敌机拆分（10 个场景） | ✅ 已完成 |
+| A-C3 | BOSS 弹幕参数调优 | ✅ 已完成 |
+| A-C4 | 语法检查 + 冒烟测试 | ✅ 5/5 PASS |
+
+### 6. 关于隐藏事件系统的扩展性评估
+
+用户询问"后续关卡添加隐藏要素（如逃跑的小车）需要修改多少代码"。经评估：
+
+- **新敌人类型**（固定时间出现）：改 2 行代码（SpawnManager 注册 + CSV 加波次）+ 新建场景/脚本
+- **条件触发的隐藏要素**：当前 CSV 纯时间驱动，需新增事件系统。PM 已在 `docs/M3_event_system_design.md` 设计了 `hidden_events.json` + `EventManager` 方案，计划在 M3-B 阶段实现
+
+## 协作说明
+
+- 本次创建 10 个新敌机场景 + 修改 4 个文件（spawn_manager.gd / boss_base.gd / 3 个 BOSS JSON）
+- 所有修改通过端到端运行验证，5/5 PASS，0 ERROR
+- M3-A 任务全部完成，可进入 M3-B
+- 本地修改完毕，等待用户用 Trae IDE commit + push 同步到远程

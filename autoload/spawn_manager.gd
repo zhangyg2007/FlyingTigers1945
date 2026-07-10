@@ -135,34 +135,37 @@ func _process(delta: float) -> void:
 # ============================================================
 
 ## 初始化敌人类型到场景路径的映射
-## 注：M1 阶段仅 enemy_fighter.tscn 已创建，其他机型暂映射到它作为占位。
-## M2 后续需补全 enemy_scout/bomber/ace 等场景，并在 Devlog 记录。
+## M3-A: 全部 10 种敌机已拆分为独立场景，参数差异化（HP/速度/分值/掉落率/碰撞框）
 func _init_enemy_scene_map() -> void:
-	# M1 已存在的场景
+	# M1 旧版兼容场景（保留，防止外部脚本直接引用）
 	_enemy_scene_map = {
 		"enemy_fighter": "res://scenes/enemies/enemy_fighter.tscn",
 	}
 
-	# CSV 中使用的真实机型名 → 暂时全部映射到 enemy_fighter.tscn（M1 唯一存在的敌机场景）
-	# 待 Design/Code 补全各机型 .tscn 后改为精确映射
-	var placeholder := "res://scenes/enemies/enemy_fighter.tscn"
-	_enemy_scene_map["ki27_fighter"] = placeholder
-	_enemy_scene_map["ki43_hayabusa"] = placeholder
-	_enemy_scene_map["ki44_shoki"] = placeholder
-	_enemy_scene_map["ki61_tony"] = placeholder
-	_enemy_scene_map["ki84_frank"] = placeholder
-	_enemy_scene_map["ki21_bomber"] = placeholder
-	_enemy_scene_map["j7w_shinden"] = placeholder
-	_enemy_scene_map["zero"] = placeholder
-	_enemy_scene_map["ohka"] = placeholder
-	_enemy_scene_map["d3a_val"] = placeholder
+	# CSV 中使用的真实机型名 → M3-A 已拆分的独立场景
+	_enemy_scene_map["ki27_fighter"] = "res://scenes/enemies/enemy_ki27_fighter.tscn"
+	_enemy_scene_map["ki43_hayabusa"] = "res://scenes/enemies/enemy_ki43_hayabusa.tscn"
+	_enemy_scene_map["ki21_bomber"] = "res://scenes/enemies/enemy_ki21_bomber.tscn"
+	_enemy_scene_map["a6m_zero"] = "res://scenes/enemies/enemy_a6m_zero.tscn"
+	_enemy_scene_map["ki61_hien"] = "res://scenes/enemies/enemy_ki61_hien.tscn"
+	_enemy_scene_map["ki84_hayate"] = "res://scenes/enemies/enemy_ki84_hayate.tscn"
+	_enemy_scene_map["d3a_val"] = "res://scenes/enemies/enemy_d3a_val.tscn"
+	_enemy_scene_map["ki45_toryu"] = "res://scenes/enemies/enemy_ki45_toryu.tscn"
+	_enemy_scene_map["j7w_shinden"] = "res://scenes/enemies/enemy_j7w_shinden.tscn"
+	_enemy_scene_map["ohka_kamikaze"] = "res://scenes/enemies/enemy_ohka_kamikaze.tscn"
+
 	# BOSS 类型 → 精确映射到 scenes/bosses/ 下的 BOSS 场景
 	_enemy_scene_map["BOSS_bomber"] = "res://scenes/bosses/boss_bomber.tscn"
 	_enemy_scene_map["BOSS_nachi"] = "res://scenes/bosses/boss_nachi.tscn"
 	_enemy_scene_map["BOSS_cruiser"] = "res://scenes/bosses/boss_nachi.tscn"  # 别名：Design 命名对齐后 boss_nachi = boss_cruiser
 	_enemy_scene_map["BOSS_fortress"] = "res://scenes/bosses/boss_fortress.tscn"
 
+	# CSV 中可能出现的别名/旧名 → 映射到对应场景
+	_enemy_scene_map["zero"] = "res://scenes/enemies/enemy_a6m_zero.tscn"        # zero = a6m_zero
+	_enemy_scene_map["ohka"] = "res://scenes/enemies/enemy_ohka_kamikaze.tscn"   # ohka = ohka_kamikaze
+
 	# 旧版兼容（防止其他脚本用 scout/fighter 等旧名调用）
+	var placeholder := "res://scenes/enemies/enemy_fighter.tscn"
 	_enemy_scene_map["scout"] = placeholder
 	_enemy_scene_map["fighter"] = placeholder
 	_enemy_scene_map["bomber"] = placeholder
