@@ -75,6 +75,9 @@ var event_progress: Dictionary = {}
 ## S评级数量（军衔系统使用）
 var s_rank_count: int = 0
 
+## 各关卡S评级状态：key=关卡索引字符串, value=true表示已获得S
+var stage_s_ranks: Dictionary = {}
+
 # ============================================================
 # 内部变量
 # ============================================================
@@ -137,6 +140,10 @@ func save_game() -> bool:
 
 	# S评级数量
 	config.set_value("progress", "s_rank_count", s_rank_count)
+
+	# 各关卡S评级状态
+	for stage_key in stage_s_ranks:
+		config.set_value("stage_s_ranks", stage_key, stage_s_ranks[stage_key])
 
 	# 保存到文件
 	var err: int = config.save(SAVE_FILE_PATH)
@@ -220,6 +227,12 @@ func load_game() -> bool:
 
 	# 读取S评级数量
 	s_rank_count = config.get_value("progress", "s_rank_count", 0)
+
+	# 读取各关卡S评级状态
+	stage_s_ranks.clear()
+	var s_rank_section_keys: PackedStringArray = config.get_section_keys("stage_s_ranks")
+	for key in s_rank_section_keys:
+		stage_s_ranks[key] = config.get_value("stage_s_ranks", key, false)
 
 	_initialized = true
 
@@ -357,9 +370,16 @@ func is_event_completed(event_id: String) -> bool:
 func get_s_rank_count() -> int:
 	return s_rank_count
 
-## 增加S评级计数（结算时调用）
-func add_s_rank() -> void:
+## 增加S评级计数（结算时调用，去重）
+## [param stage_index]: 关卡索引，用于去重判断
+func add_s_rank(stage_index: int = -1) -> void:
+	var key: String = str(stage_index)
+	if stage_index >= 0 and stage_s_ranks.has(key):
+		print("SaveManager: 关卡 %d 已获得S评级，跳过重复计数" % stage_index)
+		return
 	s_rank_count += 1
+	if stage_index >= 0:
+		stage_s_ranks[key] = true
 	print("SaveManager: S评级计数+1，当前：%d" % s_rank_count)
 
 # ============================================================
@@ -411,6 +431,7 @@ func reset_all_data() -> void:
 	unlocked_hidden_stages.clear()
 	event_progress.clear()
 	s_rank_count = 0
+	stage_s_ranks.clear()
 	_last_save_time = 0
 
 	print("SaveManager: 所有数据已重置为默认值。")

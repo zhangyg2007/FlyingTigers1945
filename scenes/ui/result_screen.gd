@@ -492,7 +492,8 @@ func _save_stage_result() -> void:
 			SaveManager.unlock_stage(stage_index + 1)
 
 	if _final_rank == "S" and SaveManager.has_method("add_s_rank"):
-		SaveManager.add_s_rank()
+		var stage_index: int = GameManager.current_stage
+		SaveManager.add_s_rank(stage_index)
 
 	SaveManager.save_game()
 

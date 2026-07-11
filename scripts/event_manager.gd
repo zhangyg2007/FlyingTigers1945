@@ -534,12 +534,11 @@ func _grant_rewards(event_id: String, rewards: Dictionary, position: Vector2) ->
 		var items: Array = rewards["drop_items"]
 		_drop_items(items, position)
 
-	# 解锁隐藏关卡
+	# 隐藏关卡解锁由 UnlockManager 双重条件判定（情报已获取 AND 军衔达标）
+	# 事件完成后自动记录到 event_progress，无需直接调用 unlock_hidden_stage
 	if rewards.has("unlock_hidden"):
 		var hidden_id: String = rewards["unlock_hidden"]
-		if GameManager:
-			GameManager.unlock_hidden_stage(hidden_id)
-		print("[EventManager] 解锁隐藏关卡: %s" % hidden_id)
+		print("[EventManager] 事件完成，隐藏关卡解锁条件已满足（情报）: %s" % hidden_id)
 
 
 ## 在指定位置掉落道具
