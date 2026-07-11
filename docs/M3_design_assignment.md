@@ -155,6 +155,18 @@ Stage 04~08 可能需要的新敌机类型（Code 确认后执行）：
 
 每个 3 张 = 15 张，规格同 M3-B。
 
+> **M3-C 实际命名对照（Design 偏离原始规划，Code 已同步适配）**:
+>
+> | 规划 ID | 实际 Design 命名 | 实际文件 | 用途 |
+> |---------|------------------|---------|------|
+> | `tone`（利根号） | boss_nagato | boss_nagato_phase1/2.png | Stage 09 BOSS |
+> | `shokaku`（翔鹤号） | boss_kamikawa | boss_kamikawa_phase1/2.png | Stage 10 BOSS |
+> | `yamato`（大和号） | boss_ki49 | boss_ki49_phase1/2.png | Stage 11 BOSS |
+> | `yahata`（八幡号） | boss_floating_aa | boss_floating_aa_phase1/2.png | Stage 12 BOSS |
+> | `shinden_final` | boss_shinden_proto | boss_shinden_proto_phase1/2.png | H1/H3 隐藏 BOSS |
+>
+> Code 侧 JSON/CSV/.tscn 均使用 Design 实际命名。后续新增内容以此命名为准。
+
 ### 4.4 隐藏关特殊素材（C-D4）
 
 | 文件名 | 尺寸 | 说明 |
