@@ -72,6 +72,9 @@ var unlocked_hidden_stages: Array[String] = []
 ## key: event_id, value: true=已完成, false=已失败
 var event_progress: Dictionary = {}
 
+## S评级数量（军衔系统使用）
+var s_rank_count: int = 0
+
 # ============================================================
 # 内部变量
 # ============================================================
@@ -131,6 +134,9 @@ func save_game() -> bool:
 
 	# 事件进度记录
 	config.set_value("events", "progress", event_progress)
+
+	# S评级数量
+	config.set_value("progress", "s_rank_count", s_rank_count)
 
 	# 保存到文件
 	var err: int = config.save(SAVE_FILE_PATH)
@@ -211,6 +217,9 @@ func load_game() -> bool:
 		event_progress = progress_variant.duplicate()
 	else:
 		event_progress = {}
+
+	# 读取S评级数量
+	s_rank_count = config.get_value("progress", "s_rank_count", 0)
 
 	_initialized = true
 
@@ -341,6 +350,19 @@ func is_event_completed(event_id: String) -> bool:
 	return false
 
 # ============================================================
+# 军衔系统接口（M3-F）
+# ============================================================
+
+## 获取S评级数量
+func get_s_rank_count() -> int:
+	return s_rank_count
+
+## 增加S评级计数（结算时调用）
+func add_s_rank() -> void:
+	s_rank_count += 1
+	print("SaveManager: S评级计数+1，当前：%d" % s_rank_count)
+
+# ============================================================
 # 存档检查与管理
 # ============================================================
 
@@ -388,6 +410,7 @@ func reset_all_data() -> void:
 	}
 	unlocked_hidden_stages.clear()
 	event_progress.clear()
+	s_rank_count = 0
 	_last_save_time = 0
 
 	print("SaveManager: 所有数据已重置为默认值。")

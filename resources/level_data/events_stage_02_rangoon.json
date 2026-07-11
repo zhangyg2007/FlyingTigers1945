@@ -1,0 +1,31 @@
+{
+  "stage_id": "02_rangoon",
+  "events": [
+    {
+      "event_id": "rangoon_general_car",
+      "event_type": "kill_target",
+      "trigger": {
+        "timing": "on_time",
+        "time": 35.0,
+        "probability": 0.8
+      },
+      "target": {
+        "enemy_type": "event_target_car",
+        "spawn_x": 50,
+        "spawn_y": -100,
+        "speed": 180,
+        "hp": 30,
+        "escape_time": 12.0
+      },
+      "rewards": {
+        "score": 5000,
+        "drop_items": ["intel_hump_route"],
+        "unlock_hidden": "H1_hump_extreme"
+      },
+      "ui": {
+        "alert_text": "截获情报：敌军将领座驾正在撤离！",
+        "complete_text": "获取驼峰路线情报！隐藏关卡已解锁（需军衔：中士）"
+      }
+    }
+  ]
+}

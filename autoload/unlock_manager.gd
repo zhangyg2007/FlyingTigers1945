@@ -1,23 +1,9 @@
 extends Node
-## 隐藏关卡解锁条件管理器（Autoload 单例，M3-C P1）
-## 根据 SaveManager 中的通关数据判定隐藏关卡是否解锁。
-## 注意：本脚本需要注册到 project.godot 的 autoload 列表中（后续整合时统一添加）。
+## 隐藏关卡解锁条件管理器（Autoload 单例，M3-F 更新）
+## 根据 SaveManager 中的事件完成记录和 RankManager 的军衔判定隐藏关卡是否解锁。
 ##
-## 解锁条件：
-##   H1 驼峰绝径: 通关 Stage 04 无伤
-##   H2 轰炸东京: 二周目 Easy 通关
-##   H3 震电对决: 二周目 Hard 第 6 关前无伤
-##   H4 广岛之刻: 通关 H3 后触发
+## 双重解锁条件：隐藏关 = 情报已获取（事件完成）AND 军衔达标
 
-## 隐藏关卡解锁条件定义
-const UNLOCK_CONDITIONS: Dictionary = {
-	"H1_hump_extreme": "stage_04_no_miss",
-	"H2_tokyo_bombing": "second_loop_easy_clear",
-	"H3_shinden_duel": "hard_stage_06_no_miss",
-	"H4_hiroshima_countdown": "H3_cleared",
-}
-
-## 隐藏关卡列表
 const HIDDEN_STAGES: Array[String] = [
 	"H1_hump_extreme",
 	"H2_tokyo_bombing",
@@ -25,58 +11,62 @@ const HIDDEN_STAGES: Array[String] = [
 	"H4_hiroshima_countdown",
 ]
 
+const HIDDEN_STAGE_INFO_EVENTS: Dictionary = {
+	"H1_hump_extreme": "rangoon_general_car",
+	"H2_tokyo_bombing": "guilin_hidden_bunker",
+	"H3_shinden_duel": "shanghai_secret_ship",
+	"H4_hiroshima_countdown": "nanjing_escort_c47",
+}
+
+const HIDDEN_STAGE_NAMES: Dictionary = {
+	"H1_hump_extreme": "驼峰绝径",
+	"H2_tokyo_bombing": "轰炸东京",
+	"H3_shinden_duel": "震电对决",
+	"H4_hiroshima_countdown": "广岛之刻",
+}
+
 func _ready() -> void:
 	pass
 
-## 检查指定隐藏关卡是否已解锁
 func is_hidden_stage_unlocked(stage_id: String) -> bool:
-	# 先查 SaveManager（可能已被事件解锁）
-	if SaveManager != null:
-		if SaveManager.has_method("is_stage_unlocked"):
-			if SaveManager.is_stage_unlocked(stage_id):
-				return true
-	# 再查条件
-	var condition: String = UNLOCK_CONDITIONS.get(stage_id, "")
-	if condition.is_empty():
-		return false
-	return _check_condition(condition)
+	return has_intel(stage_id) and has_rank(stage_id)
 
-## 检查解锁条件
-## 对每个 SaveManager 方法调用前先检查 has_method，方法不存在则返回 false
-func _check_condition(condition: String) -> bool:
+func has_intel(stage_id: String) -> bool:
+	var event_id: String = HIDDEN_STAGE_INFO_EVENTS.get(stage_id, "")
+	if event_id.is_empty():
+		return false
 	if SaveManager == null:
 		return false
-	match condition:
-		"stage_04_no_miss":
-			# 通关 Stage 04 且无伤
-			if not SaveManager.has_method("is_stage_cleared"):
-				return false
-			if not SaveManager.has_method("get_stage_no_miss"):
-				return false
-			return SaveManager.is_stage_cleared("04_hump") and SaveManager.get_stage_no_miss("04_hump")
-		"second_loop_easy_clear":
-			# 二周目 Easy 通关（任意主线关卡）
-			if not SaveManager.has_method("get_second_loop_count"):
-				return false
-			if not SaveManager.has_method("get_last_difficulty"):
-				return false
-			return SaveManager.get_second_loop_count() >= 1 and SaveManager.get_last_difficulty() == "easy"
-		"hard_stage_06_no_miss":
-			# Hard 模式第 6 关前无伤
-			if not SaveManager.has_method("get_last_difficulty"):
-				return false
-			if not SaveManager.has_method("get_stage_no_miss"):
-				return false
-			return SaveManager.get_last_difficulty() == "hard" and SaveManager.get_stage_no_miss("06_hengyang")
-		"H3_cleared":
-			# 通关 H3
-			if not SaveManager.has_method("is_stage_cleared"):
-				return false
-			return SaveManager.is_stage_cleared("H3_shinden_duel")
-		_:
-			return false
+	return SaveManager.is_event_completed(event_id)
 
-## 获取所有已解锁的隐藏关卡
+func has_rank(stage_id: String) -> bool:
+	if RankManager == null:
+		return false
+	return RankManager.can_unlock_hidden_stage(stage_id)
+
+func get_hidden_stage_unlock_status(stage_id: String) -> String:
+	if is_hidden_stage_unlocked(stage_id):
+		return "unlocked"
+	if has_intel(stage_id):
+		return "rank_required"
+	return "locked"
+
+func get_hidden_stage_required_rank_name(stage_id: String) -> String:
+	if RankManager == null:
+		return ""
+	var required_rank: String = RankManager.get_hidden_stage_required_rank(stage_id)
+	return RankManager.get_rank_name(required_rank)
+
+func get_random_hidden_stage_for_display() -> String:
+	var unlocked: Array[String] = []
+	for stage_id in HIDDEN_STAGES:
+		if is_hidden_stage_unlocked(stage_id):
+			unlocked.append(stage_id)
+	if unlocked.is_empty():
+		return ""
+	unlocked.shuffle()
+	return unlocked[0]
+
 func get_unlocked_hidden_stages() -> Array[String]:
 	var result: Array[String] = []
 	for stage_id in HIDDEN_STAGES:
@@ -84,13 +74,16 @@ func get_unlocked_hidden_stages() -> Array[String]:
 			result.append(stage_id)
 	return result
 
-## 获取所有隐藏关卡列表（含锁定/解锁状态）
 func get_all_hidden_stages_status() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for stage_id in HIDDEN_STAGES:
 		result.append({
 			"stage_id": stage_id,
+			"name": HIDDEN_STAGE_NAMES.get(stage_id, ""),
 			"unlocked": is_hidden_stage_unlocked(stage_id),
-			"condition": UNLOCK_CONDITIONS.get(stage_id, ""),
+			"has_intel": has_intel(stage_id),
+			"has_rank": has_rank(stage_id),
+			"required_rank": RankManager.get_hidden_stage_required_rank(stage_id) if RankManager else "PVT",
+			"required_rank_name": get_hidden_stage_required_rank_name(stage_id),
 		})
 	return result

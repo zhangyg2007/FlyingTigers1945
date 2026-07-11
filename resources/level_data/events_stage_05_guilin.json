@@ -1,0 +1,32 @@
+{
+  "stage_id": "05_guilin",
+  "events": [
+    {
+      "event_id": "guilin_hidden_bunker",
+      "event_type": "area_stay",
+      "trigger": {
+        "timing": "on_time",
+        "time": 25.0,
+        "probability": 1.0
+      },
+      "target": {
+        "enemy_type": "event_target_bunker",
+        "area_x": 380,
+        "area_y": 600,
+        "area_radius": 500,
+        "stay_duration": 3.0,
+        "hp": 20,
+        "escape_timer": 5.0
+      },
+      "rewards": {
+        "score": 8000,
+        "drop_items": ["intel_tokyo_defense"],
+        "unlock_hidden": "H2_tokyo_bombing"
+      },
+      "ui": {
+        "alert_text": "探测到隐藏信号...",
+        "complete_text": "获取东京防空部署情报！隐藏关卡已解锁（需军衔：上尉）"
+      }
+    }
+  ]
+}

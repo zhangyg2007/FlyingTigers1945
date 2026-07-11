@@ -85,6 +85,9 @@ var _required_count: Dictionary = {}
 ## 目标 ID → 事件 ID 映射（用于 report_target_destroyed 查找所属事件）
 var _target_to_event: Dictionary = {}
 
+## area_stay 事件状态：event_id -> {area_center, area_radius, stay_duration, current_stay_time}
+var _area_stay_states: Dictionary = {}
+
 
 # ============================================================
 # 生命周期
@@ -104,6 +107,7 @@ func _process(delta: float) -> void:
 
 	_elapsed_time += delta
 	_check_time_triggers()
+	_process_area_stay_check(delta)
 
 
 # ============================================================
@@ -235,8 +239,10 @@ func trigger_event(event_id: String) -> void:
 			_spawn_kill_target(event_id, event)
 		"destroy_targets":
 			_spawn_destroy_targets(event_id, event)
+		"area_stay":
+			_start_area_stay_event(event_id, event)
 		_:
-			print("[EventManager] 事件类型 '%s' 暂未实现（P0 仅支持 kill_target/destroy_targets）" % event_type)
+			print("[EventManager] 事件类型 '%s' 暂未实现" % event_type)
 
 
 ## 生成击杀目标事件的目标
@@ -355,6 +361,54 @@ func _spawn_destroy_targets(event_id: String, event: Dictionary) -> void:
 			parent_node.add_child(obj)
 
 	print("[EventManager] 摧毁多目标事件已激活: %s（需摧毁 %d 个目标，已生成 %d 个）" % [event_id, required_count, targets.size()])
+
+
+## 启动区域停留事件（area_stay）
+## 玩家在指定区域内停留指定时间后完成事件
+func _start_area_stay_event(event_id: String, event: Dictionary) -> void:
+	var target: Dictionary = event.get("target", {})
+	var area_x: float = float(target.get("area_x", 540.0))
+	var area_y: float = float(target.get("area_y", 960.0))
+	var area_radius: float = float(target.get("area_radius", 300.0))
+	var stay_duration: float = float(target.get("stay_duration", 3.0))
+
+	_area_stay_states[event_id] = {
+		"area_center": Vector2(area_x, area_y),
+		"area_radius": area_radius,
+		"stay_duration": stay_duration,
+		"current_stay_time": 0.0,
+	}
+
+	print("[EventManager] 区域停留事件已激活: %s（中心: (%.0f, %.0f), 半径: %.0f, 需停留: %.1fs）" % [
+		event_id, area_x, area_y, area_radius, stay_duration
+	])
+
+
+## 每帧检查区域停留事件
+func _process_area_stay_check(delta: float) -> void:
+	if _area_stay_states.is_empty():
+		return
+	var player: Node = get_tree().get_first_node_in_group("player")
+	if player == null or not (player is Node2D):
+		return
+	var player_pos: Vector2 = (player as Node2D).global_position
+	var completed_events: Array[String] = []
+	for event_id in _area_stay_states:
+		if _event_states.get(event_id, EventState.INACTIVE) != EventState.ACTIVE:
+			continue
+		var state: Dictionary = _area_stay_states[event_id]
+		var area_center: Vector2 = state["area_center"]
+		var area_radius: float = state["area_radius"]
+		var distance: float = player_pos.distance_to(area_center)
+		if distance <= area_radius:
+			state["current_stay_time"] += delta
+			if state["current_stay_time"] >= state["stay_duration"]:
+				completed_events.append(event_id)
+		else:
+			state["current_stay_time"] = 0.0
+	for eid in completed_events:
+		report_event_completed(eid)
+		_area_stay_states.erase(eid)
 
 
 # ============================================================

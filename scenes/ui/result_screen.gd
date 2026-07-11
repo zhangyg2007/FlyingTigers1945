@@ -358,6 +358,9 @@ func _on_score_roll_complete() -> void:
 	if next_button.visible:
 		next_button.grab_focus()
 
+	# 显示军衔信息
+	_display_rank_info()
+
 	# 显示解锁提示（如果有）
 	_check_and_show_unlock_hint()
 
@@ -409,6 +412,30 @@ func _check_and_show_unlock_hint() -> void:
 		tween.tween_property(unlock_hint_label, "modulate:a", 1.0, 0.5)
 
 # ============================================================
+# 军衔显示（M3-F）
+# ============================================================
+
+func _display_rank_info() -> void:
+	if RankManager == null:
+		return
+	var current_rank: String = RankManager.get_current_rank()
+	var rank_name: String = RankManager.get_rank_name(current_rank)
+	var rank_color: Color = RankManager.get_rank_color(current_rank)
+	var progress: float = RankManager.get_rank_progress()
+	var next_info: Dictionary = RankManager.get_next_rank_info()
+	var info_text: String = "军衔: %s" % rank_name
+	if next_info.size() > 0 and not next_info["rank"].is_empty():
+		if next_info["score_needed"] > 0:
+			info_text += " → %s (还需 %d 分)" % [next_info["name"], next_info["score_needed"]]
+		else:
+			info_text += " → %s" % next_info["name"]
+	if unlock_hint_label != null:
+		var hint_visible: bool = unlock_hint_label.visible
+		unlock_hint_label.text = info_text
+		unlock_hint_label.visible = true
+		unlock_hint_label.modulate = Color(rank_color.r, rank_color.g, rank_color.b, 1.0)
+
+# ============================================================
 # 按钮回调
 # ============================================================
 
@@ -452,14 +479,11 @@ func _on_menu_button_pressed() -> void:
 # ============================================================
 
 func _save_stage_result() -> void:
-	## 保存当前关卡的结果到SaveManager
 	var stage_index: int = GameManager.current_stage
 	var score: int = _result_data["score"]
 
-	# 更新最高分
 	SaveManager.save_stage_high_score(stage_index, score)
 
-	# 解锁下一关（如果是主线关且已通关）
 	var is_stage_clear: bool = GameManager.game_state == GameManager.State.STAGE_CLEAR
 	var is_boss_defeated: bool = _result_data.get("boss_defeated", false)
 
@@ -467,7 +491,9 @@ func _save_stage_result() -> void:
 		if stage_index < GameManager.MAX_STAGE:
 			SaveManager.unlock_stage(stage_index + 1)
 
-	# 保存存档
+	if _final_rank == "S" and SaveManager.has_method("add_s_rank"):
+		SaveManager.add_s_rank()
+
 	SaveManager.save_game()
 
 # ============================================================
