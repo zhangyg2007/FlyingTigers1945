@@ -1530,3 +1530,111 @@ PM 提醒需补充 `event_manager.gd` 的 `report_target_destroyed()` 方法（M
 - 修复 1 个 Bug：VirtualJoystick 与 Godot 原生类冲突 → 重命名为 MobileJoystick
 - `godot --headless --import --quit` 验证通过 exit 0，无错误
 - 本地修改完毕，等待用户用 Trae IDE commit + push 同步到远程
+
+---
+
+## 任务 13：M3-C/E PM 验收反馈处理
+
+**日期**: 2026-07-11
+**任务**: 处理 PM《M3_CE_acceptance_report.md》验收反馈中的遗留问题
+**文档参考**: [docs/M3_CE_acceptance_report.md](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/docs/M3_CE_acceptance_report.md)
+
+### PM 验收结论
+
+| 模块 | 评级 | 通过率 |
+|------|------|--------|
+| Code M3-C | A级 | 60/60 |
+| Code M3-E | A-级 | 28/29（1 P3） |
+| Design M3-C | A级 | 52/52 |
+| **M3 总体** | **A-级** | 全部 5 个子里程碑完成 |
+
+### PM 遗留问题清单核对
+
+PM 列出 4 个遗留问题（P2/P3，不阻塞发布）。经核对实际代码和资源状态：
+
+| # | PM 遗留项 | 优先级 | 实际状态 | 本次处理 |
+|---|----------|--------|---------|---------|
+| 1 | virtual_joystick.gd 无 _process | P3 | 事件驱动模式，PM 确认功能等价 | 不处理（PM 认可） |
+| 2 | H3 bg_layers shinden/shiden 拼写不一致 | P3 | **实际影响范围更大**：H1~H4 四个隐藏关 bg_layers 配置都与实际资源不匹配 | ✅ 修复 |
+| 3 | BOSS 命名偏离规划 | P2 | Code 已同步适配 Design 实际命名，功能不受影响 | 需 PM/Design 协调文档 |
+| 4 | event_manager.gd 缺 report_target_destroyed | P3 | **已在 b1ca541 提交修复**（[event_manager.gd:366](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scripts/event_manager.gd#L366)） | 已修复，需反馈 PM 更新清单 |
+
+### 修复内容：隐藏关 bg_layers 配置与实际资源对齐
+
+**问题**: PM Issue #2 只提到 H3 拼写问题，但核对实际资源后发现 4 个隐藏关的 bg_layers 都存在配置错误（命名不匹配或层数多余），会导致运行时找不到背景资源。
+
+**核对依据**: `assets/sprites/backgrounds/` 目录下实际 PNG 文件
+
+| 隐藏关 | 修正前（错误配置） | 修正后（匹配实际资源） | 实际资源目录 |
+|--------|------------------|---------------------|------------|
+| H1_hump_extreme | 4层（含 ground） | 3层（far/mid/near） | stage_H1_hump_extreme/ |
+| H2_tokyo_bombing | `bg_tokyo_night_*` 4层 | `bg_tokyo_raid_*` 3层 | stage_H2_tokyo_raid/ |
+| H3_shinden_duel | `bg_shinden_duel_*` 4层 | `bg_shiden_arena_*` 2层 | stage_H3_shinden_arena/ |
+| H4_hiroshima_countdown | 4层（含 near） | 3层（far/mid/ground） | stage_H4_hiroshima/ |
+
+**文件**: [resources/level_data/stage_config.json](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/resources/level_data/stage_config.json)（4 处修改：L235/L256/L277/L298）
+
+### 验证结果
+
+运行 `Godot_v4.7-stable_win64_console.exe --headless --import --quit`：
+- ✅ exit 0
+- ✅ 无 ERROR / SCRIPT ERROR / Parse Error
+
+### 需反馈 PM 的事项
+
+1. **report_target_destroyed 方法已存在**：该方法在 b1ca541 提交（任务 12 前置工作）中已添加到 [event_manager.gd:366](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scripts/event_manager.gd#L366)，PM 遗留清单第 4 项为过时信息，请 PM 更新验收报告。
+2. **bg_layers 问题范围扩大**：PM Issue #2 只提到 H3，实际 H1~H4 四个隐藏关都有配置错误，本次已全部修正。
+3. **BOSS 命名文档协调**：Issue #3 需 PM 协调 Design 统一 `M3_design_assignment.md` 中的 BOSS 命名（Code 侧已适配 Design 实际命名，功能不受影响）。
+
+### 文件变更清单（1 个文件）
+
+- resources/level_data/stage_config.json（修改：4 处 bg_layers 配置对齐实际资源）
+
+---
+
+## 任务 14：核对 Design BOSS 命名修复
+
+**日期**: 2026-07-11
+**任务**: 核对 Design Agent 反馈的 P2 BOSS 命名修复是否与 Code 侧 .tscn / JSON 引用一致
+**背景**: PM Issue #3（P2）BOSS 命名偏离规划，Design 已重命名 10 个文件 + 补生成 3 个 phase3 纹理
+
+### Design 修复内容
+
+- 10 个文件重命名（匹配 Code 侧 .tscn 引用）：
+  - boss_nagato → boss_tone
+  - boss_kamikawa → boss_shokaku
+  - boss_ki49 → boss_yamato
+  - boss_floating_aa → boss_yahata
+  - boss_shiden_proto → boss_shinden_final
+- 3 个 phase3 补生成（三阶段 BOSS Code 引用了 phase3）：
+  - boss_yamato_phase3.png（大和号完全毁灭）
+  - boss_yahata_phase3.png（八幡号解体爆炸）
+  - boss_shinden_final_phase3.png（震电改过载形态）
+
+### Code 侧核对结果
+
+核对 5 个 BOSS .tscn 的 `phase_sprites` 属性 + 5 个 BOSS JSON 的 `phase_sprites` 字段，与 `assets/sprites/boss/` 实际资源逐一比对：
+
+| BOSS | Code 引用 phase 数 | 实际资源 | 状态 |
+|------|------------------|---------|------|
+| tone | 2（phase1/2） | ✅ 2 个存在 | 匹配 |
+| shokaku | 2（phase1/2） | ✅ 2 个存在 | 匹配 |
+| yamato | 3（phase1/2/3） | ✅ 3 个存在（含新增 phase3） | 匹配 |
+| yahata | 3（phase1/2/3） | ✅ 3 个存在（含新增 phase3） | 匹配 |
+| shinden_final | 3（phase1/2/3） | ✅ 3 个存在（含新增 phase3） | 匹配 |
+
+**13/13 纹理全部匹配**，Code 侧 .tscn / JSON 无需任何修改。
+
+### 验证结果
+
+运行 `Godot_v4.7-stable_win64_console.exe --headless --import --quit`：
+- ✅ exit 0
+- ✅ 无 ERROR / SCRIPT ERROR / Parse Error / Failed loading / non-existent resource
+
+### 结论
+
+Design Agent 的 BOSS 命名修复与 Code 侧完全对齐，PM Issue #3（P2）已解决。Code 侧无文件变更。
+
+### 文件变更清单（0 个文件）
+
+- 无（Design 侧重命名后 Code 侧引用已匹配，无需修改）
