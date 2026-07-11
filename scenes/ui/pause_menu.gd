@@ -19,6 +19,9 @@ extends CanvasLayer
 ## 场景路径
 const SCENE_MAIN_MENU: String = "res://scenes/ui/main_menu.tscn"
 
+## 设置界面场景路径
+const SCENE_SETTINGS: String = "res://scenes/ui/settings_menu.tscn"
+
 ## 暂停切换输入动作名称（需与project.godot中的input map一致）
 const PAUSE_INPUT_ACTION: String = "pause"
 
@@ -31,6 +34,9 @@ const PAUSE_INPUT_ACTION: String = "pause"
 
 ## 重新开始按钮 -- 节点路径: $PausePanel/VBoxContainer/RestartButton
 @onready var restart_button: Button = %RestartButton
+
+## 设置按钮 -- 节点路径: $PausePanel/VBoxContainer/SettingsButton
+@onready var settings_button: Button = %SettingsButton
 
 ## 返回主菜单按钮 -- 节点路径: $PausePanel/VBoxContainer/MenuButton
 @onready var menu_button: Button = %MenuButton
@@ -50,6 +56,9 @@ var _is_showing: bool = false
 
 ## 面板动画是否正在播放
 var _is_animating: bool = false
+
+## 面板的初始（居中）位置，用于动画偏移基准
+var _panel_home_position: Vector2 = Vector2.ZERO
 
 ## 背景遮罩目标透明度
 const OVERLAY_ALPHA_HIDDEN: float = 0.0
@@ -72,9 +81,13 @@ func _ready() -> void:
 	_set_overlay_alpha(OVERLAY_ALPHA_HIDDEN)
 	pause_panel.modulate.a = 0.0
 
+	# 记录面板初始（居中）位置，作为动画偏移基准
+	_panel_home_position = pause_panel.position
+
 	# 连接按钮信号
 	resume_button.pressed.connect(_on_resume_button_pressed)
 	restart_button.pressed.connect(_on_restart_button_pressed)
+	settings_button.pressed.connect(_on_settings_button_pressed)
 	menu_button.pressed.connect(_on_menu_button_pressed)
 
 	# 连接悬停效果信号
@@ -153,9 +166,9 @@ func _show_pause_menu() -> void:
 	tween.tween_method(_set_overlay_alpha, OVERLAY_ALPHA_HIDDEN, OVERLAY_ALPHA_SHOWN, ANIM_DURATION)
 
 	# 面板从上方滑入 + 渐入
-	pause_panel.position = Vector2(pause_panel.position.x, -50.0)
+	pause_panel.position = Vector2(_panel_home_position.x, _panel_home_position.y - 50.0)
 	pause_panel.modulate.a = 0.0
-	tween.tween_property(pause_panel, "position:y", 0.0, ANIM_DURATION).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(pause_panel, "position:y", _panel_home_position.y, ANIM_DURATION).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(pause_panel, "modulate:a", 1.0, ANIM_DURATION)
 
 	tween.set_parallel(false)
@@ -177,7 +190,7 @@ func _hide_pause_menu() -> void:
 	tween.tween_method(_set_overlay_alpha, OVERLAY_ALPHA_SHOWN, OVERLAY_ALPHA_HIDDEN, ANIM_DURATION)
 
 	# 面板向上滑出 + 渐出
-	tween.tween_property(pause_panel, "position:y", -50.0, ANIM_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tween.tween_property(pause_panel, "position:y", _panel_home_position.y - 50.0, ANIM_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	tween.tween_property(pause_panel, "modulate:a", 0.0, ANIM_DURATION)
 
 	tween.set_parallel(false)
@@ -222,6 +235,26 @@ func _on_restart_button_pressed() -> void:
 	get_tree().reload_current_scene()
 
 
+func _on_settings_button_pressed() -> void:
+	## 设置按钮回调：叠加打开设置界面（不关闭暂停菜单）
+	if _is_animating:
+		return
+	_play_button_click_effect(settings_button)
+
+	# 加载设置场景作为叠加层
+	var settings_scene: PackedScene = load(SCENE_SETTINGS)
+	if settings_scene == null:
+		push_error("[PauseMenu] 无法加载设置场景: %s" % SCENE_SETTINGS)
+		return
+
+	var settings_instance: CanvasLayer = settings_scene.instantiate() as CanvasLayer
+	# 设置为叠加层模式（返回时仅移除自身，不切换到主菜单）
+	settings_instance.set("return_to_main_menu", false)
+	# 设置更高的层级以覆盖暂停菜单
+	settings_instance.layer = 30
+	add_child(settings_instance)
+
+
 func _on_menu_button_pressed() -> void:
 	## 返回主菜单按钮回调
 	if _is_animating:
@@ -241,7 +274,7 @@ func _on_menu_button_pressed() -> void:
 
 func _connect_hover_effects() -> void:
 	## 为所有按钮连接悬停效果
-	var buttons: Array[Button] = [resume_button, restart_button, menu_button]
+	var buttons: Array[Button] = [resume_button, restart_button, settings_button, menu_button]
 	for button in buttons:
 		button.mouse_entered.connect(_on_button_hovered.bind(button))
 		button.mouse_exited.connect(_on_button_unhovered.bind(button))

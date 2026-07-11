@@ -1,0 +1,22 @@
+# 第6关"衡阳会战"波次配置
+# 格式：time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+# BOSS: BOSS_kinu（鬼怒号轻巡）
+# 难度：高（速度倍率1.4~1.7，引入 ki84_hayate，城市废墟稻田场景）
+time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+2.0,a6m_zero,4,line,200,-50,1.4,straight
+4.5,a6m_zero,4,line,400,-50,1.4,straight
+7.5,ki61_hien,4,diamond,300,-50,1.4,straight
+10.5,ki84_hayate,3,v_formation,300,-50,1.5,dive
+13.5,ki21_bomber,2,line,200,-80,1.0,straight
+13.5,ki21_bomber,2,line,400,-80,1.0,straight
+17.0,ki43_hayabusa,5,v_formation,300,-50,1.5,straight
+20.5,ki84_hayate,4,diamond,200,-50,1.5,straight
+20.5,ki84_hayate,4,diamond,400,-50,1.5,straight
+24.0,a6m_zero,6,swarm,300,-50,1.6,dive
+28.0,ki61_hien,4,line,300,-50,1.5,straight
+32.0,d3a_val,4,diamond,200,-50,1.4,straight
+32.0,d3a_val,4,diamond,400,-50,1.4,straight
+36.0,ki84_hayate,5,swarm,300,-50,1.7,dive
+40.0,ki21_bomber,3,v_formation,300,-80,1.1,straight
+44.0,a6m_zero,7,diamond,300,-50,1.7,straight
+48.0,BOSS_kinu,1,boss,300,-150,0.5,boss_enter

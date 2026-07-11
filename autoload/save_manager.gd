@@ -65,6 +65,13 @@ var settings: Dictionary = {
 ## key: 关卡索引字符串, value: 最高分
 var stage_high_scores: Dictionary = {}
 
+## 已解锁的隐藏关卡列表（如 "H1_hump_extreme"）
+var unlocked_hidden_stages: Array[String] = []
+
+## 事件进度记录
+## key: event_id, value: true=已完成, false=已失败
+var event_progress: Dictionary = {}
+
 # ============================================================
 # 内部变量
 # ============================================================
@@ -118,6 +125,12 @@ func save_game() -> bool:
 	config.set_value("settings", "master_volume", settings["master_volume"])
 	config.set_value("settings", "bgm_volume", settings["bgm_volume"])
 	config.set_value("settings", "sfx_volume", settings["sfx_volume"])
+
+	# 隐藏关卡解锁记录
+	config.set_value("hidden", "unlocked_stages", unlocked_hidden_stages)
+
+	# 事件进度记录
+	config.set_value("events", "progress", event_progress)
 
 	# 保存到文件
 	var err: int = config.save(SAVE_FILE_PATH)
@@ -182,6 +195,23 @@ func load_game() -> bool:
 	settings["bgm_volume"] = config.get_value("settings", "bgm_volume", 0.7)
 	settings["sfx_volume"] = config.get_value("settings", "sfx_volume", 0.8)
 
+	# 读取已解锁隐藏关卡
+	var hidden_variant = config.get_value("hidden", "unlocked_stages", [])
+	if hidden_variant is Array:
+		unlocked_hidden_stages.clear()
+		for sid in hidden_variant:
+			if sid is String:
+				unlocked_hidden_stages.append(sid as String)
+	else:
+		unlocked_hidden_stages.clear()
+
+	# 读取事件进度
+	var progress_variant = config.get_value("events", "progress", {})
+	if progress_variant is Dictionary:
+		event_progress = progress_variant.duplicate()
+	else:
+		event_progress = {}
+
 	_initialized = true
 
 	print("SaveManager: 存档加载成功。（最高关卡：%d，总分：%d，已解锁飞机：%d架）" % [
@@ -234,6 +264,23 @@ func update_abyss_record(floor_reached: int, score: int) -> void:
 		abyss_best_score = score
 
 
+## 获取无尽模式最高层数
+func get_abyss_best_floor() -> int:
+	return abyss_best_floor
+
+
+## 获取无尽模式最高分
+func get_abyss_best_score() -> int:
+	return abyss_best_score
+
+
+## 保存无尽模式记录（更新内存 + 写盘）
+## 供 AbyssManager 在玩家死亡结算时调用
+func save_abyss_record(floor: int, score: int) -> void:
+	update_abyss_record(floor, score)
+	save_game()
+
+
 ## 保存设置（音量等）
 func save_settings(master_vol: float, bgm_vol: float, sfx_vol: float) -> void:
 	settings["master_volume"] = master_vol
@@ -252,6 +299,46 @@ func get_stage_high_score(stage_index: int) -> int:
 	if stage_high_scores.has(key):
 		return stage_high_scores[key]
 	return 0
+
+# ============================================================
+# 隐藏关卡与事件进度（M3-B）
+# ============================================================
+
+## 解锁隐藏关卡
+## [param stage_id]: 隐藏关卡标识符（如 "H1_hump_extreme"）
+func unlock_hidden_stage(stage_id: String) -> void:
+	if not stage_id in unlocked_hidden_stages:
+		unlocked_hidden_stages.append(stage_id)
+		print("SaveManager: 解锁隐藏关卡 '%s'" % stage_id)
+
+
+## 检查指定关卡是否已解锁
+## 含普通关卡（通过索引比较）和隐藏关卡（通过 unlocked_hidden_stages 列表）
+## [param stage_id]: 关卡标识符
+## [return]: true=已解锁
+func is_stage_unlocked(stage_id: String) -> bool:
+	# 隐藏关卡：检查 unlocked_hidden_stages 列表
+	if stage_id in unlocked_hidden_stages:
+		return true
+	# 普通关卡：暂时返回 true（普通关卡的解锁由 highest_stage 控制，
+	# 此方法主要用于隐藏关卡查询，普通关卡解锁判断由关卡选择界面处理）
+	return false
+
+
+## 记录事件完成状态
+## [param event_id]: 事件标识符
+## [param completed]: true=已完成, false=已失败
+func set_event_completed(event_id: String, completed: bool) -> void:
+	event_progress[event_id] = completed
+
+
+## 检查事件是否已完成
+## [param event_id]: 事件标识符
+## [return]: true=已完成
+func is_event_completed(event_id: String) -> bool:
+	if event_progress.has(event_id):
+		return event_progress[event_id] == true
+	return false
 
 # ============================================================
 # 存档检查与管理
@@ -299,6 +386,8 @@ func reset_all_data() -> void:
 		"bgm_volume": 0.7,
 		"sfx_volume": 0.8,
 	}
+	unlocked_hidden_stages.clear()
+	event_progress.clear()
 	_last_save_time = 0
 
 	print("SaveManager: 所有数据已重置为默认值。")
@@ -324,6 +413,8 @@ func print_save_summary() -> void:
 	print("  无尽模式最高层数: %d" % abyss_best_floor)
 	print("  无尽模式最高分: %d" % abyss_best_score)
 	print("  各关卡最高分: %s" % str(stage_high_scores))
+	print("  已解锁隐藏关卡: %s" % str(unlocked_hidden_stages))
+	print("  事件进度: %s" % str(event_progress))
 	print("  主音量: %.2f" % settings["master_volume"])
 	print("  BGM音量: %.2f" % settings["bgm_volume"])
 	print("  SFX音量: %.2f" % settings["sfx_volume"])

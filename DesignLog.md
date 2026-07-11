@@ -391,6 +391,49 @@ BOSS 文件体积从 200-300KB 降至 137-180KB（透明背景生效）✅
 
 ---
 
+## 2026-07-11 — M3-B: Stage 7~8 背景 + 5 新 BOSS + 3 新敌机
+
+### 任务来源
+
+`docs/M3_design_assignment.md` M3-B 阶段。
+
+### 交付物
+
+**Stage 7 芷江机场背景（4 张，512x2048）**
+- `bg_zhijiang_far`：机库群/塔台/停机坪俯视
+- `bg_zhijiang_mid`：跑道/P-40 停放/地勤车辆俯视
+- `bg_zhijiang_near`：草地/导航标识/挡轮器
+- `bg_zhijiang_ground`：磨损混凝土/轮胎痕/油渍
+
+**Stage 8 武汉背景（4 张，512x2048）**
+- `bg_wuhan_far`：长江江面/汉口城市网格俯视
+- `bg_wuhan_mid`：码头/货轮甲板/仓库/起重机
+- `bg_wuhan_near`：城市街道/建筑屋顶/车辆
+- `bg_wuhan_ground`：石板路/积水/碎片
+
+**5 个新 BOSS（15 张，512x512）**
+
+| BOSS | Phase 1 | Phase 2 | Transform |
+|------|---------|---------|-----------|
+| 一式陆攻编队 `boss_ki21_squadron` | 3 架 V 字编队 | 散开独立瞄准 | 机翼断裂起火 |
+| 秋津洲号 `boss_akitsushima` | 水上机母甲板 | 破洞烟柱 | 船体倾斜起火 |
+| 鬼怒号 `boss_kinu` | 轻巡洋舰完整 | 炮塔损坏 | 船尾下沉 |
+| 紫电改中队 `boss_shiden_squadron` | 4 架菱形编队 | 散开高速尾迹 | 一架被击落 |
+| 金刚号 `boss_kongo` | 战列舰完整 | 主炮损坏 | 舰桥倒塌大火 |
+
+**3 种新敌机（6 张，128x128）**
+- `enemy_type97_tank` + hitbox_ref：九七式中战车俯视
+- `enemy_landing_craft` + hitbox_ref：登陆艇俯视
+- `enemy_observation_balloon` + hitbox_ref：观测气球俯视
+
+### 验证
+
+29/29 PNG-32 RGBA ✅
+BOSS 透明背景生效（73-279KB）✅
+新敌机 128x128 符合规范 ✅
+
+---
+
 ## 备注
 
 - 所有文件命名严格遵循 `snake_case` 规范，符合 Master Interface Spec 4.1

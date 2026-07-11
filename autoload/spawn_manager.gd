@@ -159,10 +159,19 @@ func _init_enemy_scene_map() -> void:
 	_enemy_scene_map["BOSS_nachi"] = "res://scenes/bosses/boss_nachi.tscn"
 	_enemy_scene_map["BOSS_cruiser"] = "res://scenes/bosses/boss_nachi.tscn"  # 别名：Design 命名对齐后 boss_nachi = boss_cruiser
 	_enemy_scene_map["BOSS_fortress"] = "res://scenes/bosses/boss_fortress.tscn"
+	# M3-B: Stage 04~08 新增 BOSS 映射
+	_enemy_scene_map["BOSS_ki21_squadron"] = "res://scenes/bosses/boss_ki21_squadron.tscn"
+	_enemy_scene_map["BOSS_akitsushima"] = "res://scenes/bosses/boss_akitsushima.tscn"
+	_enemy_scene_map["BOSS_kinu"] = "res://scenes/bosses/boss_kinu.tscn"
+	_enemy_scene_map["BOSS_shiden_squadron"] = "res://scenes/bosses/boss_shiden_squadron.tscn"
+	_enemy_scene_map["BOSS_kongo"] = "res://scenes/bosses/boss_kongo.tscn"
 
 	# CSV 中可能出现的别名/旧名 → 映射到对应场景
 	_enemy_scene_map["zero"] = "res://scenes/enemies/enemy_a6m_zero.tscn"        # zero = a6m_zero
 	_enemy_scene_map["ohka"] = "res://scenes/enemies/enemy_ohka_kamikaze.tscn"   # ohka = ohka_kamikaze
+
+	# 事件目标类型（M3-B 隐藏事件系统）
+	_enemy_scene_map["event_target_car"] = "res://scenes/enemies/event_target_car.tscn"
 
 	# 旧版兼容（防止其他脚本用 scout/fighter 等旧名调用）
 	var placeholder := "res://scenes/enemies/enemy_fighter.tscn"

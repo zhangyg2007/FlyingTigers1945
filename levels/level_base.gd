@@ -61,10 +61,13 @@ var end_timer: float = 0.0
 const END_DELAY: float = 3.0
 
 # ============================================================
-# 节点引用（运行时获取）
+## 节点引用（运行时获取）
 # ============================================================
 var parallax_background: ParallaxBackground = null
 var ui_layer: CanvasLayer = null
+
+## 事件管理器（隐藏事件系统，M3-B）
+var event_manager: EventManager = null
 
 # ============================================================
 # 生命周期
@@ -89,6 +92,13 @@ func _ready() -> void:
 
 	# 准备完毕
 	print("[LevelBase] 关卡 '%s' 准备完毕，波次数: %d" % [level_name, wave_configs.size()])
+
+	# 创建事件管理器并加载关卡事件配置（M3-B 隐藏事件系统）
+	# 无 events_stage_XX.json 的关卡正常运行，load_events 会静默跳过
+	event_manager = EventManager.new()
+	event_manager.name = "EventManager"
+	add_child(event_manager)
+	event_manager.load_events(level_id)
 
 	# 自动开始关卡（M2阶段简化：场景加载后立即开始，无需按键触发）
 	# 未来如有"按任意键开始"需求，可移除此行改为外部调用 start_level()
@@ -459,6 +469,10 @@ func _spawn_boss(wave: Dictionary) -> void:
 
 			# 发射BOSS出场信号
 			boss_appeared.emit(current_boss)
+
+			# 通知事件管理器 BOSS 已出场（触发 on_boss_appear 事件）
+			if event_manager != null:
+				event_manager.notify_boss_appeared()
 
 			# 通知AudioManager播放BOSS战BGM
 			if AudioManager.has_method("play_music"):

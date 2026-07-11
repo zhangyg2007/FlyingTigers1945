@@ -56,6 +56,101 @@
         "bullet_speed_mult": 1.3,
         "boss_attack_interval_mult": 0.6
       }
+    },
+    {
+      "stage_id": "04_hump",
+      "stage_name": "驼峰航线",
+      "bgm": "bgm_stage_04.ogg",
+      "bg_layers": ["bg_hump_far", "bg_hump_mid", "bg_hump_near", "bg_hump_ground"],
+      "scroll_speed": 95.0,
+      "boss_type": "boss_ki21_squadron",
+      "duration": 60.0,
+      "easy": {
+        "enemy_hp_mult": 1.0,
+        "bullet_speed_mult": 1.0,
+        "boss_attack_interval_mult": 1.0
+      },
+      "hard": {
+        "enemy_hp_mult": 1.4,
+        "bullet_speed_mult": 1.3,
+        "boss_attack_interval_mult": 0.7
+      }
+    },
+    {
+      "stage_id": "05_guilin",
+      "stage_name": "桂林保卫战",
+      "bgm": "bgm_stage_05.ogg",
+      "bg_layers": ["bg_guilin_far", "bg_guilin_mid", "bg_guilin_near", "bg_guilin_ground"],
+      "scroll_speed": 100.0,
+      "boss_type": "boss_akitsushima",
+      "duration": 60.0,
+      "easy": {
+        "enemy_hp_mult": 1.0,
+        "bullet_speed_mult": 1.0,
+        "boss_attack_interval_mult": 1.0
+      },
+      "hard": {
+        "enemy_hp_mult": 1.5,
+        "bullet_speed_mult": 1.3,
+        "boss_attack_interval_mult": 0.6
+      }
+    },
+    {
+      "stage_id": "06_hengyang",
+      "stage_name": "衡阳会战",
+      "bgm": "bgm_stage_06.ogg",
+      "bg_layers": ["bg_hengyang_far", "bg_hengyang_mid", "bg_hengyang_near", "bg_hengyang_ground"],
+      "scroll_speed": 105.0,
+      "boss_type": "boss_kinu",
+      "duration": 60.0,
+      "easy": {
+        "enemy_hp_mult": 1.0,
+        "bullet_speed_mult": 1.0,
+        "boss_attack_interval_mult": 1.0
+      },
+      "hard": {
+        "enemy_hp_mult": 1.5,
+        "bullet_speed_mult": 1.4,
+        "boss_attack_interval_mult": 0.6
+      }
+    },
+    {
+      "stage_id": "07_zhijiang",
+      "stage_name": "芷江机场",
+      "bgm": "bgm_stage_07.ogg",
+      "bg_layers": ["bg_zhijiang_far", "bg_zhijiang_mid", "bg_zhijiang_near", "bg_zhijiang_ground"],
+      "scroll_speed": 110.0,
+      "boss_type": "boss_shiden_squadron",
+      "duration": 60.0,
+      "easy": {
+        "enemy_hp_mult": 1.0,
+        "bullet_speed_mult": 1.0,
+        "boss_attack_interval_mult": 1.0
+      },
+      "hard": {
+        "enemy_hp_mult": 1.6,
+        "bullet_speed_mult": 1.4,
+        "boss_attack_interval_mult": 0.6
+      }
+    },
+    {
+      "stage_id": "08_wuhan",
+      "stage_name": "武汉空战",
+      "bgm": "bgm_stage_08.ogg",
+      "bg_layers": ["bg_wuhan_far", "bg_wuhan_mid", "bg_wuhan_near", "bg_wuhan_ground"],
+      "scroll_speed": 115.0,
+      "boss_type": "boss_kongo",
+      "duration": 70.0,
+      "easy": {
+        "enemy_hp_mult": 1.0,
+        "bullet_speed_mult": 1.0,
+        "boss_attack_interval_mult": 1.0
+      },
+      "hard": {
+        "enemy_hp_mult": 1.7,
+        "bullet_speed_mult": 1.5,
+        "boss_attack_interval_mult": 0.5
+      }
     }
   ]
 }

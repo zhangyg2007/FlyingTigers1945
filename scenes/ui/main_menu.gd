@@ -3,12 +3,14 @@ extends CanvasLayer
 ## 管理主菜单的按钮交互、悬停效果和场景跳转。
 ##
 ## 节点结构要求（在场景编辑器中搭建）：
+## - TitleLabel (Label)               -- 游戏标题
 ## - VBoxContainer
 ##   - StartButton (Button)          -- 开始游戏
 ##   - StageSelectButton (Button)    -- 关卡选择
-##   - AbyssButton (Button)          -- 深渊模式
 ##   - SettingsButton (Button)       -- 设置
+##   - LeaderboardButton (Button)    -- 排行榜
 ##   - QuitButton (Button)           -- 退出游戏
+## - HighScoreLabel (Label)          -- 最高分显示
 ## - VersionLabel (Label)            -- 版本号显示
 
 # ============================================================
@@ -18,15 +20,21 @@ extends CanvasLayer
 ## 游戏版本号
 const GAME_VERSION: String = "v1.0.0"
 
+## 游戏标题
+const GAME_TITLE: String = "FLYING TIGERS 1945"
+
 ## 场景路径常量
 const SCENE_STAGE_SELECT: String = "res://scenes/ui/stage_select.tscn"
-const SCENE_ABYSS: String = "res://scenes/levels/abyss.tscn"
-const SCENE_SETTINGS: String = "res://scenes/ui/settings.tscn"
-const SCENE_FIRST_STAGE: String = "res://scenes/levels/stage_01_kunming.tscn"
+const SCENE_LEADERBOARD: String = "res://scenes/ui/leaderboard.tscn"
+const SCENE_SETTINGS: String = "res://scenes/ui/settings_menu.tscn"
+const SCENE_FIRST_STAGE: String = "res://levels/stage_01_kunming.tscn"
 
 # ============================================================
 # 节点引用
 # ============================================================
+
+## 游戏标题标签 -- 节点路径: $TitleLabel
+@onready var title_label: Label = %TitleLabel
 
 ## 开始游戏按钮 -- 节点路径: $VBoxContainer/StartButton
 @onready var start_button: Button = %StartButton
@@ -34,14 +42,17 @@ const SCENE_FIRST_STAGE: String = "res://scenes/levels/stage_01_kunming.tscn"
 ## 关卡选择按钮 -- 节点路径: $VBoxContainer/StageSelectButton
 @onready var stage_select_button: Button = %StageSelectButton
 
-## 深渊模式按钮 -- 节点路径: $VBoxContainer/AbyssButton
-@onready var abyss_button: Button = %AbyssButton
-
 ## 设置按钮 -- 节点路径: $VBoxContainer/SettingsButton
 @onready var settings_button: Button = %SettingsButton
 
+## 排行榜按钮 -- 节点路径: $VBoxContainer/LeaderboardButton
+@onready var leaderboard_button: Button = %LeaderboardButton
+
 ## 退出游戏按钮 -- 节点路径: $VBoxContainer/QuitButton
 @onready var quit_button: Button = %QuitButton
+
+## 最高分标签 -- 节点路径: $HighScoreLabel
+@onready var high_score_label: Label = %HighScoreLabel
 
 ## 版本号标签 -- 节点路径: $VersionLabel
 @onready var version_label: Label = %VersionLabel
@@ -64,14 +75,16 @@ const HOVER_SCALE: Vector2 = Vector2(1.05, 1.05)
 # ============================================================
 
 func _ready() -> void:
-	## 初始化版本号，连接所有按钮信号
+	## 初始化标题、版本号、最高分，连接所有按钮信号
+	title_label.text = GAME_TITLE
 	version_label.text = GAME_VERSION
+	_update_high_score_display()
 
 	# 连接按钮信号
 	start_button.pressed.connect(_on_start_button_pressed)
 	stage_select_button.pressed.connect(_on_stage_select_button_pressed)
-	abyss_button.pressed.connect(_on_abyss_button_pressed)
 	settings_button.pressed.connect(_on_settings_button_pressed)
+	leaderboard_button.pressed.connect(_on_leaderboard_button_pressed)
 	quit_button.pressed.connect(_on_quit_button_pressed)
 
 	# 连接按钮悬停效果信号
@@ -86,12 +99,23 @@ func _ready() -> void:
 
 func _input(event: InputEvent) -> void:
 	## 全局输入处理（主菜单层级）
-	# 在主菜单状态下按Esc退出确认（可选功能）
 	if event is InputEventKey:
 		if event.pressed and event.keycode == KEY_ESCAPE:
 			# 如果焦点不在退出按钮上，给退出按钮焦点
 			if not quit_button.has_focus():
 				quit_button.grab_focus()
+
+# ============================================================
+# 数据显示
+# ============================================================
+
+func _update_high_score_display() -> void:
+	## 从 SaveManager 读取最高分并更新显示
+	var high_score: int = 0
+	if SaveManager:
+		high_score = SaveManager.total_score
+	if high_score_label != null:
+		high_score_label.text = "最高分: %08d" % high_score
 
 # ============================================================
 # 按钮回调
@@ -109,16 +133,16 @@ func _on_stage_select_button_pressed() -> void:
 	get_tree().change_scene_to_file(SCENE_STAGE_SELECT)
 
 
-func _on_abyss_button_pressed() -> void:
-	## 深渊模式按钮回调：加载深渊模式场景
-	_play_button_click_effect(abyss_button)
-	_start_abyss_mode()
-
-
 func _on_settings_button_pressed() -> void:
 	## 设置按钮回调：加载设置场景
 	_play_button_click_effect(settings_button)
 	get_tree().change_scene_to_file(SCENE_SETTINGS)
+
+
+func _on_leaderboard_button_pressed() -> void:
+	## 排行榜按钮回调：加载排行榜场景
+	_play_button_click_effect(leaderboard_button)
+	get_tree().change_scene_to_file(SCENE_LEADERBOARD)
 
 
 func _on_quit_button_pressed() -> void:
@@ -138,8 +162,8 @@ func _connect_hover_effects() -> void:
 	var buttons: Array[Button] = [
 		start_button,
 		stage_select_button,
-		abyss_button,
 		settings_button,
+		leaderboard_button,
 		quit_button,
 	]
 
@@ -173,22 +197,18 @@ func _start_game_stage(stage_index: int) -> void:
 	get_tree().change_scene_to_file(stage_path)
 
 
-func _start_abyss_mode() -> void:
-	## 启动深渊模式
-	GameManager.reset_game()
-	get_tree().change_scene_to_file(SCENE_ABYSS)
-
-
 func _get_stage_scene_path(stage_index: int) -> String:
 	## 根据关卡索引返回场景路径
-	## 默认使用第一关路径，实际项目中应根据关卡索引映射
-	# TODO: 根据SaveManager中的关卡配置动态获取路径
+	## 关卡场景位于 res://levels/ 目录下
 	match stage_index:
 		0:
-			return "res://scenes/levels/stage_01_kunming.tscn"
+			return "res://levels/stage_01_kunming.tscn"
 		_:
-			# 通用路径格式
-			return "res://scenes/levels/stage_%02d.tscn" % (stage_index + 1)
+			# 通用路径格式（按关卡索引映射 stage_config.json 中的 stage_id）
+			var all_ids: Array[String] = GameManager.get_all_stage_ids()
+			if stage_index < all_ids.size():
+				return "res://levels/stage_%s.tscn" % all_ids[stage_index]
+			return "res://levels/stage_01_kunming.tscn"
 
 # ============================================================
 # 动画效果
@@ -196,7 +216,6 @@ func _get_stage_scene_path(stage_index: int) -> String:
 
 func _play_scale_tween(button: Button, target_scale: Vector2) -> void:
 	## 播放按钮缩放Tween动画
-	# 停止之前可能存在的动画
 	var tween: Tween = button.get_tree().create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(button, "scale", target_scale, HOVER_TWEEN_DURATION)
 

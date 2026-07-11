@@ -513,3 +513,40 @@ func reset_all() -> void:
 	reset_game()
 	high_score = 0
 	difficulty = Difficulty.EASY
+
+# ============================================================
+# 隐藏事件系统（M3-B）
+# ============================================================
+
+## 事件被触发（激活）时发出
+signal event_triggered(event_id: String, event_type: String)
+
+## 事件完成时发出，rewards 为奖励字典
+signal event_completed(event_id: String, rewards: Dictionary)
+
+## 事件失败时发出
+signal event_failed(event_id: String)
+
+## 解锁隐藏关卡
+## [param stage_id]: 隐藏关卡标识符（如 "H1_hump_extreme"）
+func unlock_hidden_stage(stage_id: String) -> void:
+	if SaveManager:
+		SaveManager.unlock_hidden_stage(stage_id)
+	print("[GameManager] 解锁隐藏关卡: %s" % stage_id)
+
+
+## 检查指定关卡是否已解锁（含普通关卡和隐藏关卡）
+## [param stage_id]: 关卡标识符
+## [return]: true=已解锁
+func is_stage_unlocked(stage_id: String) -> bool:
+	if SaveManager:
+		return SaveManager.is_stage_unlocked(stage_id)
+	return false
+
+
+## 判断指定关卡 ID 是否为隐藏关卡
+## 隐藏关卡 ID 以 "H" 开头（如 "H1_hump_extreme"）
+## [param stage_id]: 关卡标识符
+## [return]: true=是隐藏关卡
+func is_hidden_stage(stage_id: String) -> bool:
+	return stage_id.begins_with("H")

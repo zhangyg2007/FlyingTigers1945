@@ -1174,3 +1174,229 @@ else:
 - 所有修改通过端到端运行验证，5/5 PASS，0 ERROR
 - M3-A 任务全部完成，可进入 M3-B
 - 本地修改完毕，等待用户用 Trae IDE commit + push 同步到远程
+
+---
+
+## 任务 9：M3-B 关卡扩展 Stage 04~08 + 事件系统 + M3-D 深渊/排行榜
+
+**日期**: 2026-07-11
+**任务**: M3-A 通过后并行启动 M3-B（Stage 04~08 CSV/.tscn/BOSS + 事件系统 EventManager）和 M3-D（SaveManager 扩展、深渊生成器、本地排行榜）
+**文档参考**: `docs/M3_task_breakdown.md`、`docs/M3_event_system_design.md`、`docs/M3_A_acceptance_report.md`
+
+### 1. M3-B 关卡数据配置（Stage 04~08）
+
+| # | 文件 | 说明 |
+|---|------|------|
+| 1 | resources/level_data/stage_04_hump.csv | 驼峰航线 17 波，引入 a6m_zero/d3a_val，倍率 1.3~1.6，BOSS=ki21_squadron |
+| 2 | resources/level_data/stage_05_guilin.csv | 桂林保卫战 17 波，引入 ki61_hien，倍率 1.3~1.7，BOSS=akitsushima |
+| 3 | resources/level_data/stage_06_hengyang.csv | 衡阳会战 17 波，引入 ki84_hayate，倍率 1.4~1.7，BOSS=kinu |
+| 4 | resources/level_data/stage_07_zhijiang.csv | 芷江机场 16 波，引入 j7w_shinden，倍率 1.5~1.8，BOSS=shiden_squadron |
+| 5 | resources/level_data/stage_08_wuhan.csv | 武汉空战 19 波，全敌机混编，倍率 1.6~2.0，BOSS=kongo |
+
+### 2. M3-B BOSS 配置（5 个新 BOSS）
+
+| # | 文件 | BOSS 名 | HP | 阶段 | 弹幕模式 |
+|---|------|---------|-----|------|---------|
+| 1 | resources/boss_data/boss_ki21_squadron.json | 一式陆攻编队 | 500 | 2 | fan_shoot+aimed_shoot+turret_fire |
+| 2 | resources/boss_data/boss_akitsushima.json | 秋津洲号水上机母舰 | 900 | 2 | missile_volley+fan_shoot+spiral_shoot+aimed_shoot |
+| 3 | resources/boss_data/boss_kinu.json | 鬼怒号轻巡 | 750 | 2 | turret_fire+spiral_shoot+fan_shoot+aimed_shoot |
+| 4 | resources/boss_data/boss_shiden_squadron.json | 紫电改中队 | 600 | 2 | fan_shoot+aimed_shoot+spiral_shoot（高速 110） |
+| 5 | resources/boss_data/boss_kongo.json | 金刚号战列舰 | 1500 | 3 | 全弹幕模式（5 种），超大型舰 |
+
+每个 BOSS JSON 包含完整 `bullet_params` 字段，所有弹幕参数支持 `count_per_phase`/`speed_per_phase` 按阶段递增。
+
+### 3. M3-B BOSS 场景（5 个 .tscn）
+
+| # | 文件 | 占位纹理 | 碰撞框 |
+|---|------|---------|--------|
+| 1 | scenes/bosses/boss_ki21_squadron.tscn | boss_cruiser_phase1.png | 90x70 |
+| 2 | scenes/bosses/boss_akitsushima.tscn | boss_fortress_phase1.png | 110x80 |
+| 3 | scenes/bosses/boss_kinu.tscn | boss_nachi_phase1.png | 100x70 |
+| 4 | scenes/bosses/boss_shiden_squadron.tscn | boss_cruiser_phase1.png | 80x60 |
+| 5 | scenes/bosses/boss_kongo.tscn | boss_fortress_phase1.png | 130x90（3 阶段） |
+
+注：Design 交付正式 Sprite 后，JSON phase_sprites 路径会自动生效（`_update_phase_sprite` 有 `ResourceLoader.exists` 检查）。
+
+### 4. M3-B 关卡场景（5 个 .tscn）
+
+| # | 文件 | 关卡名 | 滚动速度 | BOSS 场景 |
+|---|------|--------|---------|----------|
+| 1 | levels/stage_04_hump.tscn | 驼峰航线 | 95.0 | boss_ki21_squadron.tscn |
+| 2 | levels/stage_05_guilin.tscn | 桂林保卫战 | 100.0 | boss_akitsushima.tscn |
+| 3 | levels/stage_06_hengyang.tscn | 衡阳会战 | 105.0 | boss_kinu.tscn |
+| 4 | levels/stage_07_zhijiang.tscn | 芷江机场 | 110.0 | boss_shiden_squadron.tscn |
+| 5 | levels/stage_08_wuhan.tscn | 武汉空战 | 115.0 | boss_kongo.tscn |
+
+### 5. M3-B 配置文件更新
+
+- **resources/level_data/stage_config.json**: 追加 stage_04~08 配置，bg_layers 命名与 Design 资产一致（bg_hump_*/bg_guilin_*/bg_hengyang_*/bg_zhijiang_*/bg_wuhan_*），难度曲线递增（easy 1.0 / hard 1.4~1.7）
+- **autoload/spawn_manager.gd**: `_init_enemy_scene_map()` 追加 5 个新 BOSS 映射 + event_target_car 映射
+
+### 6. M3-B 事件系统（P0）
+
+| # | 文件 | 类型 | 说明 |
+|---|------|------|------|
+| 1 | scripts/event_manager.gd | 新建 | class_name EventManager，事件状态机（INACTIVE/ACTIVE/COMPLETED/FAILED），支持 on_time/on_stage_start/on_boss_appear 触发时机，kill_target 事件类型，奖励发放（score/drop_items/unlock_hidden） |
+| 2 | scripts/event_target_base.gd | 新建 | class_name EventTargetBase extends EnemyBase，逃脱倒计时 + 重写 die() 通知完成 + 屏幕外通知失败 |
+| 3 | scenes/enemies/event_target_car.tscn | 新建 | 将军汽车场景，hp=50/speed=180/score=5000/escape_timer=15s，占位纹理 enemy_ki21_bomber.png |
+| 4 | resources/level_data/events_stage_01_kunming.json | 新建 | 示例事件：将军汽车 45 秒出现，70% 概率，击毁奖励 5000 分 + 解锁 H1 隐藏关 |
+
+**事件系统集成**:
+- `autoload/game_manager.gd`: 新增 event_triggered/event_completed/event_failed 信号 + unlock_hidden_stage/is_stage_unlocked/is_hidden_stage 方法
+- `autoload/save_manager.gd`: 新增 unlocked_hidden_stages + event_progress 存储，save/load/reset 同步
+- `levels/level_base.gd`: _ready() 创建 EventManager 子节点 + load_events(level_id)，_spawn_boss() 通知 boss_appeared
+- **向后兼容**: 无 events_stage_XX.json 的关卡正常运行不受影响
+
+### 7. M3-D 深渊模式 + 本地排行榜
+
+| # | 文件 | 类型 | 说明 |
+|---|------|------|------|
+| 1 | scripts/abyss_generator.gd | 新建 | class_name AbyssGenerator extends RefCounted，程序化楼层生成器，5 梯阶难度（1-5/6-10/11-15/16-20/21+），每 5 层 BOSS 循环（bomber→nachi→fortress→kongo） |
+| 2 | scripts/abyss_manager.gd | 新建 | class_name AbyssManager extends Node，深渊模式生命周期管理，楼层切换/玩家死亡结束/新纪录检测 |
+| 3 | scripts/local_leaderboard.gd | 新建 | class_name LocalLeaderboard extends Node，ConfigFile 持久化到 user://leaderboard.cfg，stage_mode/abyss_mode 两分类各保留前 10 名 |
+| 4 | scenes/abyss_mode.tscn | 新建 | 深渊模式场景，AbyssManager + ParallaxBackground + UILayer |
+| 5 | autoload/save_manager.gd | 修改 | 新增 get_abyss_best_floor/get_abyss_best_score/save_abyss_record 便捷方法 |
+
+**难度曲线公式**:
+- 敌人 HP 倍率：`min(1.0 + floor*0.02, 5.0)`
+- 敌弹速度倍率：`min(1.0 + floor*0.015, 3.0)`
+- 生成速度倍率：5 梯阶 [1.0-1.2]/[1.2-1.5]/[1.5-1.8]/[1.8-2.2]/[2.0-2.5]，21 层起每层 +0.05
+
+### 8. 语法检查
+
+| 脚本 | 结果 | 说明 |
+|------|------|------|
+| scripts/event_manager.gd | ✅ PASS | godot --headless --import --quit exit 0 |
+| scripts/event_target_base.gd | ✅ PASS | 同上 |
+| scripts/abyss_generator.gd | ✅ PASS (exit 0) | 无 autoload 依赖 |
+| scripts/abyss_manager.gd | ✅ PASS | 项目内加载编译通过 |
+| scripts/local_leaderboard.gd | ✅ PASS (exit 0) | 无 autoload 依赖 |
+
+### 9. 已知遗留
+
+- Design 未交付 Stage 07/08 背景图（bg_zhijiang_*/bg_wuhan_*）和新 BOSS Sprite，Code 使用占位纹理，Design 交付后 JSON phase_sprites 自动生效
+- EventManager 目前仅实现 P0 的 kill_target 类型，P1 的 destroy_targets/DestructibleObject 留待 M3-C
+- 深渊模式场景 abyss_mode.tscn 使用 bg_kunming_mountain.png 占位，待 Design 交付深渊专属背景
+- 本地修改完毕，等待用户用 Trae IDE commit + push 同步到远程
+
+---
+
+## 任务 10：M3-D 菜单 UI 系统
+
+**日期**: 2026-07-11
+**任务**: 实现 6 个菜单 UI 场景（主菜单/关卡选择/设置/排行榜/暂停菜单/结算），含 LocalLeaderboard 排行榜类
+**文档参考**: 任务规范（用户消息）
+
+### 1. 文件清单
+
+| # | 文件 | 类型 | 说明 |
+|---|------|------|------|
+| 1 | scenes/ui/main_menu.gd | 重写 | 5 按钮（开始/关卡选择/设置/排行榜/退出）+ 标题 + 最高分显示 |
+| 2 | scenes/ui/main_menu.tscn | 重写 | TitleLabel + 5 按钮（texture_normal/hover/pressed）+ HighScoreLabel |
+| 3 | scenes/ui/stage_select.gd | 重写 | 动态读取 stage_config.json 8 关，按钮含锁定/解锁判断 |
+| 4 | scenes/ui/stage_select.tscn | 新建 | 背景 + 标题 + BackButton + GridContainer(columns=2) |
+| 5 | scenes/ui/settings_menu.gd | 新建 | 3 音量滑块 + 难度选择 + @export return_to_main_menu 叠加层模式 |
+| 6 | scenes/ui/settings_menu.tscn | 新建 | 3 HSlider + Easy/Hard Button + BackButton |
+| 7 | scripts/local_leaderboard.gd | 新建 | class_name LocalLeaderboard，ConfigFile 持久化到 user://leaderboard.cfg |
+| 8 | scenes/ui/leaderboard.gd | 重写 | 两分类切换 + 动态条目 + ConfirmationDialog 清除确认 |
+| 9 | scenes/ui/leaderboard.tscn | 新建 | 标题 + CategoryContainer + RecordContainer + ConfirmDialog |
+| 10 | scenes/ui/pause_menu.gd | 修改 | 新增 SettingsButton + _panel_home_position 修正动画基准 |
+| 11 | scenes/ui/pause_menu.tscn | 新建 | PauseMenu CanvasLayer + BackgroundOverlay + PausePanel + 4 按钮 |
+| 12 | scenes/ui/result_screen.gd | 重写 | 关卡名/用时/分数/奖章/解锁提示 + 分数滚动动画 + 下一关/重玩 |
+| 13 | scenes/ui/result_screen.tscn | 更新 | 新增 StageNameLabel/TimeLabel/UnlockHintLabel + ui_medal_c.png |
+
+### 2. 语法检查（godot --headless --check-only --script）
+
+**关键 Bug 修复**: leaderboard.gd 与 local_leaderboard.gd 的常量/方法/字段名不匹配
+
+| leaderboard.gd 原写法 | local_leaderboard.gd 实际定义 | 状态 |
+|------------------------|-------------------------------|------|
+| `CATEGORY_MAIN_STAGE` | `CATEGORY_STAGE` | ✅ 已修正 |
+| `get_top_records()` | `get_entries()` | ✅ 已修正 |
+| `clear_records()` | `clear_category()` | ✅ 已修正 |
+| `record["player_name"]` | `record["name"]` | ✅ 已修正 |
+| `record["stage"]` | `record["stage_id"]` | ✅ 已修正 |
+
+**最终检查结果**（7 个脚本）:
+
+| 脚本 | 结果 | 说明 |
+|------|------|------|
+| scripts/local_leaderboard.gd | ✅ PASS (exit 0) | 无 autoload 依赖 |
+| scenes/ui/leaderboard.gd | ✅ PASS (exit 0) | 修复后通过 |
+| scenes/ui/main_menu.gd | ✅ PASS* | 仅 autoload 标识符错误（--check-only 模式不加载 autoload，预期行为）|
+| scenes/ui/stage_select.gd | ✅ PASS* | 同上 |
+| scenes/ui/settings_menu.gd | ✅ PASS* | 同上 |
+| scenes/ui/pause_menu.gd | ✅ PASS* | 同上 |
+| scenes/ui/result_screen.gd | ✅ PASS* | 同上 |
+
+**注**: `PASS*` 表示脚本本身语法正确，仅因 `--check-only --script` 模式不初始化 autoload 单例（GameManager/SaveManager/AudioManager）导致标识符找不到，运行时不会出现此问题。
+
+### 3. 资源引用验证
+
+所有 .tscn 引用的纹理均存在：
+- `ui_main_menu_bg.png` / `ui_button_normal/hover/pressed.png` / `ui_stage_select_map.png` / `ui_medal_s/a/b/c.png` ✅
+
+### 4. 协作说明
+
+- 本次重写 4 个 .gd + 新建 2 个 .gd + 修改 1 个 .gd（共 7 个脚本）
+- 本次重写 2 个 .tscn + 新建 4 个 .tscn + 更新 1 个 .tscn（共 7 个场景）
+- 语法检查 7/7 通过（含 1 个真实 Bug 修复：leaderboard.gd 常量/方法名不匹配）
+- 本地修改完毕，等待用户用 Trae IDE commit + push 同步到远程
+
+---
+
+## 任务 11：Trae IDE 评审 Bug 修复（M3-B/M3-D 收尾）
+
+**日期**: 2026-07-11
+**任务**: 修复 Trae IDE 评审 M3-B/M3-D 代码发现的 2 个 Bug，确保深渊模式与事件系统可正常运行
+**文档参考**: 用户消息（Trae IDE 评审报告）
+
+### 1. Bug #1 (P1)：abyss_manager.gd 引用 DifficultyCurve 静态方法
+
+**文件**: [scripts/abyss_manager.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scripts/abyss_manager.gd) L139-140 + [scripts/abyss_generator.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scripts/abyss_generator.gd)
+
+**问题**: `_apply_abyss_difficulty()` 调用 `DifficultyCurve.get_enemy_hp_mult(floor_num)` 与 `DifficultyCurve.get_bullet_speed_mult(floor_num)`。Trae IDE 静态分析报告 `DifficultyCurve` 类不存在（实际 `scripts/difficulty_curve.gd` 文件存在且有 `class_name DifficultyCurve`，属 IDE 索引误报，但运行时若有 .gd.uid 注册异常会真的失效）。
+
+**修复方案**（采纳用户建议，最稳妥方案）:
+- 在 `AbyssGenerator` 中新增两个实例方法 `get_enemy_hp_mult(floor_num)` 与 `get_bullet_speed_mult(floor_num)`，公式与 `DifficultyCurve` 完全一致（HP 每层 +2% 上限 5.0；弹速每层 +1.5% 上限 3.0）
+- `abyss_manager.gd` 改用 `_generator.get_enemy_hp_mult(floor_num)` / `_generator.get_bullet_speed_mult(floor_num)`，消除对全局 `DifficultyCurve` 类的静态依赖
+
+**根因分析**: `DifficultyCurve` 作为 `RefCounted` 子类仅靠 `class_name` 全局注册，静态分析器与运行时均可能因 .gd.uid 缺失/索引未更新而识别失败。改为通过 `AbyssManager` 已持有的 `_generator: AbyssGenerator` 实例方法调用，依赖关系显式且可靠。
+
+### 2. Bug #2：event_manager.gd 用 `"event_id" in enemy` 检查属性存在性
+
+**文件**: [scripts/event_manager.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scripts/event_manager.gd) L264-273（`_on_event_target_spawned`）
+
+**问题**: 原代码 `if not ("event_id" in enemy):` 用 `in` 操作符检查节点属性存在性，Trae IDE 指出在 GDScript 中跨类引用时可能不可靠。后续 `var target = enemy`（无类型）+ `target.event_id = ...` 也缺乏类型保护。
+
+**修复方案**:
+- 改用类型检查 `if not (enemy is EventTargetBase):`（`EventTargetBase` 有 `class_name` 全局注册，`is` 操作符类型安全且可靠）
+- `var target = enemy` → `var target: EventTargetBase = enemy`（显式类型标注，编译期捕获属性拼写错误）
+- 已核实 `hp`/`current_hp`/`speed` 在父类 `EnemyBase` L14/L32/L17 声明，`event_id`/`escape_timer` 在 `EventTargetBase` L13/L16 声明，类型化访问全部合法
+
+### 3. 验证结果
+
+运行 `Godot_v4.7-stable_win64_console.exe --headless --import --quit`：
+
+| 验证项 | 结果 |
+|--------|------|
+| 退出码 | ✅ exit 0 |
+| Parse Error / SCRIPT ERROR | ✅ 无 |
+| class_name 全局注册 | ✅ EventTargetBase / AbyssGenerator 均正常加载 |
+| 8 个关卡 CSV 扫描 | ✅ 全部通过 |
+
+### 4. 文件变更清单
+
+| 文件 | 变更 |
+|------|------|
+| scripts/abyss_generator.gd | 新增 `get_enemy_hp_mult()` + `get_bullet_speed_mult()` 方法（+18 行） |
+| scripts/abyss_manager.gd | L139-142 改用 `_generator.get_enemy_hp_mult/bullet_speed_mult`（+2 行注释） |
+| scripts/event_manager.gd | L264-273 改用 `is EventTargetBase` 类型检查 + 显式类型标注 |
+
+### 5. 协作说明
+
+- 本次修复 Trae IDE 评审发现的 2 个 Bug，均为 M3-B/M3-D 收尾阻塞项
+- Bug #1 按用户建议方案修复（在 AbyssGenerator 中添加方法），消除对 DifficultyCurve 全局类静态依赖
+- Bug #2 用 `is` 类型检查 + 显式类型标注替代 `in` 属性检查，提升类型安全性
+- 修改 3 个 Code 文件，`godot --headless --import --quit` 验证通过 exit 0
+- 本地修改完毕，等待用户用 Trae IDE commit + push 同步到远程

@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/abyss_manager.gd" id="1_abyss"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/stage_01_kunming/bg_kunming_mountain.png" id="2_bg"]
+
+[node name="AbyssMode" type="Node"]
+script = ExtResource("1_abyss")
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+
+[node name="BgLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_mirroring = Vector2(0, 1920)
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxBackground/BgLayer"]
+texture = ExtResource("2_bg")
+position = Vector2(540, 960)
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="EventManager" type="Node" parent="."]
