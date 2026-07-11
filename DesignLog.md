@@ -434,6 +434,59 @@ BOSS 透明背景生效（73-279KB）✅
 
 ---
 
+## 2026-07-11 — M3-C: Stage 9~12 + 隐藏关 + 新 BOSS + 事件素材
+
+### 任务来源
+
+`docs/M3_design_assignment.md` M3-C 阶段。严格遵循 `docs/design_art_style_guide.md`。
+
+### 交付物
+
+**Stage 9 南昌背景（4 张，512x2048）**
+鄱阳湖 + 湖岸农田 + 村庄 + 泥岸
+
+**Stage 10 上海背景（4 张，512x2048）**
+外滩 + 码头 + 城市街道 + 石板路
+
+**Stage 11 南京背景（4 张，512x2048）**
+长江 + 城墙 + 城区废墟 + 碎石
+
+**Stage 12 东京背景（4 张，512x2048）**
+夜视城市 + 工业区燃烧 + 住宅区火海 + 焦土
+
+**隐藏关背景（11 张，512x2048）**
+- H1 驼峰极端 3 张：暴风雪/冰川/山口
+- H2 东京轰炸 3 张：城市轰炸/工业区/火风暴
+- H3 紫电竞技场 2 张：太平洋海面/尾迹
+- H4 广岛 3 张：轰炸前/市中心/核爆废墟
+
+**BOSS 09-12（8 张，512x512）**
+- `boss_ki49`：Ki-49 吞龙重爆
+- `boss_floating_aa`：高射炮浮台
+- `boss_kamikawa`：神川丸水机母
+- `boss_nagato`：长门号战列舰
+
+**隐藏 BOSS（7 张，512x512）**
+- `boss_frozen_bomber`：冰封 Ki-21（H1）
+- `boss_shiden_proto`：紫电改原型机（H3）
+- `boss_b29_enola`：艾诺拉·盖伊（H4）
+- `boss_mushroom_cloud`：蘑菇云（H4 特殊）
+- `boss_bridge_destroyed`：渡桥断裂（事件）
+
+**新敌机（6 张）**
+- `enemy_ki43_body/hitbox_ref/side`：隼式（64x64 + 128x64）
+- `enemy_a6m_body/hitbox_ref/side`：零式（64x64 + 128x64）
+
+**特效（1 张）**
+- `fx_nuclear_flash`：核爆闪光 512x512
+
+### 验证
+
+50/50 PNG-32 RGBA ✅
+0 JPG 残留 ✅
+
+---
+
 ## 备注
 
 - 所有文件命名严格遵循 `snake_case` 规范，符合 Master Interface Spec 4.1

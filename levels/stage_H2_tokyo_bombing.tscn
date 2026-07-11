@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://levels/level_base.gd" id="1_script"]
+
+[node name="StageH2TokyoBombing" type="Node"]
+script = ExtResource("1_script")
+level_id = "H2_tokyo_bombing"
+level_name = "轰炸东京"
+wave_config_path = "res://resources/level_data/stage_H2_tokyo_bombing.csv"
+bg_scroll_speed = 100.0
+boss_scene_path = "res://scenes/bosses/boss_yahata.tscn"
+bgm_path = "bgm_stage_H2.ogg"

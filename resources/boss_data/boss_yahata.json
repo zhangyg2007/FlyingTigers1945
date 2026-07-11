@@ -1,0 +1,52 @@
+{
+  "boss_id": "boss_yahata",
+  "boss_name": "八幡号飞行要塞",
+  "max_hp": 2500,
+  "phase_hps": [700, 900, 900],
+  "phase_attack_intervals": [1.0, 0.8, 0.5],
+  "phase_bullets": [
+    ["spiral_shoot", "fan_shoot"],
+    ["spiral_shoot", "fan_shoot", "turret_fire"],
+    ["spiral_shoot", "fan_shoot", "turret_fire", "aimed_shoot"]
+  ],
+  "bullet_params": {
+    "spiral_shoot": {
+      "arms_base": 6,
+      "arms_per_phase": 1,
+      "bullets_per_arm": 4,
+      "speed_base": 210.0,
+      "speed_per_phase": 30.0,
+      "damage": 1
+    },
+    "fan_shoot": {
+      "count_base": 10,
+      "count_per_phase": 2,
+      "spread_angle": 100.0,
+      "speed_base": 240.0,
+      "speed_per_phase": 35.0,
+      "damage": 1
+    },
+    "turret_fire": {
+      "speed_base": 310.0,
+      "speed_per_phase": 45.0,
+      "damage": 2,
+      "aim_on_center": true
+    },
+    "aimed_shoot": {
+      "count_base": 3,
+      "count_per_phase": 1,
+      "speed_base": 370.0,
+      "spread_offset_deg": 5.0,
+      "damage": 2
+    }
+  },
+  "phase_sprites": [
+    "res://assets/sprites/boss/boss_yahata_phase1.png",
+    "res://assets/sprites/boss/boss_yahata_phase2.png",
+    "res://assets/sprites/boss/boss_yahata_phase3.png"
+  ],
+  "move_speed": 42.0,
+  "contact_damage": 24,
+  "entry_target_y": 150.0,
+  "drop_count": 10
+}

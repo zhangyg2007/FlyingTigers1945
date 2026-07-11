@@ -1,0 +1,11 @@
+# 隐藏关H3"震电对决"波次配置
+# 格式：time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+# BOSS: BOSS_shinden_final（震电·终焉）
+# 机制：1v1 BOSS Rush，前4波少量高速敌机，最后一波直接BOSS
+# 难度：极高（BOSS强化1.5x速度/0.5x攻击间隔）
+time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+2.0,j7w_shinden,2,solo,300,-50,2.0,straight
+6.0,j7w_shinden,2,solo,200,-50,2.2,straight
+6.0,j7w_shinden,2,solo,400,-50,2.2,straight
+10.0,j7w_shinden,3,diamond,300,-50,2.3,straight
+14.0,BOSS_shinden_final,1,boss,300,-150,0.5,boss_enter

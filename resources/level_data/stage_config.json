@@ -151,6 +151,166 @@
         "bullet_speed_mult": 1.5,
         "boss_attack_interval_mult": 0.5
       }
+    },
+    {
+      "stage_id": "09_nanchang",
+      "stage_name": "南昌会战",
+      "bgm": "bgm_stage_09.ogg",
+      "bg_layers": ["bg_nanchang_far", "bg_nanchang_mid", "bg_nanchang_near", "bg_nanchang_ground"],
+      "scroll_speed": 120.0,
+      "boss_type": "boss_tone",
+      "duration": 70.0,
+      "easy": {
+        "enemy_hp_mult": 1.0,
+        "bullet_speed_mult": 1.0,
+        "boss_attack_interval_mult": 1.0
+      },
+      "hard": {
+        "enemy_hp_mult": 1.8,
+        "bullet_speed_mult": 1.6,
+        "boss_attack_interval_mult": 0.5
+      }
+    },
+    {
+      "stage_id": "10_shanghai",
+      "stage_name": "上海防空",
+      "bgm": "bgm_stage_10.ogg",
+      "bg_layers": ["bg_shanghai_far", "bg_shanghai_mid", "bg_shanghai_near", "bg_shanghai_ground"],
+      "scroll_speed": 125.0,
+      "boss_type": "boss_shokaku",
+      "duration": 75.0,
+      "easy": {
+        "enemy_hp_mult": 1.0,
+        "bullet_speed_mult": 1.0,
+        "boss_attack_interval_mult": 1.0
+      },
+      "hard": {
+        "enemy_hp_mult": 1.9,
+        "bullet_speed_mult": 1.6,
+        "boss_attack_interval_mult": 0.5
+      }
+    },
+    {
+      "stage_id": "11_nanjing",
+      "stage_name": "南京保卫战",
+      "bgm": "bgm_stage_11.ogg",
+      "bg_layers": ["bg_nanjing_far", "bg_nanjing_mid", "bg_nanjing_near", "bg_nanjing_ground"],
+      "scroll_speed": 130.0,
+      "boss_type": "boss_yamato",
+      "duration": 80.0,
+      "easy": {
+        "enemy_hp_mult": 1.0,
+        "bullet_speed_mult": 1.0,
+        "boss_attack_interval_mult": 1.0
+      },
+      "hard": {
+        "enemy_hp_mult": 2.0,
+        "bullet_speed_mult": 1.7,
+        "boss_attack_interval_mult": 0.4
+      }
+    },
+    {
+      "stage_id": "12_tokyo",
+      "stage_name": "东京突袭",
+      "bgm": "bgm_stage_12.ogg",
+      "bg_layers": ["bg_tokyo_far", "bg_tokyo_mid", "bg_tokyo_near", "bg_tokyo_ground"],
+      "scroll_speed": 135.0,
+      "boss_type": "boss_yahata",
+      "duration": 80.0,
+      "easy": {
+        "enemy_hp_mult": 1.0,
+        "bullet_speed_mult": 1.0,
+        "boss_attack_interval_mult": 1.0
+      },
+      "hard": {
+        "enemy_hp_mult": 2.1,
+        "bullet_speed_mult": 1.8,
+        "boss_attack_interval_mult": 0.4
+      }
+    },
+    {
+      "stage_id": "H1_hump_extreme",
+      "stage_name": "驼峰绝径",
+      "bgm": "bgm_stage_H1.ogg",
+      "bg_layers": ["bg_hump_extreme_far", "bg_hump_extreme_mid", "bg_hump_extreme_near", "bg_hump_extreme_ground"],
+      "scroll_speed": 130.0,
+      "boss_type": "boss_shinden_final",
+      "duration": 60.0,
+      "hidden": true,
+      "unlock_condition": "stage_04_no_miss",
+      "easy": {
+        "enemy_hp_mult": 1.0,
+        "bullet_speed_mult": 1.0,
+        "boss_attack_interval_mult": 1.0
+      },
+      "hard": {
+        "enemy_hp_mult": 2.0,
+        "bullet_speed_mult": 1.8,
+        "boss_attack_interval_mult": 0.4
+      }
+    },
+    {
+      "stage_id": "H2_tokyo_bombing",
+      "stage_name": "轰炸东京",
+      "bgm": "bgm_stage_H2.ogg",
+      "bg_layers": ["bg_tokyo_night_far", "bg_tokyo_night_mid", "bg_tokyo_night_near", "bg_tokyo_night_ground"],
+      "scroll_speed": 100.0,
+      "boss_type": "boss_yahata",
+      "duration": 60.0,
+      "hidden": true,
+      "unlock_condition": "second_loop_easy_clear",
+      "easy": {
+        "enemy_hp_mult": 1.0,
+        "bullet_speed_mult": 1.0,
+        "boss_attack_interval_mult": 1.0
+      },
+      "hard": {
+        "enemy_hp_mult": 2.0,
+        "bullet_speed_mult": 1.8,
+        "boss_attack_interval_mult": 0.4
+      }
+    },
+    {
+      "stage_id": "H3_shinden_duel",
+      "stage_name": "震电对决",
+      "bgm": "bgm_stage_H3.ogg",
+      "bg_layers": ["bg_shinden_duel_far", "bg_shinden_duel_mid", "bg_shinden_duel_near", "bg_shinden_duel_ground"],
+      "scroll_speed": 110.0,
+      "boss_type": "boss_shinden_final",
+      "duration": 50.0,
+      "hidden": true,
+      "unlock_condition": "hard_stage_06_no_miss",
+      "easy": {
+        "enemy_hp_mult": 1.0,
+        "bullet_speed_mult": 1.0,
+        "boss_attack_interval_mult": 1.0
+      },
+      "hard": {
+        "enemy_hp_mult": 2.0,
+        "bullet_speed_mult": 1.8,
+        "boss_attack_interval_mult": 0.4
+      }
+    },
+    {
+      "stage_id": "H4_hiroshima_countdown",
+      "stage_name": "广岛之刻",
+      "bgm": "bgm_stage_H4.ogg",
+      "bg_layers": ["bg_hiroshima_far", "bg_hiroshima_mid", "bg_hiroshima_near", "bg_hiroshima_ground"],
+      "scroll_speed": 140.0,
+      "boss_type": "",
+      "duration": 60.0,
+      "hidden": true,
+      "unlock_condition": "H3_cleared",
+      "easy": {
+        "enemy_hp_mult": 1.0,
+        "bullet_speed_mult": 1.0,
+        "boss_attack_interval_mult": 1.0
+      },
+      "hard": {
+        "enemy_hp_mult": 2.0,
+        "bullet_speed_mult": 1.8,
+        "boss_attack_interval_mult": 0.4
+      }
     }
   ]
 }

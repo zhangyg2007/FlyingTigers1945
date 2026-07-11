@@ -1,0 +1,50 @@
+{
+  "boss_id": "boss_tone",
+  "boss_name": "利根号重巡",
+  "max_hp": 1800,
+  "phase_hps": [800, 1000],
+  "phase_attack_intervals": [1.2, 0.9],
+  "phase_bullets": [
+    ["missile_volley", "spiral_shoot", "fan_shoot"],
+    ["missile_volley", "spiral_shoot", "fan_shoot", "turret_fire"]
+  ],
+  "bullet_params": {
+    "missile_volley": {
+      "count_base": 4,
+      "count_per_phase": 1,
+      "speed_base": 170.0,
+      "spread_deg": 18.0,
+      "damage": 3
+    },
+    "spiral_shoot": {
+      "arms_base": 4,
+      "arms_per_phase": 1,
+      "bullets_per_arm": 3,
+      "speed_base": 200.0,
+      "speed_per_phase": 25.0,
+      "damage": 1
+    },
+    "fan_shoot": {
+      "count_base": 8,
+      "count_per_phase": 2,
+      "spread_angle": 80.0,
+      "speed_base": 230.0,
+      "speed_per_phase": 30.0,
+      "damage": 1
+    },
+    "turret_fire": {
+      "speed_base": 300.0,
+      "speed_per_phase": 40.0,
+      "damage": 2,
+      "aim_on_center": true
+    }
+  },
+  "phase_sprites": [
+    "res://assets/sprites/boss/boss_tone_phase1.png",
+    "res://assets/sprites/boss/boss_tone_phase2.png"
+  ],
+  "move_speed": 40.0,
+  "contact_damage": 20,
+  "entry_target_y": 150.0,
+  "drop_count": 6
+}

@@ -1400,3 +1400,133 @@ else:
 - Bug #2 用 `is` 类型检查 + 显式类型标注替代 `in` 属性检查，提升类型安全性
 - 修改 3 个 Code 文件，`godot --headless --import --quit` 验证通过 exit 0
 - 本地修改完毕，等待用户用 Trae IDE commit + push 同步到远程
+
+---
+
+## 任务 12：M3-C 关卡扩展 Phase 2 + M3-E 平台适配
+
+**日期**: 2026-07-11
+**任务**: M3-C（Stage 09~12 + 4 隐藏关 + BOSS + 解锁系统 + 隐藏关机制）+ M3-E（虚拟摇杆 + 性能降级 + 分辨率适配 + 性能测试 + 构建导出）
+**文档参考**: `docs/M3_task_breakdown.md`、`docs/M3_BD_acceptance_report.md`、`docs/M3_event_system_design.md`
+
+### 0. 前置工作：destroy_targets 事件类型 + DestructibleObject
+
+PM 提醒需补充 `event_manager.gd` 的 `report_target_destroyed()` 方法（M3-C 渡桥事件需要）。
+
+**文件**: [scripts/event_manager.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scripts/event_manager.gd) + [scripts/destructible_object.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scripts/destructible_object.gd)（新建）+ [scenes/events/event_target_bridge.tscn](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/events/event_target_bridge.tscn)（新建）
+
+**新增内容**:
+- `destroy_targets` 事件类型处理（`_spawn_destroy_targets` 方法）：直接实例化 DestructibleObject 场景，不经过 SpawnManager（静态目标非敌机）
+- `report_target_destroyed(target_id)` 方法：DestructibleObject 被摧毁时调用，追踪进度，全部摧毁后自动完成事件
+- 内部状态：`_target_to_event`（object_id → event_id 映射）、`_destroyed_count`、`_required_count`
+- `DestructibleObject` 类（extends Area2D）：碰撞层 Layer4=Enemy，检测 Layer2=PlayerBullet，受击时扣 HP，HP 归零切换破碎纹理并通知 EventManager
+- `event_target_bridge.tscn`：渡桥场景，使用占位纹理（Design 后续提供 bridge.png / bridge_broken.png）
+
+### 1. M3-C 主线 Stage 09~12
+
+**子代理完成**，16 个文件（4 CSV + 4 tscn + 4 JSON + 4 BOSS tscn）
+
+| 关卡 | CSV 波数 | BOSS | BOSS HP | 阶段 | 速度倍率 | 滚动速度 |
+|------|---------|------|---------|------|---------|---------|
+| 09_nanchang | 18+BOSS | BOSS_tone (利根号重巡) | 1800 | 2 | 1.7~2.0 | 120 |
+| 10_shanghai | 19+BOSS | BOSS_shokaku (翔鹤号航母) | 2200 | 2 | 1.8~2.1 | 125 |
+| 11_nanjing | 19+BOSS | BOSS_yamato (大和号战列舰) | 3000 | 3 | 1.9~2.2 | 130 |
+| 12_tokyo | 19+BOSS | BOSS_yahata (八幡号飞行要塞) | 2500 | 3 | 2.0~2.4 | 135 |
+
+### 2. M3-C 隐藏关 + 机制脚本 + 解锁系统
+
+**子代理完成**，4 隐藏关 CSV + 4 tscn + 4 机制脚本 + 1 隐藏 BOSS + unlock_manager.gd
+
+| 隐藏关 | 名称 | 机制脚本 | 特殊机制 | BOSS |
+|--------|------|---------|---------|------|
+| H1_hump_extreme | 驼峰绝径 | hump_narrow_passage.gd | 碰撞峡谷壁即死 | BOSS_shinden_final |
+| H2_tokyo_bombing | 轰炸东京 | tokyo_bombing.gd | 逆向卷轴+仅地面目标 | BOSS_yahata |
+| H3_shinden_duel | 震电对决 | shinden_duel.gd | 1v1 BOSS Rush (BOSS 1.5x速度/0.5x攻击间隔) | BOSS_shinden_final |
+| H4_hiroshima_countdown | 广岛之刻 | hiroshima_countdown.gd | 60秒倒计时生存+禁用射击 | 无BOSS |
+
+**隐藏 BOSS**: boss_shinden_final（震电·终焉），max_hp=2000，3阶段[600/700/700]，攻击间隔极快[0.8/0.6/0.4]，spiral_shoot arms_base=6（密集螺旋）
+
+**解锁条件系统**: [autoload/unlock_manager.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/autoload/unlock_manager.gd)
+- H1: 通关 Stage 04 无伤
+- H2: 二周目 Easy 通关
+- H3: Hard 模式第 6 关前无伤
+- H4: 通关 H3
+- 对 SaveManager 方法调用均使用 `has_method` 防御性检查
+
+### 3. M3-E 平台适配 + 性能优化
+
+**子代理完成**，5 个交付物
+
+| 任务 | 文件 | 说明 |
+|------|------|------|
+| E-C1 虚拟摇杆 | scripts/virtual_joystick.gd + scenes/ui/virtual_joystick.tscn | class_name MobileJoystick（避免与 Godot 原生 VirtualJoystick 冲突），纯代码 ColorRect 视觉，多点触控 |
+| E-C2 性能降级 | autoload/performance_manager.gd | 3档(HIGH/MEDIUM/LOW)，每5秒检测FPS，60帧滑动窗口 |
+| E-C3 分辨率适配 | scripts/screen_adapter.gd | 540x960基准，横/竖屏自动适配，content_scale_factor |
+| E-C4 性能测试 | tests/performance_budget.gd + .tscn | 300子弹10秒测试，输出FPS报告 |
+| E-C7 构建导出 | export_presets.cfg | Windows + Android 预设 |
+
+**Bug 修复**: `class_name VirtualJoystick` 与 Godot 4.7 原生类冲突，重命名为 `MobileJoystick`
+
+### 4. 整合工作
+
+| 文件 | 变更 |
+|------|------|
+| stage_config.json | 追加 8 关（Stage 09~12 + H1~H4），含 hidden/unlock_condition 字段，共 16 关 |
+| spawn_manager.gd | 新增 5 个 BOSS 映射 + 2 个地面目标映射(type97_tank/landing_craft) |
+| project.godot | [autoload] 新增 UnlockManager + PerformanceManager |
+| scenes/enemies/enemy_type97_tank.tscn | 新建（hp=10, speed=40, 97式坦克） |
+| scenes/enemies/enemy_landing_craft.tscn | 新建（hp=8, speed=50, 登陆艇） |
+
+### 5. 验证结果
+
+运行 `Godot_v4.7-stable_win64_console.exe --headless --import --quit`：
+
+| 验证项 | 结果 |
+|--------|------|
+| 退出码 | ✅ exit 0 |
+| Parse Error / SCRIPT ERROR | ✅ 无 |
+| 17 个 CSV 文件扫描 | ✅ 全部通过（8 主线 + 4 新主线 + 4 隐藏 + 1 测试） |
+| class_name 全局注册 | ✅ DestructibleObject / MobileJoystick / ScreenAdapter / PerformanceBudget / HumpNarrowPassage / TokyoBombing / ShindenDuel / HiroshimaCountdown |
+| Autoload 注册 | ✅ UnlockManager + PerformanceManager |
+
+### 6. 文件变更清单（共 33 个文件）
+
+**前置工作 (3 文件)**:
+- scripts/event_manager.gd（修改：+destroy_targets 事件类型 +report_target_destroyed 方法）
+- scripts/destructible_object.gd（新建）
+- scenes/events/event_target_bridge.tscn（新建）
+
+**M3-C 主线 (16 文件)**:
+- resources/level_data/stage_09~12_*.csv（4 个新建）
+- levels/stage_09~12_*.tscn（4 个新建）
+- resources/boss_data/boss_tone/shokaku/yamato/yahata.json（4 个新建）
+- scenes/bosses/boss_tone/shokaku/yamato/yahata.tscn（4 个新建）
+
+**M3-C 隐藏关 (12 文件)**:
+- resources/level_data/stage_H1~H4_*.csv（4 个新建）
+- levels/stage_H1~H4_*.tscn（4 个新建）
+- scripts/hump_narrow_passage.gd / tokyo_bombing.gd / shinden_duel.gd / hiroshima_countdown.gd（4 个新建）
+- resources/boss_data/boss_shinden_final.json + scenes/bosses/boss_shinden_final.tscn（2 个新建）
+- autoload/unlock_manager.gd（新建）
+
+**M3-E (7 文件)**:
+- scripts/virtual_joystick.gd + scenes/ui/virtual_joystick.tscn（2 个新建）
+- autoload/performance_manager.gd（新建）
+- scripts/screen_adapter.gd（新建）
+- tests/performance_budget.gd + .tscn（2 个新建）
+- export_presets.cfg（新建）
+
+**整合 (5 文件)**:
+- resources/level_data/stage_config.json（修改：16 关完整版）
+- autoload/spawn_manager.gd（修改：+7 映射）
+- project.godot（修改：+2 autoload）
+- scenes/enemies/enemy_type97_tank.tscn + enemy_landing_craft.tscn（2 个新建）
+
+### 7. 协作说明
+
+- 本次并行启动 M3-C 和 M3-E，使用 3 个子代理并行执行（主线/隐藏关/M3-E），避免文件冲突
+- 前置工作（report_target_destroyed + DestructibleObject）由主代理完成，确保渡桥事件可用
+- 整合工作（stage_config.json / spawn_manager.gd / project.godot）由主代理统一处理，避免子代理修改共享文件
+- 修复 1 个 Bug：VirtualJoystick 与 Godot 原生类冲突 → 重命名为 MobileJoystick
+- `godot --headless --import --quit` 验证通过 exit 0，无错误
+- 本地修改完毕，等待用户用 Trae IDE commit + push 同步到远程

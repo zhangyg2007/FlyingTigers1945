@@ -42,6 +42,9 @@ const EVENTS_DIR: String = "res://resources/level_data/"
 ## 道具场景路径（用于 drop_items 奖励掉落）
 const POWERUP_SCENE_PATH: String = "res://scenes/powerups/powerup.tscn"
 
+## 可摧毁物体场景路径（渡桥等静态目标，用于 destroy_targets 事件）
+const DESTRUCTIBLE_SCENE_PATH: String = "res://scenes/events/event_target_bridge.tscn"
+
 # ============================================================
 # 内部状态
 # ============================================================
@@ -72,6 +75,15 @@ var _pending_speed: float = 180.0
 
 ## 当前关卡 ID
 var _stage_id: String = ""
+
+## 已摧毁目标计数：event_id -> int（用于 destroy_targets 事件）
+var _destroyed_count: Dictionary = {}
+
+## 需要摧毁的目标数量：event_id -> int
+var _required_count: Dictionary = {}
+
+## 目标 ID → 事件 ID 映射（用于 report_target_destroyed 查找所属事件）
+var _target_to_event: Dictionary = {}
 
 
 # ============================================================
@@ -221,8 +233,10 @@ func trigger_event(event_id: String) -> void:
 	match event_type:
 		"kill_target":
 			_spawn_kill_target(event_id, event)
+		"destroy_targets":
+			_spawn_destroy_targets(event_id, event)
 		_:
-			print("[EventManager] 事件类型 '%s' 暂未实现（P0 仅支持 kill_target）" % event_type)
+			print("[EventManager] 事件类型 '%s' 暂未实现（P0 仅支持 kill_target/destroy_targets）" % event_type)
 
 
 ## 生成击杀目标事件的目标
@@ -285,9 +299,95 @@ func _on_event_target_spawned(enemy: Node) -> void:
 		SpawnManager.enemy_spawned.disconnect(_on_event_target_spawned)
 
 
+## 生成摧毁多目标事件的目标（渡桥等静态可摧毁物体）
+## 直接实例化 DestructibleObject 场景，不经过 SpawnManager（静态目标非敌机）
+func _spawn_destroy_targets(event_id: String, event: Dictionary) -> void:
+	var target: Dictionary = event.get("target", {})
+	var required_count: int = int(target.get("count", 0))
+	var targets: Array = target.get("targets", [])
+
+	if required_count <= 0 or targets.is_empty():
+		push_error("[EventManager] destroy_targets 事件 '%s' 缺少 count 或 targets" % event_id)
+		_mark_failed(event_id)
+		return
+
+	# 加载可摧毁物体场景（可通过 target.scene_path 指定自定义场景）
+	var scene_path: String = String(target.get("scene_path", DESTRUCTIBLE_SCENE_PATH))
+	var scene: PackedScene = load(scene_path) as PackedScene
+	if scene == null:
+		push_error("[EventManager] 无法加载可摧毁物体场景: %s" % scene_path)
+		_mark_failed(event_id)
+		return
+
+	_required_count[event_id] = required_count
+	_destroyed_count[event_id] = 0
+
+	# 逐个生成目标
+	for t in targets:
+		var obj_id: String = String(t.get("id", ""))
+		var x: float = float(t.get("x", 0.0))
+		var y: float = float(t.get("y", 0.0))
+		var hp: int = int(t.get("hp", 30))
+
+		if obj_id.is_empty():
+			continue
+
+		var obj: Node = scene.instantiate()
+		if obj == null:
+			continue
+
+		# 设置目标属性
+		if obj is DestructibleObject:
+			(obj as DestructibleObject).object_id = obj_id
+			(obj as DestructibleObject).max_hp = hp
+			(obj as DestructibleObject).current_hp = hp
+
+		# 设置位置
+		if obj is Node2D:
+			(obj as Node2D).position = Vector2(x, y)
+
+		# 注册 object_id → event_id 映射（供 report_target_destroyed 查找）
+		_target_to_event[obj_id] = event_id
+
+		# 添加到场景树（与 EventManager 同级，即 LevelBase 下）
+		var parent_node: Node = get_parent()
+		if parent_node != null:
+			parent_node.add_child(obj)
+
+	print("[EventManager] 摧毁多目标事件已激活: %s（需摧毁 %d 个目标，已生成 %d 个）" % [event_id, required_count, targets.size()])
+
+
 # ============================================================
-# 事件结果报告（供 EventTargetBase 调用）
+# 事件结果报告（供 EventTargetBase / DestructibleObject 调用）
 # ============================================================
+
+## 报告目标被摧毁（由 DestructibleObject._destroy() 调用）
+## 用于 destroy_targets 事件：当所有目标被摧毁时自动完成事件
+func report_target_destroyed(target_id: String) -> void:
+	# 查找目标所属事件
+	var event_id: String = _target_to_event.get(target_id, "")
+	if event_id.is_empty():
+		return
+
+	if not _events.has(event_id):
+		return
+
+	if _event_states.get(event_id, EventState.INACTIVE) != EventState.ACTIVE:
+		return
+
+	# 增加已摧毁计数
+	var count: int = int(_destroyed_count.get(event_id, 0)) + 1
+	_destroyed_count[event_id] = count
+
+	# 清理映射
+	_target_to_event.erase(target_id)
+
+	var required: int = int(_required_count.get(event_id, 0))
+	print("[EventManager] 目标已摧毁: %s（进度 %d/%d）" % [target_id, count, required])
+
+	# 达到所需数量时完成事件
+	if count >= required:
+		report_event_completed(event_id)
 
 ## 报告事件完成
 ## 由 EventTargetBase.die() 在目标被击毁时调用

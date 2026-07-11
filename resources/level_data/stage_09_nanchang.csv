@@ -1,0 +1,24 @@
+# 第9关"南昌会战"波次配置
+# 格式：time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+# BOSS: BOSS_tone（利根号重巡）
+# 难度：高（速度倍率1.7~2.0，湖泊+丘陵场景，敌机混编加强）
+time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+2.0,ki27_fighter,5,line,200,-50,1.7,straight
+4.5,ki43_hayabusa,5,line,400,-50,1.7,straight
+7.5,a6m_zero,4,diamond,300,-50,1.7,straight
+10.5,ki61_hien,4,v_formation,300,-50,1.7,dive
+13.5,ki45_toryu,2,solo,200,-50,1.5,straight
+13.5,ki45_toryu,2,solo,400,-50,1.5,straight
+17.0,ki84_hayate,3,diamond,300,-50,1.8,straight
+20.5,ki21_bomber,3,line,200,-80,1.1,straight
+20.5,ki21_bomber,3,line,400,-80,1.1,straight
+24.0,a6m_zero,8,swarm,300,-50,1.8,dive
+28.0,d3a_val,5,diamond,200,-50,1.7,straight
+28.0,d3a_val,5,diamond,400,-50,1.7,straight
+32.0,ki84_hayate,6,v_formation,300,-50,1.9,straight
+36.0,ki61_hien,6,swarm,300,-50,1.9,dive
+40.0,j7w_shinden,4,diamond,300,-50,1.9,straight
+44.0,ki21_bomber,4,v_formation,300,-80,1.2,straight
+48.0,a6m_zero,8,swarm,300,-50,2.0,straight
+52.0,ki84_hayate,5,diamond,300,-50,2.0,straight
+56.0,BOSS_tone,1,boss,300,-150,0.5,boss_enter

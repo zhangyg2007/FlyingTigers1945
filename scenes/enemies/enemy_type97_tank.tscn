@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/enemies/enemy_base.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemy/enemy_type97_tank.png" id="2_tex"]
+
+[sub_resource type="RectangleShape2D" id="3_shape"]
+size = Vector2(60, 40)
+
+[node name="EnemyType97Tank" type="CharacterBody2D"]
+script = ExtResource("1_script")
+hp = 10
+speed = 40.0
+score_value = 500
+drop_chance = 0.5
+collision_layer = 8
+collision_mask = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_tex")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("3_shape")

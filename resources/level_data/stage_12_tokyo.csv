@@ -1,0 +1,25 @@
+# 第12关"东京突袭"波次配置
+# 格式：time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+# BOSS: BOSS_yahata（八幡号飞行要塞）
+# 难度：终焉（速度倍率2.0~2.4，夜间城市+火光场景，最终BOSS三阶段飞行要塞）
+time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+2.0,a6m_zero,5,line,200,-50,2.0,straight
+4.5,ki84_hayate,5,line,400,-50,2.0,straight
+7.5,j7w_shinden,4,diamond,300,-50,2.0,straight
+10.5,ki61_hien,4,v_formation,300,-50,2.0,dive
+13.5,ki45_toryu,2,solo,200,-50,1.8,straight
+13.5,ki45_toryu,2,solo,400,-50,1.8,straight
+17.0,ki84_hayate,3,diamond,300,-50,2.1,straight
+20.5,ki21_bomber,3,line,200,-80,1.4,straight
+20.5,ki21_bomber,3,line,400,-80,1.4,straight
+24.0,a6m_zero,8,swarm,300,-50,2.1,dive
+28.0,d3a_val,5,diamond,200,-50,2.0,straight
+28.0,d3a_val,5,diamond,400,-50,2.0,straight
+32.0,ki84_hayate,6,v_formation,300,-50,2.2,straight
+36.0,ki61_hien,6,swarm,300,-50,2.2,dive
+40.0,ohka_kamikaze,3,solo,200,-50,2.3,straight
+40.0,ohka_kamikaze,3,solo,400,-50,2.3,straight
+44.0,j7w_shinden,5,diamond,300,-50,2.2,straight
+48.0,a6m_zero,8,swarm,300,-50,2.3,straight
+52.0,ki21_bomber,4,v_formation,300,-80,1.5,straight
+56.0,BOSS_yahata,1,boss,300,-150,0.5,boss_enter

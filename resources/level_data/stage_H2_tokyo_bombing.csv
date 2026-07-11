@@ -1,0 +1,16 @@
+# 隐藏关H2"轰炸东京"波次配置
+# 格式：time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+# BOSS: BOSS_yahata（八幡号飞行要塞）
+# 机制：逆向卷轴（上→下），仅轰炸地面目标，无空中敌机
+# 难度：中（地面目标密集，需精准轰炸）
+time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+2.0,type97_tank,3,line,200,-50,1.0,straight
+4.5,type97_tank,3,line,400,-50,1.0,straight
+7.5,landing_craft,2,line,150,-50,0.9,straight
+7.5,landing_craft,2,line,450,-50,0.9,straight
+10.5,type97_tank,4,diamond,300,-50,1.0,straight
+14.0,landing_craft,3,v_formation,300,-50,0.9,straight
+17.5,type97_tank,4,line,200,-50,1.1,straight
+17.5,type97_tank,4,line,400,-50,1.1,straight
+21.0,landing_craft,3,diamond,300,-50,0.9,straight
+25.0,BOSS_yahata,1,boss,300,-150,0.5,boss_enter

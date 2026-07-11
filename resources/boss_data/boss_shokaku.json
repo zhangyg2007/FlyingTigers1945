@@ -1,0 +1,51 @@
+{
+  "boss_id": "boss_shokaku",
+  "boss_name": "翔鹤号航母",
+  "max_hp": 2200,
+  "phase_hps": [1000, 1200],
+  "phase_attack_intervals": [1.1, 0.8],
+  "phase_bullets": [
+    ["missile_volley", "fan_shoot", "spiral_shoot"],
+    ["missile_volley", "fan_shoot", "spiral_shoot", "aimed_shoot"]
+  ],
+  "bullet_params": {
+    "missile_volley": {
+      "count_base": 6,
+      "count_per_phase": 2,
+      "speed_base": 180.0,
+      "spread_deg": 15.0,
+      "damage": 3
+    },
+    "fan_shoot": {
+      "count_base": 10,
+      "count_per_phase": 2,
+      "spread_angle": 90.0,
+      "speed_base": 240.0,
+      "speed_per_phase": 30.0,
+      "damage": 1
+    },
+    "spiral_shoot": {
+      "arms_base": 4,
+      "arms_per_phase": 1,
+      "bullets_per_arm": 3,
+      "speed_base": 210.0,
+      "speed_per_phase": 25.0,
+      "damage": 1
+    },
+    "aimed_shoot": {
+      "count_base": 3,
+      "count_per_phase": 1,
+      "speed_base": 360.0,
+      "spread_offset_deg": 5.0,
+      "damage": 2
+    }
+  },
+  "phase_sprites": [
+    "res://assets/sprites/boss/boss_shokaku_phase1.png",
+    "res://assets/sprites/boss/boss_shokaku_phase2.png"
+  ],
+  "move_speed": 35.0,
+  "contact_damage": 22,
+  "entry_target_y": 150.0,
+  "drop_count": 8
+}

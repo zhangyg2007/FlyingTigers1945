@@ -1,0 +1,25 @@
+# 第11关"南京保卫战"波次配置
+# 格式：time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+# BOSS: BOSS_yamato（大和号战列舰）
+# 难度：究极（速度倍率1.9~2.2，城墙+紫金山场景，三阶段最强战列舰）
+time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+2.0,a6m_zero,5,line,200,-50,1.9,straight
+4.5,ki84_hayate,5,line,400,-50,1.9,straight
+7.5,j7w_shinden,4,diamond,300,-50,1.9,straight
+10.5,ki61_hien,4,v_formation,300,-50,1.9,dive
+13.5,ki45_toryu,2,solo,200,-50,1.7,straight
+13.5,ki45_toryu,2,solo,400,-50,1.7,straight
+17.0,ki84_hayate,3,diamond,300,-50,2.0,straight
+20.5,ki21_bomber,3,line,200,-80,1.3,straight
+20.5,ki21_bomber,3,line,400,-80,1.3,straight
+24.0,a6m_zero,8,swarm,300,-50,2.0,dive
+28.0,d3a_val,5,diamond,200,-50,1.9,straight
+28.0,d3a_val,5,diamond,400,-50,1.9,straight
+32.0,ki84_hayate,6,v_formation,300,-50,2.1,straight
+36.0,ki61_hien,6,swarm,300,-50,2.1,dive
+40.0,ohka_kamikaze,3,solo,200,-50,2.2,straight
+40.0,ohka_kamikaze,3,solo,400,-50,2.2,straight
+44.0,j7w_shinden,5,diamond,300,-50,2.1,straight
+48.0,a6m_zero,8,swarm,300,-50,2.2,straight
+52.0,ki21_bomber,4,v_formation,300,-80,1.4,straight
+56.0,BOSS_yamato,1,boss,300,-150,0.5,boss_enter

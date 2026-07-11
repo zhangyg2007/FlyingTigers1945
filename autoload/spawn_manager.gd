@@ -165,6 +165,12 @@ func _init_enemy_scene_map() -> void:
 	_enemy_scene_map["BOSS_kinu"] = "res://scenes/bosses/boss_kinu.tscn"
 	_enemy_scene_map["BOSS_shiden_squadron"] = "res://scenes/bosses/boss_shiden_squadron.tscn"
 	_enemy_scene_map["BOSS_kongo"] = "res://scenes/bosses/boss_kongo.tscn"
+	# M3-C: Stage 09~12 + 隐藏关 BOSS 映射
+	_enemy_scene_map["BOSS_tone"] = "res://scenes/bosses/boss_tone.tscn"
+	_enemy_scene_map["BOSS_shokaku"] = "res://scenes/bosses/boss_shokaku.tscn"
+	_enemy_scene_map["BOSS_yamato"] = "res://scenes/bosses/boss_yamato.tscn"
+	_enemy_scene_map["BOSS_yahata"] = "res://scenes/bosses/boss_yahata.tscn"
+	_enemy_scene_map["BOSS_shinden_final"] = "res://scenes/bosses/boss_shinden_final.tscn"
 
 	# CSV 中可能出现的别名/旧名 → 映射到对应场景
 	_enemy_scene_map["zero"] = "res://scenes/enemies/enemy_a6m_zero.tscn"        # zero = a6m_zero
@@ -172,6 +178,10 @@ func _init_enemy_scene_map() -> void:
 
 	# 事件目标类型（M3-B 隐藏事件系统）
 	_enemy_scene_map["event_target_car"] = "res://scenes/enemies/event_target_car.tscn"
+
+	# M3-C: 隐藏关 H2 地面目标类型
+	_enemy_scene_map["type97_tank"] = "res://scenes/enemies/enemy_type97_tank.tscn"
+	_enemy_scene_map["landing_craft"] = "res://scenes/enemies/enemy_landing_craft.tscn"
 
 	# 旧版兼容（防止其他脚本用 scout/fighter 等旧名调用）
 	var placeholder := "res://scenes/enemies/enemy_fighter.tscn"

@@ -1,0 +1,43 @@
+# 隐藏关H4"广岛之刻"波次配置
+# 格式：time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+# 无BOSS：倒计时生存60秒，不可攻击仅躲避
+# 机制：全弹幕躲避，大量敌机但不需击毁
+# 难度：极高（密集弹幕，纯生存）
+time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+1.0,a6m_zero,4,line,200,-50,1.8,straight
+1.0,a6m_zero,4,line,400,-50,1.8,straight
+3.0,ki84_hayate,5,diamond,300,-50,2.0,straight
+5.0,j7w_shinden,3,diamond,200,-50,2.2,straight
+5.0,j7w_shinden,3,diamond,400,-50,2.2,straight
+7.0,a6m_zero,6,swarm,300,-50,2.0,straight
+9.0,ki61_hien,5,v_formation,300,-50,2.0,straight
+11.0,d3a_val,4,diamond,200,-50,1.8,straight
+11.0,d3a_val,4,diamond,400,-50,1.8,straight
+13.0,j7w_shinden,4,diamond,300,-50,2.3,straight
+15.0,a6m_zero,8,swarm,300,-50,2.1,straight
+17.0,ki84_hayate,6,v_formation,300,-50,2.1,straight
+19.0,j7w_shinden,3,solo,150,-50,2.4,straight
+19.0,j7w_shinden,3,solo,450,-50,2.4,straight
+21.0,ki61_hien,6,swarm,300,-50,2.2,straight
+23.0,a6m_zero,8,diamond,300,-50,2.2,straight
+25.0,d3a_val,5,v_formation,200,-50,2.0,straight
+25.0,d3a_val,5,v_formation,400,-50,2.0,straight
+27.0,j7w_shinden,5,diamond,300,-50,2.4,straight
+29.0,a6m_zero,10,swarm,300,-50,2.2,straight
+31.0,ki84_hayate,7,v_formation,300,-50,2.3,straight
+33.0,ki61_hien,6,diamond,200,-50,2.2,straight
+33.0,ki61_hien,6,diamond,400,-50,2.2,straight
+35.0,j7w_shinden,6,swarm,300,-50,2.4,straight
+37.0,a6m_zero,10,diamond,300,-50,2.3,straight
+39.0,d3a_val,6,v_formation,300,-50,2.1,straight
+41.0,ki84_hayate,8,swarm,300,-50,2.4,straight
+43.0,j7w_shinden,5,diamond,200,-50,2.5,straight
+43.0,j7w_shinden,5,diamond,400,-50,2.5,straight
+45.0,a6m_zero,12,swarm,300,-50,2.4,straight
+47.0,j7w_shinden,8,diamond,300,-50,2.5,straight
+49.0,ki84_hayate,8,v_formation,300,-50,2.5,straight
+51.0,a6m_zero,12,swarm,300,-50,2.5,straight
+53.0,j7w_shinden,10,diamond,300,-50,2.6,straight
+55.0,ki61_hien,8,swarm,300,-50,2.5,straight
+57.0,a6m_zero,14,swarm,300,-50,2.5,straight
+59.0,j7w_shinden,10,diamond,300,-50,2.6,straight

@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/destructible_object.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemy/enemy_ki21_bomber.png" id="2_tex"]
+
+[sub_resource type="RectangleShape2D" id="3_shape"]
+size = Vector2(80, 40)
+
+[node name="EventTargetBridge" type="Area2D"]
+script = ExtResource("1_script")
+object_id = ""
+max_hp = 30
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_tex")
+scale = Vector2(0.4, 0.4)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("3_shape")

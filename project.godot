@@ -34,6 +34,8 @@ AudioManager="*res://autoload/audio_manager.gd"
 PoolManager="*res://autoload/pool_manager.gd"
 SaveManager="*res://autoload/save_manager.gd"
 SpawnManager="*res://autoload/spawn_manager.gd"
+UnlockManager="*res://autoload/unlock_manager.gd"
+PerformanceManager="*res://autoload/performance_manager.gd"
 
 [display]
 

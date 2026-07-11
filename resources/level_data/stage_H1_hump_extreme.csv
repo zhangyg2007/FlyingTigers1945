@@ -1,0 +1,21 @@
+# 隐藏关H1"驼峰绝径"波次配置
+# 格式：time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+# BOSS: BOSS_shinden_final（震电·终焉）
+# 机制：狭窄峡谷，敌机少但速度极快（2.0+），碰撞即死
+# 难度：极高（高速穿梭+碰撞一击必杀）
+time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+2.0,j7w_shinden,2,solo,200,-50,2.0,dive
+4.5,j7w_shinden,2,solo,400,-50,2.0,dive
+7.5,j7w_shinden,3,diamond,300,-50,2.1,dive
+10.5,a6m_zero,3,line,300,-50,2.0,dive
+13.5,j7w_shinden,2,solo,200,-50,2.2,dive
+13.5,j7w_shinden,2,solo,400,-50,2.2,dive
+17.0,ki84_hayate,4,diamond,300,-50,2.1,dive
+20.5,j7w_shinden,3,v_formation,300,-50,2.2,dive
+24.0,a6m_zero,4,swarm,300,-50,2.0,dive
+28.0,j7w_shinden,3,diamond,200,-50,2.3,dive
+28.0,j7w_shinden,3,diamond,400,-50,2.3,dive
+32.0,ki84_hayate,5,v_formation,300,-50,2.2,dive
+36.0,j7w_shinden,4,swarm,300,-50,2.3,dive
+40.0,a6m_zero,5,diamond,300,-50,2.2,dive
+44.0,BOSS_shinden_final,1,boss,300,-150,0.5,boss_enter
