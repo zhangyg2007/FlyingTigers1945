@@ -1,5 +1,5 @@
 class_name MapObject
-extends Node2D
+extends Area2D
 ## 地图对象基类（M3-G G-C1）
 ## 所有地图交互对象（坦克、碉堡、车队、平民车辆、防空炮等）的基类。
 ## 由 MapObjectManager 根据地图 JSON 配置动态生成。
