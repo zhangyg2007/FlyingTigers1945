@@ -566,4 +566,214 @@ autoload/
 
 ---
 
-**本文档作为 M3-G 地图设计方案，Code 和 Design Agent 确认后按优先级分批实施。**
+---
+
+## 12. Design 评审意见（2026-07-13）
+
+### 12.1 认同项
+
+- **单图层替代 4 层视差**：符合 Strikers 1945 / iFighter 2 标准做法，Design 完全支持
+- **交互对象架构**：Design 已有 `event_bunker_hidden/revealed`、`enemy_type97_tank` 等素材，可直接复用
+- **深度感通过纹理渐变**：Design 在生成地图时可控制近深远浅
+
+### 12.2 需要调整的问题
+
+**（1）地图尺寸建议缩减**
+
+| 原方案 | 问题 | 建议调整 |
+|--------|------|---------|
+| 标准关 512x9600 | AI 生成最大可用高度约 2048px，9600 需拼接 5 段，接缝处理困难 | 标准关 **512x4096**（约 50 秒 @ 80px/s），长关分段循环或区域切换 |
+| 隐藏关 512x12000 | 同上 | 隐藏关 **512x6144**（约 77 秒）或分段设计 |
+
+**（2）已交付 4 层背景的迁移策略**
+
+当前 12 常规关 + 4 隐藏关已交付 4 层背景约 60 张。不建议全量重做：
+
+| 策略 | 说明 |
+|------|------|
+| **M4 试点先行** | 先选 1-2 个关（建议 Stage 1 昆明 + H1 驼峰）做单图层试点 |
+| **验证后推广** | Code 端验证单图层 + 碰撞系统后，再逐步迁移其他关卡 |
+| **旧素材不删除** | 4 层背景保留在 `backgrounds/` 目录，迁移完成后再清理 |
+
+**（3）碰撞体分离原则**
+
+- 地图图片只画地面纹理 + 不可交互装饰物（房屋、树木、道路）
+- 所有可交互对象（坦克、碉堡、山峰）不烘焙进地图图片，作为独立 sprite 由 Code 用 `StaticBody2D` / `Area2D` 实例化
+- 这样地图图片可复用，碰撞体可独立调整
+
+---
+
+## 13. 隐藏关 H1 驼峰航线：山峰/云雾可撞机设计
+
+### 13.1 设计目标
+
+- **核心玩法**：几乎无敌方飞机，考验玩家飞行技术和反应能力
+- **主要威胁**：两侧山壁碰撞 + 云雾视觉欺骗 + 飘落碎片
+- **参考关卡**：1942 岩石关、Gradius 火山关、R-Type 地形关
+
+### 13.2 地图结构
+
+采用单图层设计，地图宽度 512px，安全飞行通道宽度在 200px ~ 350px 之间动态变化。
+
+```
+纵向剖面示意（→ 为地图宽度方向）：
+
+段1 (0~20%): 入口段 — 宽通道热身
+  ████████|←──────── 350px 安全通道 ────────→|████████
+  ████████|      冰雪地面 + 轻微风雪         |████████
+
+段2 (20~40%): 收窄段 — 通道逐渐变窄
+  ████████████|←── 280px ──→|████████████
+  ████████████|   S形弯道开始  |████████████
+
+段3 (40~55%): 最窄段 — 高难度核心
+  ██████████████████|← 200px →|███████████████████
+  ██████████████████|  碎片掉落  |███████████████████
+
+段4 (55~70%): 云雾欺骗段 — 视觉遮挡
+  ██████████████ ☁️☁️☁️ ██████████████
+  ██████████████ ☁️[山壁]☁️ ██████████████  ← 云雾后有隐藏山壁
+
+段5 (70~85%): S形弯道 — 连续转向
+  ████████████████████████
+       ████████████████████████  ← 通道左右偏移
+  ████████████████████████
+
+段6 (85~100%): 出口段 — 展宽 + Boss 区
+  ████████|←──────── 350px ────────→|████████
+  ████████|    冰川裂缝 + Boss 区域   |████████
+```
+
+### 13.3 可撞机元素定义
+
+| 元素 | 视觉描述 | 碰撞类型 | Code 实现 |
+|------|---------|---------|----------|
+| **山壁** | 深褐/灰白色岩石俯视，带冰覆盖和阴影投射 | **StaticBody2D** 多边形碰撞体，沿通道边缘 | 碰撞体数据随地图 JSON 配置，或用 TileMap 碰撞层 |
+| **云雾（真实）** | 半透明白色团，边缘渐隐，纯装饰 | **无碰撞** | `TextureRect` 或 sprite，alpha 淡入淡出 |
+| **云雾（欺骗）** | 外观与真实云雾相同，但背后藏着山壁突起 | **云雾无碰撞 + 隐藏山壁有碰撞** | 玩家接近时云雾淡出，露出山壁 |
+| **冰碎片** | 小型白色冰块从山壁脱落 | **Area2D** 独立 sprite，向下飘移 + 轻微横向漂移 | 从配置的 y 坐标点生成，对象池复用 |
+
+### 13.4 Design 交付物（H1 重做）
+
+采用 M3-G 单图层方案，替代原有 3 张 4 层背景。
+
+| 文件 | 尺寸 | 内容 | 用途 |
+|------|------|------|------|
+| `bg_hump_extreme_full.png` | 512x6144 | 单图层完整地图：山壁通道 + 冰面纹理 + 云雾装饰 | 替代原 far/mid/near 3 张 |
+| `hump_rock_debris.png` | 64x64 | 冰岩碎片 sprite | Code 实例化为飘落障碍物 |
+| `hump_cloud_fake.png` | 256x256 | 视觉欺骗云雾（半透明白色团） | Code 控制显隐，遮挡隐藏山壁 |
+
+### 13.5 H1 地图 JSON 配置示例
+
+```json
+{
+  "stage_id": "stage_H1_hump_extreme",
+  "stage_name": "驼峰极端航线",
+  "duration": 77,
+  "scroll_speed": 80,
+
+  "map": {
+    "width": 512,
+    "height": 6144,
+    "background_image": "bg_hump_extreme_full.png",
+
+    "wall_colliders": [
+      {"segment": "0-20%",  "left_x": 0,   "right_x": 81,  "points": "..."},
+      {"segment": "0-20%",  "left_x": 431, "right_x": 512, "points": "..."},
+      {"segment": "20-40%", "left_x": 0,   "right_x": 116, "points": "..."},
+      {"segment": "20-40%", "left_x": 396, "right_x": 512, "points": "..."},
+      {"segment": "40-55%", "left_x": 0,   "right_x": 156, "points": "..."},
+      {"segment": "40-55%", "left_x": 356, "right_x": 512, "points": "..."}
+    ],
+
+    "clouds": [
+      {"y": 3000, "x": 320, "is_deceptive": true, "hidden_wall": {"x": 300, "width": 40, "height": 80}},
+      {"y": 3400, "x": 150, "is_deceptive": false},
+      {"y": 3800, "x": 400, "is_deceptive": true, "hidden_wall": {"x": 380, "width": 50, "height": 100}}
+    ],
+
+    "debris_spawners": [
+      {"y": 2200, "x": "left_wall",  "rate": 0.5, "speed": 60},
+      {"y": 2800, "x": "right_wall", "rate": 0.8, "speed": 80},
+      {"y": 3200, "x": "both_walls", "rate": 1.0, "speed": 100}
+    ],
+
+    "objects": [],
+
+    "boss_zone": {
+      "start_y": 5600,
+      "end_y": 6144,
+      "boss_type": "boss_frozen_bomber"
+    }
+  }
+}
+```
+
+### 13.6 Code 侧实施要点
+
+1. **山壁碰撞体**：使用 `StaticBody2D` + `CollisionPolygon2D`，沿地图通道边缘放置。碰撞体坐标可从 `wall_colliders` 配置加载，或用单独的碰撞层 TileMap
+2. **云雾显隐**：玩家 y 坐标接近欺骗云雾时，`Tween` 淡出云雾 sprite（alpha 0.7 → 0.0），露出后面山壁
+3. **碎片生成**：`DebrisSpawner` 从配置点按 `rate` 频率生成 `hump_rock_debris` sprite，带轻微横向随机漂移，使用对象池复用
+4. **无敌人**：H1 的 `objects` 数组为空，`SpawnManager` 对 H1 跳过空中敌机生成
+
+---
+
+## 14. 实施优先级与迁移计划
+
+### 14.1 M4 试点阶段
+
+| 步骤 | 内容 | 负责 |
+|------|------|------|
+| 1 | H1 驼峰单图层地图生成（`bg_hump_extreme_full.png` + 碎片 + 云雾） | Design |
+| 2 | H1 山壁碰撞体 + 云雾显隐 + 碎片生成器 | Code |
+| 3 | Stage 1 昆明单图层地图生成（`bg_kunming_full.png`） | Design |
+| 4 | Stage 1 交互对象 JSON 配置 + `MapObjectManager` 集成 | Code |
+| 5 | 试点验证：两个关卡跑通单图层 + 碰撞 + 对象系统 | Code + Design |
+
+### 14.2 M5 全面迁移
+
+试点验证后，按关卡顺序逐步迁移剩余 10 个常规关 + 3 个隐藏关到单图层方案。
+
+---
+
+## 15. 文件结构规划（更新版）
+
+```
+assets/sprites/backgrounds/
+  stage_H1_hump_extreme/
+    bg_hump_extreme_full.png      # 新：单图层完整地图
+    bg_hump_extreme_far.png       # 旧：保留，迁移完成后清理
+    bg_hump_extreme_mid.png       # 旧：保留
+    bg_hump_extreme_near.png      # 旧：保留
+  stage_01_kunming/
+    bg_kunming_full.png           # 新：M4 试点生成
+    bg_kunming_near.png           # 旧：保留
+    bg_kunming_mid.png            # 旧：保留
+    bg_kunming_ground.png         # 旧：保留
+    bg_kunming_lake.png           # 旧：保留
+    bg_kunming_mountain.png       # 旧：保留
+
+assets/sprites/effects/
+  hump_rock_debris.png            # 新：冰岩碎片
+  hump_cloud_fake.png             # 新：欺骗云雾
+
+resources/level_data/
+  stage_H1_hump_extreme_map.json  # 新：H1 地图配置（含碰撞体、云雾、碎片）
+  stage_01_kunming_map.json       # 新：Stage 1 地图配置
+
+scenes/map_objects/
+  map_object.gd                   # 新：对象基类
+  enemy_tank.tscn                 # 新：坦克
+  bunker.tscn                     # 新：碉堡
+  convoy.tscn                     # 新：车队
+  civilian_car.tscn               # 新：平民车辆
+  anti_air_gun.tscn               # 新：防空炮
+  hidden_element.tscn             # 新：隐藏要素
+
+autoload/
+  map_object_manager.gd           # 新：对象管理器
+```
+
+---
+
+**本文档作为 M3-G 地图设计方案 v1.1，已整合 Design 评审意见 + H1 驼峰可撞机设计。Code 和 Design Agent 按第 14 节优先级分批实施。**
