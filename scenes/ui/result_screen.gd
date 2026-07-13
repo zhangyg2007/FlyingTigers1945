@@ -79,6 +79,9 @@ const LEVEL_SCENE_DIR: String = "res://levels/"
 ## 解锁提示标签 -- 节点路径: $UnlockHintLabel
 @onready var unlock_hint_label: Label = %UnlockHintLabel
 
+## 军衔信息标签 -- 节点路径: $RankInfoLabel（独立于解锁提示，避免覆盖）
+@onready var rank_info_label: Label = %RankInfoLabel
+
 ## 下一关按钮 -- 节点路径: $NextButton
 @onready var next_button: Button = %NextButton
 
@@ -429,11 +432,10 @@ func _display_rank_info() -> void:
 			info_text += " → %s (还需 %d 分)" % [next_info["name"], next_info["score_needed"]]
 		else:
 			info_text += " → %s" % next_info["name"]
-	if unlock_hint_label != null:
-		var hint_visible: bool = unlock_hint_label.visible
-		unlock_hint_label.text = info_text
-		unlock_hint_label.visible = true
-		unlock_hint_label.modulate = Color(rank_color.r, rank_color.g, rank_color.b, 1.0)
+	if rank_info_label != null:
+		rank_info_label.text = info_text
+		rank_info_label.visible = true
+		rank_info_label.modulate = Color(rank_color.r, rank_color.g, rank_color.b, 1.0)
 
 # ============================================================
 # 按钮回调

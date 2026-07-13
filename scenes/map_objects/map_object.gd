@@ -8,7 +8,7 @@ extends Area2D
 ## - setup(data) 从 JSON 字典初始化属性
 ## - take_damage(damage) 处理受伤
 ## - reset_state() 供 PoolManager 复用对象时重置状态
-## - 碰撞层：Layer4(Enemy) + Layer2(PlayerBullet) 检测
+## - 碰撞层：Layer6(GroundTarget) 检测 Layer2(PlayerBullet)
 
 # ============================================================
 # 导出属性
@@ -35,6 +35,18 @@ var _max_hp: int = 1
 var _is_alive: bool = true
 ## 地图 Y 坐标（用于 MapObjectManager 判断是否进入生成窗口）
 var map_spawn_y: float = 0.0
+
+
+func _ready() -> void:
+	if is_interactive:
+		# 可交互对象：Layer6 = GroundTarget (64)，检测 Layer2 = PlayerBullet (2)
+		collision_layer = 64
+		collision_mask = 2
+		area_entered.connect(_on_area_entered)
+	else:
+		# 不可交互对象：Layer8 = Scenery (256)，不检测任何碰撞
+		collision_layer = 256
+		collision_mask = 0
 
 
 ## 从 JSON 字典初始化对象属性
@@ -76,10 +88,28 @@ func _on_damaged() -> void:
 
 ## 被摧毁回调（子类可重写实现爆炸特效 + 分数奖励）
 func _on_destroyed() -> void:
-	# 默认行为：加分数 + 释放节点
 	if GameManager:
 		GameManager.add_score(score_value)
 	queue_free()
+
+
+## 设置碰撞层（在 setup() 末尾调用，确保 is_interactive 已正确设置）
+func _setup_collision() -> void:
+	if is_interactive:
+		collision_layer = 64
+		collision_mask = 2
+		area_entered.connect(_on_area_entered)
+	else:
+		collision_layer = 256
+		collision_mask = 0
+
+
+## 碰撞检测：玩家子弹进入时受伤
+func _on_area_entered(area: Area2D) -> void:
+	if not _is_alive or not is_interactive:
+		return
+	if "damage" in area:
+		take_damage(int(area.damage))
 
 
 ## PoolManager 复用时重置状态

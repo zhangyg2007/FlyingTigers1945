@@ -138,12 +138,18 @@ func _ready() -> void:
 	if not is_in_group("player"):
 		add_to_group("player")
 
-	# 初始化运行时状态
-	lives = max_lives
-	bombs = 3
-	power_level = 1
+	# 初始化运行时状态（与GameManager同步）
+	if GameManager:
+		lives = GameManager.lives
+		bombs = GameManager.bombs
+		power_level = GameManager.power_level
+		is_invincible = GameManager.is_invincible
+	else:
+		lives = max_lives
+		bombs = 3
+		power_level = 1
+		is_invincible = false
 	score = 0
-	is_invincible = false
 	_is_dead = false
 	charge_time = 0.0
 	shoot_timer = 0.0
@@ -423,7 +429,7 @@ func _handle_bomb_input() -> void:
 
 
 ## 使用炸弹
-## 全屏清弹效果 + 2秒无敌
+## 全屏清弹效果 + 屏幕闪烁 + 敌机伤害 + 2秒无敌
 func use_bomb() -> void:
 	if bombs <= 0:
 		return
@@ -433,6 +439,9 @@ func use_bomb() -> void:
 	bombs -= 1
 	bombs_changed.emit(bombs)
 	bomb_used.emit()
+
+	# 全屏白色闪烁效果（经典STG炸弹视觉反馈）
+	_create_bomb_flash()
 
 	# 清除屏幕上所有敌方子弹
 	_clear_enemy_bullets()
@@ -497,6 +506,28 @@ func _spawn_bomb_effect() -> void:
 			effect.queue_free()
 	)
 	timer.start()
+
+
+## 创建炸弹全屏白色闪烁效果
+func _create_bomb_flash() -> void:
+	var viewport_size: Vector2 = get_viewport_rect().size
+
+	var flash := ColorRect.new()
+	flash.name = "BombFlash"
+	flash.rect_size = viewport_size
+	flash.color = Color(1, 1, 1, 0.8)
+	flash.z_index = 100
+
+	var viewport: Viewport = get_viewport()
+	if viewport != null:
+		viewport.add_child(flash)
+
+	var tween := create_tween()
+	tween.tween_property(flash, "color:a", 0.0, 0.3)
+	tween.tween_callback(func():
+		if is_instance_valid(flash):
+			flash.queue_free()
+	)
 
 
 ## ============================================================
@@ -574,6 +605,11 @@ func lose_life() -> void:
 	lives -= 1
 	lives_changed.emit(lives)
 
+	# 同步到GameManager
+	if GameManager:
+		GameManager.lives = lives
+		GameManager.lives_changed.emit(lives)
+
 	if lives <= 0:
 		# 没有生命了，游戏结束
 		_player_die()
@@ -583,11 +619,17 @@ func lose_life() -> void:
 		power_level = maxi(power_level - 1, 1)
 		power_changed.emit(power_level)
 
+		# 同步Power到GameManager
+		if GameManager:
+			GameManager.power_level = power_level
+			GameManager.power_changed.emit(power_level)
+
 		# 复活无敌时间
 		_start_invincibility(invincible_duration)
 
 		# 通知GameManager（如果存在）
-		_notify_game_manager_life_lost()
+		if GameManager:
+			GameManager.start_invincible(invincible_duration)
 
 
 ## 玩家死亡处理
@@ -640,24 +682,35 @@ func _collect_powerup(powerup: PowerupBase) -> void:
 func add_power(amount: int) -> void:
 	power_level = mini(power_level + amount, 4)
 	power_changed.emit(power_level)
+	if GameManager:
+		GameManager.power_level = power_level
+		GameManager.power_changed.emit(power_level)
 
 
 ## 增加炸弹数量
 func add_bombs(amount: int) -> void:
 	bombs = mini(bombs + amount, max_bombs)
 	bombs_changed.emit(bombs)
+	if GameManager:
+		GameManager.bombs = bombs
+		GameManager.bombs_changed.emit(bombs)
 
 
 ## 增加分数
 func add_score(amount: int) -> void:
 	score += amount
 	score_changed.emit(score)
+	if GameManager:
+		GameManager.add_score(amount)
 
 
 ## 回复生命
 func heal(amount: int) -> void:
 	lives = mini(lives + amount, max_lives)
 	lives_changed.emit(lives)
+	if GameManager:
+		GameManager.lives = lives
+		GameManager.lives_changed.emit(lives)
 
 
 ## ============================================================

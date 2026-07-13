@@ -73,7 +73,7 @@ func _ready() -> void:
 	current_hp = hp
 	_has_path = move_path != null
 
-	# 连接 Hitbox Area2D 信号（如果场景中存在 Hitbox 子节点）
+	# 创建或连接 Hitbox Area2D 信号
 	# CharacterBody2D 没有 body_entered/area_entered 信号，需要 Area2D 子节点检测碰撞
 	if has_node("Hitbox"):
 		var hitbox: Area2D = $Hitbox
@@ -81,6 +81,9 @@ func _ready() -> void:
 			hitbox.area_entered.connect(_on_area_entered)
 		if not hitbox.body_entered.is_connected(_on_body_entered):
 			hitbox.body_entered.connect(_on_body_entered)
+	else:
+		# 场景中没有Hitbox，自动创建一个
+		_create_hitbox()
 
 
 func _process(delta: float) -> void:
@@ -252,29 +255,29 @@ func _on_body_entered(body: Node) -> void:
 		body.on_enemy_collision(self)
 
 
-## 受击闪白效果
+## 受击红色闪烁效果
 func _flash_white() -> void:
-	# 查找Sprite2D子节点
 	var sprite: Sprite2D = _find_sprite(self)
-	if sprite == null or sprite.material == null:
+	if sprite == null:
 		return
 
-	# 使用ShaderMaterial闪白
 	if sprite.material is ShaderMaterial:
 		sprite.material.set_shader_parameter("flash", 1.0)
-		# 用一个极短Timer恢复
-		var tree: SceneTree = get_tree()
-		if tree != null:
-			var timer: Timer = Timer.new()
-			add_child(timer)
-			timer.wait_time = 0.05
-			timer.one_shot = true
-			timer.timeout.connect(func() -> void:
-				if is_instance_valid(sprite) and sprite.material is ShaderMaterial:
-					sprite.material.set_shader_parameter("flash", 0.0)
-				timer.queue_free()
-			)
-			timer.start()
+		var timer: Timer = Timer.new()
+		add_child(timer)
+		timer.wait_time = 0.05
+		timer.one_shot = true
+		timer.timeout.connect(func() -> void:
+			if is_instance_valid(sprite) and sprite.material is ShaderMaterial:
+				sprite.material.set_shader_parameter("flash", 0.0)
+			timer.queue_free()
+		)
+		timer.start()
+	else:
+		var original_color = sprite.modulate
+		sprite.modulate = Color(1, 0.3, 0.3, 1)
+		var tween := create_tween()
+		tween.tween_property(sprite, "modulate", original_color, 0.1)
 
 
 ## 递归查找Sprite2D节点
@@ -396,6 +399,42 @@ func get_index_in_wave() -> int:
 	return _index_in_wave
 
 
-## 编队总数
+## 获取编队总数
 func get_total_in_wave() -> int:
 	return _total_in_wave
+
+
+## 动态创建 Hitbox Area2D 子节点
+## CharacterBody2D 没有 body_entered/area_entered 信号，需要 Area2D 子节点检测碰撞
+func _create_hitbox() -> void:
+	var hitbox := Area2D.new()
+	hitbox.name = "Hitbox"
+	hitbox.collision_layer = 0
+	hitbox.collision_mask = 0
+	hitbox.set_collision_mask_value(2, true)  # 检测 Layer2 = PlayerBullet
+
+	# 创建碰撞形状（复制主CollisionShape2D的形状）
+	var main_collision_shape: CollisionShape2D = null
+	for child in get_children():
+		if child is CollisionShape2D:
+			main_collision_shape = child
+			break
+
+	if main_collision_shape != null and main_collision_shape.shape != null:
+		var shape = main_collision_shape.shape.duplicate()
+		var hitbox_shape := CollisionShape2D.new()
+		hitbox_shape.shape = shape
+		hitbox_shape.position = main_collision_shape.position
+		hitbox.add_child(hitbox_shape)
+	else:
+		# 默认创建一个圆形碰撞形状
+		var shape := CircleShape2D.new()
+		shape.radius = 15.0
+		var hitbox_shape := CollisionShape2D.new()
+		hitbox_shape.shape = shape
+		hitbox.add_child(hitbox_shape)
+
+	# 连接信号
+	hitbox.area_entered.connect(_on_area_entered)
+	hitbox.body_entered.connect(_on_body_entered)
+	add_child(hitbox)

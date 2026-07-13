@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scenes/map_objects/map_object.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/sprites/enemy/event_bunker_revealed.png" id="2_tex"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemy/event_bunker_hidden.png" id="2_tex"]
 
 [sub_resource type="RectangleShape2D" id="3_shape"]
 size = Vector2(80, 80)
@@ -10,9 +10,7 @@ size = Vector2(80, 80)
 script = ExtResource("1_script")
 object_type = "bunker"
 is_interactive = true
-score_value = 500
-collision_layer = 64
-collision_mask = 4
+score_value = 800
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("2_tex")

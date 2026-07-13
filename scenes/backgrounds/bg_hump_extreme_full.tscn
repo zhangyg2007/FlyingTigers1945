@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/stage_H1_hump_extreme/bg_hump_extreme_full.png" id="1_tex"]
+
+[node name="BgHumpExtremeFull" type="ParallaxLayer"]
+motion_mirroring = Vector2(0, 6144)
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+centered = false
+position = Vector2(284, 0)
+texture = ExtResource("1_tex")

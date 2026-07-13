@@ -550,13 +550,20 @@ func hit(damage: int) -> void:
 	take_damage(damage)
 
 
-## 受击白色闪烁
+## 受击红色闪烁（局部红色反馈效果）
 func _flash_white() -> void:
 	if hit_flash:
 		hit_flash.visible = true
+		hit_flash.modulate = Color(1, 0.2, 0.2, 0.8)
 		var tween := create_tween()
 		tween.tween_property(hit_flash, "modulate:a", 0.0, 0.15)
 		tween.tween_callback(func(): hit_flash.visible = false)
+	else:
+		if _boss_sprite != null:
+			var original_color = _boss_sprite.modulate
+			_boss_sprite.modulate = Color(1, 0.3, 0.3, 1)
+			var tween := create_tween()
+			tween.tween_property(_boss_sprite, "modulate", original_color, 0.12)
 
 
 ## 生成爆炸效果（覆盖 EnemyBase._spawn_explosion，使用对象池）

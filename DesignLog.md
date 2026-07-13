@@ -397,6 +397,37 @@ Design 侧重命名文件以匹配 Code 引用（成本更低）：
 - 碎片生成器（DebrisSpawner + 对象池）
 - 替换 `stage_config.json` 中 H1 的 bg_layers 为单 `bg_hump_extreme_full`
 
+---
+
+## 2026-07-13 — M3-G Phase 2：事件素材 + 背景弹坑微调
+
+### 任务来源
+
+`docs/M3_G_Phase1_acceptance_report.md` 第 6 节 Phase 2 Design 任务。
+
+### G-D2 事件素材（3 张）
+
+| 文件 | 尺寸 | 内容 |
+|------|------|------|
+| `event_target_car.png` | 128x64 | 黑色军用轿车（将军汽车事件目标，逃跑中带扬尘） |
+| `event_target_bridge.png` | 512x256 | 怒江浮桥（完整状态，木板+钢缆） |
+| `event_target_bridge_broken.png` | 512x256 | 怒江浮桥（断裂状态，木板散落水中） |
+
+### G-D3 背景弹坑微调（2 张）
+
+| 文件 | 修改内容 |
+|------|---------|
+| `bg_rangoon_mid.png` | 程序化叠加 10 个弹坑（道路上的预先存在破坏痕迹） |
+| `bg_guilin_mid.png` | 程序化叠加 6 个弹坑（地形上的战斗痕迹） |
+
+弹坑样式：暗色环形焦土 + 中心深色弹坑底 + 边缘隆起高光，GaussianBlur 柔化。
+
+### 验证
+
+3/3 新素材 PNG-32 RGBA ✅
+2 张背景微调后仍为 PNG-32 RGBA ✅
+0 JPG 残留 ✅
+
 ### 风格一致性说明
 
 所有 Sprite（player/enemy/boss/backgrounds/ui）统一使用 AI 生成 + Pillow 转码 PNG-32 RGBA 工作流，确保像素精度一致。

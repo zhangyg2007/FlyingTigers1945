@@ -42,11 +42,12 @@ func _ready() -> void:
 ## 根据子弹类型设置碰撞层
 func setup_collision_layers() -> void:
 	if is_player_bullet:
-		# 玩家子弹：在 Layer2，检测 Layer4(Enemy)
-		collision_layer = 0  # 先清空
+		# 玩家子弹：在 Layer2，检测 Layer4(Enemy) + Layer6(GroundTarget)
+		collision_layer = 0
 		collision_mask = 0
 		set_collision_layer_value(2, true)  # Layer2 = PlayerBullet
 		set_collision_mask_value(4, true)   # 检测 Layer4 = Enemy
+		set_collision_mask_value(6, true)   # 检测 Layer6 = GroundTarget
 	else:
 		# 敌弹：在 Layer3，检测 Layer1(Player)
 		collision_layer = 0
@@ -92,8 +93,8 @@ func _on_body_entered(body: Node) -> void:
 func _on_area_entered(area: Node) -> void:
 	if _is_pending_destroy:
 		return
-	# 只有玩家子弹需要检测敌机的Area2D碰撞
-	if is_player_bullet and area is EnemyBase:
+	# 玩家子弹检测敌机和地面对象
+	if is_player_bullet and (area is EnemyBase or area is MapObject):
 		hit_target.emit(area)
 		_on_hit(area)
 

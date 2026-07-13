@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://levels/level_base.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/backgrounds/bg_hump_extreme_full.tscn" id="2_bg"]
 
 [node name="StageH1HumpExtreme" type="Node"]
 script = ExtResource("1_script")
@@ -10,3 +11,7 @@ wave_config_path = "res://resources/level_data/stage_H1_hump_extreme.csv"
 bg_scroll_speed = 130.0
 boss_scene_path = "res://scenes/bosses/boss_shinden_final.tscn"
 bgm_path = "bgm_stage_H1.ogg"
+skip_enemy_spawning = true
+map_config_path = "res://resources/level_data/stage_H1_hump_extreme_map.json"
+bg_layer_scenes = Array[PackedScene]([ExtResource("2_bg")])
+
