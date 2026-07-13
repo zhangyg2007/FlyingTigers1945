@@ -315,6 +315,88 @@ Design 侧重命名文件以匹配 Code 引用（成本更低）：
 
 10 文件重命名 + 3 文件新生成 = 13 个文件 ✅
 
+---
+
+## 2026-07-11 — M3-F 补充设计：隐藏关卡军衔系统 + 事件素材
+
+### 任务来源
+
+`docs/M3_F_supplement_design.md`：隐藏关卡需要军衔等级做开通条件 + 事件系统素材。
+
+### 交付物
+
+**P0 军衔系统 UI（8 张）**
+
+| 文件 | 尺寸 | 内容 |
+|------|------|------|
+| `ui_rank_corporal` | 48x48 | 下士：三道铜 V 字 |
+| `ui_rank_sergeant` | 48x48 | 中士：三 V + 摇杆 |
+| `ui_rank_captain` | 48x48 | 上尉：银鹰徽 |
+| `ui_rank_major` | 48x48 | 少校：金橡叶 |
+| `ui_rank_colonel` | 48x48 | 上校：银鹰+星 |
+| `ui_rank_ace` | 64x64 | 王牌：金翼+桂冠 |
+| `ui_rank_progress_bar_bg` | 200x16 | 经验条底框 |
+| `ui_rank_progress_bar_fill` | 200x16 | 经验条填充 |
+
+**P1 碉堡事件（2 张，128x128）**
+- `event_bunker_hidden`：伪装碉堡（丛林覆盖）
+- `event_bunker_revealed`：暴露碉堡（混凝土+射击口）
+
+**P2 运输线事件（5 张）**
+- `event_transport_ship` / `event_transport_wreck`：运输舰/残骸 128x128
+- `event_supplies_crate`：补给箱 64x64
+- `intel_hump_route` / `intel_tokyo_defense`：情报图标 48x48
+
+**P3 友军+UI（4 张）**
+- `event_c47_ally` / `event_c47_damaged`：C-47 友军/损坏 128x128
+- `ui_hint_bar_bg` / `ui_hint_bar_locked`：提示条背景/锁定 400x40
+
+### 验证
+
+19/19 PNG-32 RGBA ✅
+
+---
+
+## 2026-07-13 — M3-G 阶段 1：H1 驼峰单图层地图试点
+
+### 任务来源
+
+`docs/M3_G_map_design.md` v1.1 第 14 节实施计划，阶段 1。
+
+### 技术方案
+
+- AI 生成 3 段 2048px 冰雪地面纹理，numpy crossfade 64px 拼接为 512x6144
+- 地图只画地面纹理（冰面/雪地/岩石），**不画山壁**（山壁由 Code 用 StaticBody2D 实例化）
+- 碎片和云雾作为独立 sprite 供 Code 实例化
+
+### 交付物
+
+| 文件 | 尺寸 | 大小 | 内容 |
+|------|------|------|------|
+| `bg_hump_extreme_full.png` | 512x6144 | 4541KB | 单图层完整地图（3 段 crossfade 拼接） |
+| `hump_rock_debris.png` | 64x64 | 9KB | 冰岩碎片 sprite（Code 实例化为飘落障碍物） |
+| `hump_cloud_fake.png` | 256x256 | 43KB | 视觉欺骗云雾（半透明，Code 控制显隐） |
+
+### 拼接参数
+
+- 段 1（y=0~2047）：平坦冰雪地面，白色冰面 + 轻微裂缝
+- 段 2（y=2048~4095）：冰川地形，蓝色冰裂缝 + 岩石碎片
+- 段 3（y=4096~6144）：高山高原，深色岩石 + 冰川裂缝 + Boss 区
+- Crossfade：64px 线性混合，接缝处无可见跳变
+
+### 验证
+
+3/3 PNG-32 RGBA ✅
+0 JPG 残留 ✅
+地图尺寸 512x6144 符合规范 ✅
+
+### Code 侧待实现
+
+- 山壁碰撞体（StaticBody2D + CollisionPolygon2D，参照 M3_G_map_design.md 第 13.6 节）
+- 云雾显隐控制（Tween alpha）
+- 碎片生成器（DebrisSpawner + 对象池）
+- 替换 `stage_config.json` 中 H1 的 bg_layers 为单 `bg_hump_extreme_full`
+
 ### 风格一致性说明
 
 所有 Sprite（player/enemy/boss/backgrounds/ui）统一使用 AI 生成 + Pillow 转码 PNG-32 RGBA 工作流，确保像素精度一致。

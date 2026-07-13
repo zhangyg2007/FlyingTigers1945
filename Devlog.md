@@ -1638,3 +1638,246 @@ Design Agent 的 BOSS 命名修复与 Code 侧完全对齐，PM Issue #3（P2）
 ### 文件变更清单（0 个文件）
 
 - 无（Design 侧重命名后 Code 侧引用已匹配，无需修改）
+
+---
+
+## 任务 15：M3-F 军衔系统 Code Review
+
+**日期**: 2026-07-11
+**任务**: Review IDE（Trae IDE）完成的 M3-F 军衔系统代码，验证是否准确实现 PM 设计文档要求
+**文档参考**: [docs/M3_F_supplement_design.md](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/docs/M3_F_supplement_design.md)
+**Git commit**: 6300ffd
+
+### IDE 交付物清单（9 个文件）
+
+| # | 文件 | 类型 | 状态 |
+|---|------|------|------|
+| 1 | [autoload/rank_manager.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/autoload/rank_manager.gd) | 新建 | ✅ 已核对 |
+| 2 | [resources/level_data/events_stage_02_rangoon.json](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/resources/level_data/events_stage_02_rangoon.json) | 新建 | ✅ 已核对 |
+| 3 | [resources/level_data/events_stage_05_guilin.json](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/resources/level_data/events_stage_05_guilin.json) | 新建 | ✅ 已核对 |
+| 4 | [autoload/save_manager.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/autoload/save_manager.gd) | 修改 | ✅ 已核对 |
+| 5 | [autoload/unlock_manager.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/autoload/unlock_manager.gd) | 修改 | ✅ 已核对 |
+| 6 | [project.godot](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/project.godot) | 修改 | ✅ 已核对 |
+| 7 | [scenes/ui/stage_select.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/ui/stage_select.gd) | 修改 | ✅ 已核对 |
+| 8 | [scenes/ui/result_screen.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/ui/result_screen.gd) | 修改 | ✅ 已核对 |
+| 9 | [scripts/event_manager.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scripts/event_manager.gd) | 修改 | ✅ 已核对 |
+
+### Review 结论：P0/P1 核心功能准确完成
+
+#### P0 核心功能（3/3 PASS）
+
+**F-C1 RankManager** ✅
+- 7 级军衔定义（PVT→CPL→SGT→CPT→MAJ→COL→ACE）与 PM 2.1 节完全一致
+- RANK_THRESHOLDS / RANK_STAGES_REQUIRED / RANK_S_REQUIRED 三个常量字典与 PM 2.2 节代码完全一致
+- `calculate_rank_score()` 公式：`stages*10万 + total_score*50% + s_rank_count*20万`，与 PM 2.2 节一致
+- `get_current_rank()` 逻辑：ACE 特殊判定（12关+12S）→ 从高到低逐级检查（COL→CPL）→ 默认 PVT
+- 额外实现：`get_rank_progress()` / `get_next_rank_info()` / `is_rank_reached()` / `can_unlock_hidden_stage()` / `get_hidden_stage_required_rank()`
+- HIDDEN_STAGE_RANK_REQUIRED 映射：H1→SGT, H2→CPT, H3→MAJ, H4→COL，与 PM 2.1 节一致
+
+**F-C2 SaveManager 扩展** ✅
+- `s_rank_count: int` 字段已添加（L76）
+- `save_game()` 包含 `config.set_value("progress", "s_rank_count", s_rank_count)`（L139）
+- `load_game()` 包含 `s_rank_count = config.get_value("progress", "s_rank_count", 0)`（L222）
+- `reset_all_data()` 包含 `s_rank_count = 0`（L413）
+- `get_s_rank_count()` / `add_s_rank()` 方法已实现（L357-363）
+
+**F-C3 UnlockManager 双重解锁逻辑** ✅
+- `is_hidden_stage_unlocked()` = `has_intel(stage_id) and has_rank(stage_id)`（L31-32）
+- `has_intel()` 检查 `SaveManager.is_event_completed(event_id)`（L34-40）
+- `has_rank()` 检查 `RankManager.can_unlock_hidden_stage(stage_id)`（L42-45）
+- 三种状态查询：`get_hidden_stage_unlock_status()` 返回 "unlocked" / "rank_required" / "locked"（L47-52）
+- HIDDEN_STAGE_INFO_EVENTS 映射 4 个情报事件 ID（L14-19）
+
+#### P1 扩展功能（4/4 PASS）
+
+**F-C5 StageSelect 三种状态** ✅
+- `_refresh_hidden_stage_button()` 根据 UnlockManager 返回的状态显示：
+  - `unlocked` → "🔮 [关卡名]"，可点击
+  - `rank_required` → "✨ [关卡名]" + "军衔不足：需要[军衔名]"，禁用
+  - `locked` → "??? 隐藏" + "🔒 未发现"，禁用
+
+**F-C4 ResultScreen 军衔显示** ✅
+- `_display_rank_info()` 显示当前军衔 + 晋升进度（L418-436）
+- `_save_stage_result()` 在 S 评级时调用 `SaveManager.add_s_rank()`（L494-495）
+- 军衔信息使用军衔对应颜色显示
+
+**area_stay 事件类型** ✅
+- `_start_area_stay_event()` 初始化区域停留状态（event_manager.gd L368-384）
+- `_process_area_stay_check()` 每帧检测玩家与区域中心距离，累计停留时间（L388-411）
+- 玩家离开区域时重置停留时间（L408）
+- 停留时间达标后自动 `report_event_completed()`（L405-410）
+
+**情报配置** ✅
+- `events_stage_02_rangoon.json`：kill_target 事件，将官座车，35秒触发，80%概率，解锁 H1
+- `events_stage_05_guilin.json`：area_stay 事件，密林碉堡，25秒触发，100%概率，停留3秒，解锁 H2
+- 两个 JSON 与 PM 3.2/3.3 节配置完全一致
+
+**F-C6 project.godot 注册** ✅
+- `[autoload]` 新增 `RankManager="*res://autoload/rank_manager.gd"`（L39）
+
+### 军衔计算逻辑验证（PM 2.3 节用例）
+
+使用 PM 2.2 节公式手动验证 6 个场景：
+
+| 场景 | 通关数 | 总分 | S数 | rank_score | 代码计算结果 | PM 2.3 预期 | 一致性 |
+|------|--------|------|-----|-----------|-------------|------------|--------|
+| 6关均B | 6 | 120万 | 0 | 120万 | SGT（中士） | 中士 | ✅ 一致 |
+| 12关4S+8A | 12 | 800万 | 4 | 600万 | MAJ（少校） | 少校 | ✅ 一致 |
+| 全S | 12 | 1440万 | 12 | 1080万 | ACE（王牌） | 上校→ACE | ✅ 一致 |
+| 12关均B | 12 | 240万 | 0 | 240万 | SGT（中士） | 上尉 | ⚠️ PM验证表有误 |
+| 12关均A | 12 | 600万 | 0 | 420万 | SGT（中士） | 少校附近 | ⚠️ PM验证表有误 |
+| 12关A无S | 12 | 600万 | 0 | 420万 | SGT（中士） | 少校差一点 | ⚠️ PM验证表有误 |
+
+**结论**：代码正确实现了 PM 2.1 节的规则定义（CPT 需 S≥2，MAJ 需 S≥4）。PM 2.3 节验证表有 3 处预期值偏高，原因是验证表忽略了 CPT/MAJ 的 S 评级要求。**代码遵循 PM 2.1 节规则定义，实现正确**。需反馈 PM 更新 2.3 节验证表。
+
+### Godot headless 验证
+
+运行 `Godot_v4.7-stable_win64_console.exe --headless --import --quit`：
+- ✅ exit 0
+- ✅ 无 ERROR / SCRIPT ERROR / Parse Error / Failed loading
+- ✅ EventManager class_name 正确注册
+- ✅ RankManager autoload 正确加载
+
+### 发现的次要问题（非阻塞，供 PM 确认）
+
+**问题 1 [P3]：PM 2.3 节验证表与 2.1 节规则定义不一致**
+- PM 2.3 节"新手→上尉"预期值偏高，实际代码按 2.1 节规则计算为 SGT（因 CPT 需 S≥2）
+- 代码遵循 2.1 节规则定义，实现正确
+- 需 PM 更新 2.3 节验证表
+
+**问题 2 [P3]：s_rank_count 重复计数风险**
+- `result_screen.gd` 的 `_save_stage_result()` 每次结算 S 评级都调用 `add_s_rank()`
+- 玩家重试同一关多次获 S 会重复增加 s_rank_count
+- PM 设计未明确"每关只计一次 S"
+- 需 PM 确认是否需要去重（按关卡 ID 记录已获 S 的关卡）
+
+**问题 3 [P3]：unlock_hidden_stage 调用冗余**
+- `event_manager.gd` 的 `_grant_rewards()` 仍调用 `GameManager.unlock_hidden_stage()`
+- 新逻辑下 `is_hidden_stage_unlocked()` 只检查 `has_intel AND has_rank`，不检查 `unlocked_hidden_stages` 列表
+- 该调用变为冗余（不影响功能，但 `unlocked_hidden_stages` 列表数据不再被使用）
+- 非阻塞，可后续清理
+
+### 实施范围说明
+
+PM 设计文档定义了 4 个情报（P0~P3 分批实施），IDE 完成了 P0 和 P1：
+
+| 情报 | 关卡 | 优先级 | 状态 | 事件类型 |
+|------|------|--------|------|---------|
+| 情报1 将官座车 | Stage 02 仰光 | P0 | ✅ 已完成 | kill_target（复用） |
+| 情报2 密林碉堡 | Stage 05 桂林 | P1 | ✅ 已完成 | area_stay（新增） |
+| 情报3 沉船密码箱 | Stage 10 上海 | P2 | ⏸️ 未实施 | kill_and_loot（待新增） |
+| 情报4 绝密军令 | Stage 11 南京 | P3 | ⏸️ 未实施 | escort_survive（待新增） |
+
+H3/H4 隐藏关当前无法解锁（情报事件 JSON 未创建），符合 PM 分批实施计划。
+
+### 文件变更清单（0 个文件）
+
+- 无（本次为 Code Review，未修改任何文件。IDE 已提交 commit 6300ffd）
+
+---
+
+## 任务 16：M3-G 地图设计审核 + 阶段1 基础设施实施
+
+**日期**: 2026-07-11
+**任务**: 审核 PM/IDE 的 M3-G 地图设计文档（[docs/M3_G_map_design.md](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/docs/M3_G_map_design.md)），并实施阶段1 基础设施（G-C1~G-C4）
+**背景**: PM 设计了单图层背景 + 交互对象系统的地图方案，计划 M4 试点 H1 驼峰 + Stage 1 昆明
+
+### 审核发现
+
+深入审核了现有代码与 M3-G 设计的兼容性，发现 5 个技术问题：
+
+| 编号 | 问题 | 严重度 | 处理方案 |
+|------|------|--------|---------|
+| 1 | H1 无敌人需求与 SpawnManager 兜底逻辑冲突（`_generate_default_waves` 在 CSV 为空时生成 10 波敌人） | P0 | 新增 `skip_enemy_spawning` 开关包裹 `_check_and_spawn_waves()` |
+| 2 | 背景滚动公式 `* 0.01` 系数可疑 + `bg_layer_scenes` 在 .tscn 中为空 | P1 | 阶段2 重建背景加载逻辑 |
+| 3 | StaticBody2D + CollisionPolygon2D 无先例 | P1 | 阶段2 从零搭建 H1 山壁碰撞 |
+| 4 | area_stay 仅支持圆形区域 | P2 | 阶段4 扩展矩形/多边形区域 |
+| 5 | PM 5.1 节代码 `data["position"]["x"]` 直接访问字典键会崩溃 | P2 | 改用 `.get()` 安全访问 |
+
+### 阶段1 交付物（4 个文件）
+
+| # | 任务 | 文件 | 类型 | 状态 |
+|---|------|------|------|------|
+| 1 | G-C1 | [scenes/map_objects/map_object.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/map_objects/map_object.gd) | 新建 | ✅ |
+| 2 | G-C2 | [autoload/map_object_manager.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/autoload/map_object_manager.gd) | 新建 | ✅ |
+| 3 | G-C3 | [project.godot](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/project.godot) | 修改 | ✅ |
+| 4 | G-C4 | [levels/level_base.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/levels/level_base.gd) | 修改 | ✅ |
+
+### G-C1: MapObject 基类
+
+**文件**: `scenes/map_objects/map_object.gd`
+**class_name**: `MapObject` extends `Node2D`
+
+**核心 API**:
+- `setup(data: Dictionary)` — 从 JSON 字典初始化（使用 `.get()` 安全访问嵌套字典，避免 PM 5.1 节代码的崩溃风险）
+- `take_damage(damage: int)` — 受伤处理
+- `_on_damaged()` / `_on_destroyed()` — 子类可重写的回调
+- `reset_state()` — 供 PoolManager 复用对象时重置状态（必须实现，否则 PoolManager 会报错）
+
+**关键设计**:
+- 碰撞层约定：Layer4(Enemy) + Layer2(PlayerBullet) 检测
+- `map_spawn_y` 字段供 MapObjectManager 判断生成窗口
+- `_on_destroyed()` 默认行为：加分数 + queue_free
+
+### G-C2: MapObjectManager 对象管理器
+
+**文件**: `autoload/map_object_manager.gd`（Autoload 单例）
+**注册名**: `MapObjectManager`
+
+**核心 API**:
+- `load_map_config(json_path, level_parent)` — 加载 `stage_XX_map.json`，解析 `map.objects` 数组，按 y 坐标排序
+- `update(scroll_offset_y)` — 每帧调用，当对象 `map_spawn_y <= scroll_y + 1920 + SPAWN_AHEAD(200)` 时生成
+- `clear()` — 关卡结束时清理所有对象和状态
+- `get_active_count()` / `get_pending_count()` — 查询接口
+
+**关键设计**:
+- 复用 PoolManager 管理对象池（自动注册容量 20）
+- 向后兼容：无 map.json 的关卡静默跳过，不影响现有逻辑
+- 生成窗口：屏幕高度 1920 + 提前量 200 像素
+
+### G-C3: project.godot 注册
+
+在 `[autoload]` 新增 `MapObjectManager="*res://autoload/map_object_manager.gd"`（L40）
+
+### G-C4: level_base.gd 集成
+
+**新增导出变量**（L37-39）:
+- `skip_enemy_spawning: bool = false` — H1 等无敌人关卡设为 true
+- `map_config_path: String = ""` — 指向 `stage_XX_map.json`
+
+**新增内部状态**（L63）:
+- `bg_scroll_offset_y: float = 0.0` — 累计背景滚动偏移量
+
+**修改点**:
+1. `_ready()` L109-112: 加载地图配置（静默跳过空路径）
+2. `_process()` L130-135: `skip_enemy_spawning` 包裹波次生成 + 调用 `MapObjectManager.update()`
+3. `_update_bg_scroll()` L242: 累计 `bg_scroll_offset_y`
+4. `end_level()` L186-187: 清理 MapObjectManager
+5. `force_end_level()` L211-212: 清理 MapObjectManager
+
+### 验证结果
+
+运行 `Godot_v4.7-stable_win64_console.exe --headless --import --quit`：
+- ✅ exit 0
+- ✅ MapObject class_name 正确注册（日志显示 `update_scripts_classes | MapObject`）
+- ✅ 无 ERROR / SCRIPT ERROR / Parse Error / Failed loading
+
+### 向后兼容性
+
+- 无 `map_config_path` 的关卡：`load_map_config` 静默跳过，不影响现有逻辑
+- `skip_enemy_spawning = false`（默认）：波次生成逻辑不变
+- 现有 .tscn 文件无需修改即可正常运行
+
+### 阶段2 准备
+
+阶段1 基础设施已就绪，阶段2（H1 驼峰试点）可立即启动，等待 Design 交付：
+- `bg_hump_extreme_full.png`（512x6144 单图层背景）
+- `hump_rock_debris.png`（碎片纹理）
+- `hump_cloud_fake.png`（云雾纹理）
+
+### 文件变更清单（4 个文件）
+
+- scenes/map_objects/map_object.gd（新建：MapObject 基类，96 行）
+- autoload/map_object_manager.gd（新建：对象管理器 autoload，180 行）
+- project.godot（修改：注册 MapObjectManager autoload）
+- levels/level_base.gd（修改：+skip_enemy_spawning +map_config_path +bg_scroll_offset_y +MapObjectManager 集成）

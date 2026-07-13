@@ -33,6 +33,10 @@ signal level_cleared()
 @export var bgm_path: String = ""
 ## 是否允许暂停
 @export var can_pause: bool = true
+## 是否跳过空中敌机生成（H1 驼峰等无敌人关卡使用）
+@export var skip_enemy_spawning: bool = false
+## 地图配置 JSON 路径（M3-G 单图层地图对象配置，留空则不加载）
+@export var map_config_path: String = ""
 
 # ============================================================
 # 内部状态
@@ -55,6 +59,8 @@ var boss_defeated: bool = false
 var current_boss: Node2D = null
 ## 背景视差层节点数组
 var bg_layers: Array[ParallaxLayer] = []
+## 累计背景滚动偏移量（像素，用于 MapObjectManager 判断生成窗口）
+var bg_scroll_offset_y: float = 0.0
 ## 关卡结束计时器（BOSS击败后延迟结算）
 var end_timer: float = 0.0
 ## 关卡结束延迟时间
@@ -100,6 +106,11 @@ func _ready() -> void:
 	add_child(event_manager)
 	event_manager.load_events(level_id)
 
+	# 加载地图对象配置（M3-G 单图层地图对象系统）
+	# 无 stage_XX_map.json 的关卡正常运行，load_map_config 会静默跳过
+	if map_config_path != "" and MapObjectManager:
+		MapObjectManager.load_map_config(map_config_path, self)
+
 	# 自动开始关卡（M2阶段简化：场景加载后立即开始，无需按键触发）
 	# 未来如有"按任意键开始"需求，可移除此行改为外部调用 start_level()
 	start_level()
@@ -115,8 +126,13 @@ func _process(delta: float) -> void:
 	# 更新背景滚动
 	_update_bg_scroll(delta)
 
-	# 检查并生成敌机波次
-	_check_and_spawn_waves()
+	# 检查并生成敌机波次（H1 等无敌人关卡跳过）
+	if not skip_enemy_spawning:
+		_check_and_spawn_waves()
+
+	# 更新地图对象（M3-G 根据滚动偏移生成地面对象）
+	if MapObjectManager:
+		MapObjectManager.update(bg_scroll_offset_y)
 
 	# 检查BOSS战结束
 	_check_level_complete(delta)
@@ -166,6 +182,10 @@ func end_level() -> void:
 	if PoolManager.has_method("return_all_active"):
 		PoolManager.return_all_active()
 
+	# 清理地图对象（M3-G）
+	if MapObjectManager:
+		MapObjectManager.clear()
+
 	# 发射关卡通关信号
 	level_cleared.emit()
 
@@ -186,6 +206,10 @@ func force_end_level() -> void:
 	# 场景切换前清理对象池
 	if PoolManager.has_method("return_all_active"):
 		PoolManager.return_all_active()
+
+	# 清理地图对象（M3-G）
+	if MapObjectManager:
+		MapObjectManager.clear()
 
 	print("[LevelBase] 关卡 '%s' 强制结束" % level_name)
 
@@ -221,6 +245,9 @@ func _create_parallax_background() -> void:
 func _update_bg_scroll(delta: float) -> void:
 	if parallax_background == null:
 		return
+
+	# 累计滚动偏移量（供 MapObjectManager 判断生成窗口使用）
+	bg_scroll_offset_y += bg_scroll_speed * delta
 
 	# 向下滚动视差背景，模拟飞机向上飞行
 	for layer in bg_layers:
