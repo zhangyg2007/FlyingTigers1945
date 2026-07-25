@@ -2175,3 +2175,71 @@ PM 审核发现 L03（怒江惠通桥）存在史实问题：惠通桥非重型�
 
 ---
 
+## PM 审核 commit 6f6d5bf (2026-07-25)
+
+### 同步状态说明
+
+> ⚠️ **同步差异**：用户报告 commit `6f6d5bf` 已推送（86244e5..6f6d5bf），但 PM Agent 所在仓库 `git ls-remote origin` 显示远程 `main` 仍停留在 `86244e5`，本地无 `boss_sakaguchi.json`/`armored_car.tscn` 等新文件。本节 PM 审核基于用户提供的提交内容摘要进行，待同步恢复后需复核实际代码。
+
+### 已完成交付物（基于用户报告）
+
+**L03 史实修正 Code 实施**（对应 L03-C1~C6 任务）：
+
+| 任务 | 交付内容 | 状态 |
+|------|---------|------|
+| L03-C1 | `boss_sakaguchi.json`（坂口王牌机 BOSS，multi_target）| ✅ 已完成 |
+| L03-C2 | `boss_sakaguchi.tscn`（多目标编队场景）| ✅ 已完成 |
+| L03-C5 | `armored_car.tscn`（95 式装甲车地面对象）| ✅ 已完成 |
+| L03-C3/C4/C6 | `stage_03_salween` 关卡配置 + `stage_config.json` + `map_object_manager.gd`/`spawn_manager.gd` 更新 | ✅ 已完成 |
+| 清理 | 删除 `boss_fortress.json`/`.tscn`（已整合到坂口 BOSS）| ✅ 已完成 |
+
+**Design 素材批量交付**（161 个新文件）：
+
+| 类别 | 数量 | 内容 |
+|------|------|------|
+| 子弹 | 5 种 | bullet_enemy_large/homing/player_cannon/rocket/bomb |
+| 特效 | 3 种 | fx_explosion_chain/fire/smoke |
+| 敌机方向变体 | 7 型×8 方向+翻滚 | J2M/Ki-27/Ki-43/Ki-44/Ki-45/Ki-61/Ki-84 |
+| 地面单位方向变体 | 3 型×4 方向 | landing_craft/truck/type97_tank |
+| 地图对象 | 12 种 | ally_barricade/nest/bridge/bunker/command_post/flak_gun/fuel_tank/hangar/runway/train_car/train_engine/warehouse |
+| 玩家战机翻滚 | 7 架 | B25/B29/P38/P40B/P40E/P47/P51 |
+
+### 代码验证结果
+
+| 脚本 | 状态 | 备注 |
+|------|------|------|
+| `save_manager.gd` | ✅ 通过 | 无依赖问题 |
+| `boss_base.gd` | ✅ 已修复 | 循环依赖问题已解决 |
+| `ally_position.gd` | ✅ 已修复 | 类型转换问题已解决 |
+| `assault_boss.gd` | ⏳ 超时 | check-only 模式检查时间较长，非错误 |
+
+### 5 项待 PM 决策问题 — 优先级分析
+
+| # | 问题 | 影响范围 | 优先级 | PM 决策 |
+|---|------|---------|--------|---------|
+| 1 | BOSS 部件精灵缺失（炮塔/防空炮/雷达仅有碰撞体）| 全部 naval_assault + multi_target BOSS（L02/L04A/L07/L08A/L03）| **P1** | 安排 Design 补充部件 Sprite（见下方任务 F1）|
+| 2 | 情报图标缺失（IntelBriefcase 复用默认素材）| 4 个情报关（L02/L04/L05/L07）| **P2** | 安排 Design 补充 4 个情报专用图标（见任务 F2）|
+| 3 | 友军阵地素材缺失（AllyPosition 复用 mg_nest.png）| 3 个保护关（L03/L07/L10）| **P1** | 安排 Design 补充撤退卡车/运输船/高炮素材（见任务 F3）|
+| 4 | multi_target vessels 仅基础框架 | L03 坂口装甲支队 + L07 三舰艇编队 | **P0** | 安排 Code 完善 vessel 切换逻辑（见任务 F4）⚠️ 与 E13 记录矛盾，需复核 |
+| 5 | mixed/final segments 仅基础框架 | L04/L08/L10 多阶段 BOSS（含终极关）| **P0** | 安排 Code 完善 segment 切换逻辑（见任务 F5）⚠️ 与 E13 记录矛盾，需复核 |
+
+### 后续任务规划（F1-F5）
+
+| # | 部门 | 任务 | 文件 | 优先级 | 依赖 |
+|---|------|------|------|--------|------|
+| F1 | Design | BOSS 部件 Sprite 补全 | `assets/sprites/boss/parts/`（炮塔/防空炮/雷达等独立 Sprite）| P1 | 无 |
+| F2 | Design | 4 个情报专用图标 | `assets/sprites/ui/intel_*.png`（L02/L04/L05/L07 各 1）| P2 | 无 |
+| F3 | Design | 友军保护专用素材 | `ally_retreat_truck.png`/`ally_transport_ship.png`/`ally_aa_gun.png` | P1 | 无 |
+| F4 | Code | multi_target vessels 逻辑完善 | `scenes/bosses/boss_base.gd`（`_init_multi_target_boss`/`_switch_to_next_vessel`）| P0 | 需先复核 E13 实现 |
+| F5 | Code | mixed/final segments 逻辑完善 | `scenes/bosses/boss_base.gd`（`_init_mixed_boss`/`_switch_to_next_segment`）| P0 | 需先复核 E13 实现 |
+
+### ⚠️ 需重点复核项
+
+**问题 4/5 与 devlog E13 记录矛盾**：
+- E13 记录（第 1865 行起）声称 multi_target 和 mixed/final "详细实现逻辑已完善"，含 `_apply_vessel`/`_switch_to_next_segment` 等方法
+- 但 commit 6f6d5bf 报告这两项仍为"基础框架，详细实现待完善"
+- **可能原因**：① E13 实现不完整即标记完成；② 6f6d5bf 重构时回退了部分逻辑；③ "基础框架"指 vessels 配置数据缺失而非代码逻辑
+- **行动**：待同步恢复后，PM 需对比 86244e5 与 6f6d5bf 的 `boss_base.gd` diff，确认实际状态
+
+---
+

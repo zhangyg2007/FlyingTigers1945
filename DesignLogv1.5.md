@@ -157,3 +157,51 @@
 | L03-D5 | 国军旗 Sprite | 32×32 PNG-32 RGBA | `ally_chinese_flag.png`（L03+L05+L07共用）|
 
 **注**：L03-D2（95式轻装甲车）可复用现有 `event_target_car.png` 作为占位；L03-D3/D4/D5 为新增素材。BOSS Sprite L03-D1 需新建（现有 `boss_huitong_bridge.png` 将废弃）。
+
+---
+
+### 2026-07-25 (Session 5) — PM 审核代码同步素材 + 待补清单
+
+**背景**：commit 6f6d5bf 报告 Code + Design 同步，含 161 个新素材文件。PM 审核后整理待补 Design 素材清单。
+
+**已交付素材（基于 commit 6f6d5bf 报告）**：
+
+| 类别 | 数量 | 规格 | 备注 |
+|------|------|------|------|
+| 子弹 | 5 种 | — | bullet_enemy_large/homing/player_cannon/rocket/bomb |
+| 特效 | 3 种 | — | fx_explosion_chain/fire/smoke |
+| 敌机方向变体 | 7 型×8 方向+翻滚 | 128×128 | J2M/Ki-27/Ki-43/Ki-44/Ki-45/Ki-61/Ki-84 |
+| 地面单位方向变体 | 3 型×4 方向 | — | landing_craft/truck/type97_tank |
+| 地图对象 | 12 种 | — | ally_barricade/nest/bridge/bunker/command_post/flak_gun/fuel_tank/hangar/runway/train_car/train_engine/warehouse |
+| 玩家战机翻滚 | 7 架 | 128×128 | B25/B29/P38/P40B/P40E/P47/P51 |
+
+**待补 Design 素材清单（PM 审核整理）**：
+
+| 优先级 | 任务 ID | 缺失内容 | 规格 | 影响范围 | 来源问题 |
+|--------|---------|---------|------|---------|---------|
+| P1 | F1 | BOSS 部件 Sprite（炮塔/防空炮/雷达等）| 60×60 PNG-32 RGBA | L02/L04A/L07/L08A/L03 全部部件型 BOSS | 问题 1：部件仅有碰撞体无独立 Sprite |
+| P1 | F3 | 友军保护专用素材 | 详见下表 | L03/L07/L10 三个保护关 | 问题 3：AllyPosition 复用 mg_nest.png |
+| P2 | F2 | 4 个情报专用图标 | 64×64 PNG-32 RGBA | L02/L04/L05/L07 四个情报关 | 问题 2：IntelBriefcase 复用默认素材 |
+
+**F3 友军保护素材明细**：
+
+| 文件名 | 尺寸 | 用途 | 关卡 |
+|--------|------|------|------|
+| `ally_retreat_truck.png` | 64×48 | 撤退卡车（绿色+国军旗）| L03 |
+| `ally_transport_ship.png` | 80×48 | 运输船（带国军旗）| L07 |
+| `ally_aa_gun.png` | 64×64 | 高射炮阵地（带国军旗）| L10 |
+| `ally_chinese_flag.png` | 32×32 | 国军军旗（共用）| L03+L05+L07 |
+| `ally_usa_flag.png` | 32×32 | 美军军旗（区分用）| L10 |
+
+**F1 BOSS 部件 Sprite 明细**（按 BOSS 分类）：
+
+| BOSS | 缺失部件 | 数量 |
+|------|---------|------|
+| 天龙号（L02）| 炮塔×4 | 4 |
+| 妙高号（L04A）| 炮塔×4 + 防空炮×2 | 6 |
+| 最上号（L08A）| 炮塔×5 + 舰桥 | 6 |
+| 坂口装甲支队（L03）| 指挥坦克炮塔 + 装甲车炮塔×2 | 3 |
+| 湘江舰艇编队（L07）| 舰桥×3 | 3 |
+| **合计** | — | ~22 |
+
+**注**：commit 6f6d5bf 同步差异——PM Agent 仓库远程仍停留在 86244e5，6f6d5bf 未同步到 GitHub。待同步恢复后需复核实际素材文件。
