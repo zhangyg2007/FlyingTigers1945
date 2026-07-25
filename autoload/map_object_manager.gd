@@ -25,6 +25,8 @@ const SCENE_PATHS: Dictionary = {
 	"fuel_depot": "res://scenes/map_objects/fuel_depot.tscn",
 	"bridge": "res://scenes/map_objects/bridge_target.tscn",
 	"airfield_runway": "res://scenes/map_objects/airfield_runway.tscn",
+	# v1.5.1 L03 史实修正：95式轻装甲车（坂口支队追击车辆）
+	"armored_car": "res://scenes/map_objects/armored_car.tscn",
 	# v1.5 C16 新增环境障碍
 	"canyon_wall": "res://scenes/obstacles/canyon_wall.tscn",
 	"karst_peak": "res://scenes/obstacles/karst_peak.tscn",

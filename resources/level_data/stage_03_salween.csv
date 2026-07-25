@@ -1,22 +1,22 @@
-# 第3关"怒江天险"波次配置
+# 第3关"怒江惠通桥"波次配置
 # 格式：time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
-# BOSS: BOSS_fortress（筑波浮桥要塞）
-# 难度：高（速度倍率1.2~1.5，密集波次，大量敌机）
+# BOSS: BOSS_sakaguchi（56师团坂口装甲支队 - multi_target）
+# 史实背景：1942.5.5 飞虎队空袭怒江西岸坂口支队车队，掩护远征军撤退过桥
+# 波次节奏：
+#   - 空中堵截层：Ki-27 战斗机与 Ki-21 轰炸机交替从屏幕上方出现（本 CSV）
+#     （设计文档中提及 Ki-48，因 Ki-48 场景未实现，暂以 ki21_bomber 代替）
+#   - 车辆追击层：95式轻装甲车沿滇缅公路追击（map JSON 配置，按 Y 坐标滚动生成）
+#   - 峡谷限制：两侧 canyon_wall 不可飞入（map JSON 配置）
 time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
-2.0,ki27_fighter,5,line,200,-50,1.2,straight
-4.5,ki27_fighter,5,line,400,-50,1.2,straight
-7.5,ki43_hayabusa,4,diamond,300,-50,1.4,straight
-10.5,ki27_fighter,6,v_formation,300,-50,1.1,dive
-13.5,ki21_bomber,2,line,200,-80,0.8,straight
-13.5,ki21_bomber,2,line,400,-80,0.8,straight
-17.0,ki43_hayabusa,5,v_formation,300,-50,1.3,dive
-20.5,ki27_fighter,4,diamond,200,-50,1.2,straight
-20.5,ki27_fighter,4,diamond,400,-50,1.2,straight
-24.0,ki43_hayabusa,6,swarm,300,-50,1.4,straight
-28.0,ki21_bomber,3,v_formation,300,-80,0.9,dive
-32.0,ki43_hayabusa,4,diamond,200,-50,1.5,straight
-32.0,ki43_hayabusa,4,diamond,400,-50,1.5,straight
-36.0,ki27_fighter,8,swarm,300,-50,1.3,dive
-40.0,ki43_hayabusa,5,v_formation,300,-50,1.4,straight
-44.0,ki21_bomber,2,line,300,-80,1.0,straight
-47.0,BOSS_fortress,1,boss,300,-150,0.4,boss_enter
+2.0,ki27_fighter,4,v_formation,300,-50,1.2,dive
+8.0,ki27_fighter,5,line,200,-50,1.2,straight
+11.0,ki21_bomber,3,line,300,-80,0.9,straight
+17.0,ki27_fighter,6,swarm,300,-50,1.3,dive
+20.0,ki21_bomber,2,line,200,-80,0.9,straight
+20.0,ki21_bomber,2,line,400,-80,0.9,straight
+27.0,ki27_fighter,4,diamond,200,-50,1.2,straight
+27.0,ki27_fighter,4,diamond,400,-50,1.2,straight
+31.0,ki21_bomber,3,v_formation,300,-80,1.0,dive
+35.0,ki27_fighter,8,swarm,300,-50,1.4,straight
+40.0,ki27_fighter,4,line,300,-50,1.3,dive
+44.0,BOSS_sakaguchi,1,boss,300,-150,0.4,boss_enter

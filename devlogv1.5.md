@@ -2169,9 +2169,132 @@ PM 审核发现 L03（怒江惠通桥）存在史实问题：惠通桥非重型�
 | M4-C | 多战机系统 + 机库 UI（C9-C10）| ✅ 完成 |
 | M4-D | 隐藏情报 + 友军保护（C11-C14）| ✅ 完成 |
 | M4-E | 平衡调优 + 冒烟测试（C15-C22）| ✅ 完成 |
-| **L03 修正** | 史实修正（L03-C1~C7）| ⏳ 待实施 |
+| **L03 修正** | 史实修正（L03-C1~C7）| ✅ 完成（见下文 v1.5.1 实施）|
 
-**v1.5.0 M4-A~M4-E 阶段全部完成并推送。L03 史实修正为后续迭代任务。**
+**v1.5.0 M4-A~M4-E 阶段全部完成并推送。L03 史实修正实施详见下文。**
+
+---
+
+## v1.5.1 L03 史实修正实施
+
+**日期**: 2026-07-25
+**任务**: 根据 PM 审核反馈的 v1.5.1 修订，将 L03 BOSS 从惠通桥（ground_facility）重设计为 56 师团坂口装甲支队（multi_target），并同步更新关卡波次、地图对象、友军保护事件。
+
+### 实施背景
+
+PM 审核发现 L03 存在史实问题：惠通桥非重型设施，不适合做 BOSS；实际战役为掩护远征军撤退过桥后炸桥，日军坂口支队以装甲车辆源源不断追击 + 飞机堵截。设计文档 `docs/v1.5.0_upgrade_design.md` §15.4.3 和 §19.3 已修正，本次为 Code 实施任务。
+
+### 实施内容
+
+#### L03-C1: BOSS JSON 重构
+
+- 删除 `resources/boss_data/boss_fortress.json`（惠通桥，ground_facility）
+- 新建 `resources/boss_data/boss_sakaguchi.json`（坂口装甲支队，multi_target）
+  - boss_id: `boss_sakaguchi_armored_column`
+  - 5 个 vessels 依次击破：
+    | vessel | 名称 | HP | 弹幕 | 分数 | Sprite |
+    |--------|------|-----|------|------|--------|
+    | command_tank | 指挥坦克 | 3000 | turret_fire | 10000 | enemy_type97_tank.png |
+    | armored_car_1 | 95式装甲车 | 1500 | fan_shoot | 5000 | event_target_car.png |
+    | armored_car_2 | 95式装甲车 | 1500 | fan_shoot | 5000 | event_target_car.png |
+    | ki27_1 | Ki-27战斗机 | 800 | aimed_shoot | 3000 | enemy_ki27_fighter.png |
+    | ki27_2 | Ki-27战斗机 | 800 | aimed_shoot | 3000 | enemy_ki27_fighter.png |
+  - 总 HP 7600，玩家 DPS 50 下 TTK ≈ 152s（合理，符合 multi_target 依次击破节奏）
+  - 复用现有素材（无新增 Design 依赖）
+
+#### L03-C2: BOSS 场景重构
+
+- 删除 `scenes/bosses/boss_fortress.tscn`
+- 新建 `scenes/bosses/boss_sakaguchi.tscn`
+  - boss_type = "multi_target"，indestructible = true，max_hp = -1
+  - 纹理: enemy_type97_tank.png（指挥坦克作为主体外观）
+  - 碰撞框: 180×180（大型装甲编队）
+  - boss_config_path 指向新 JSON
+
+#### L03-C3: 友军保护事件重设计
+
+- 重写 `resources/level_data/events_stage_03_salween.json`
+  - event_id: `salween_ally_bridge_building` → `salween_ally_retreat`
+  - 友军：3 机枪阵地（HP 50）→ 3 撤退卡车（HP 800×3）
+  - 时限：30s → 45s
+  - ally_type: `mg_nest` → `retreat_truck`
+  - trigger time: 30.0 → 20.0（与 §15.4.3 中 Y=1200 触发位置匹配）
+  - 提示文本更新为"掩护远征军撤退过桥"
+
+#### L03-C4: 地图配置更新
+
+- 重写 `resources/level_data/stage_03_salween_map.json`
+  - 保留 8 个 canyon_wall（峡谷两侧不可飞入区，符合 §15.4.3 峡谷地形）
+  - 新增 7 个 armored_car 地面目标（沿滇缅公路追击，HP 30 / 分数 500）
+  - 移除原 3 个 bunker（与坂口支队史实不符）
+  - 保留 1 个 anti_air_gun（东岸防空威胁）
+
+#### L03-C5: 95式轻装甲车场景
+
+- 新建 `scenes/map_objects/armored_car.tscn`
+  - 继承 map_object.gd（随背景滚动）
+  - 纹理: event_target_car.png（设计 §19.3 明确"复用 event_target_car.png 作为 95 式轻装甲车"）
+  - 碰撞框: 60×40
+  - score_value: 500
+- 更新 `autoload/map_object_manager.gd` SCENE_PATHS 新增 `"armored_car"` 映射
+
+#### L03-C6: 波次配置更新
+
+- 重写 `resources/level_data/stage_03_salween.csv`
+  - 移除原 Ki-43/Ki-21 波次（与 1942.5 史实不符，当时日军主力为 Ki-27/Ki-48）
+  - 12 波空中堵截：Ki-27 战斗机 + Ki-21 轰炸机交替
+  - 95式轻装甲车改为 map JSON 配置（按 Y 坐标滚动生成，更符合"沿公路追击"的史实）
+  - BOSS: `BOSS_fortress` → `BOSS_sakaguchi`
+  - 注：设计 §15.4.3 提及 Ki-48，因 Ki-48 场景未实现，暂以 ki21_bomber 代替（与 L01 处理方式一致）
+
+#### L03-C7: 配置文件联动更新
+
+- `levels/stage_03_salween.tscn`: boss_scene_path 指向 `boss_sakaguchi.tscn`
+- `autoload/spawn_manager.gd`: BOSS_fortress 映射更新为 `boss_sakaguchi.tscn`，新增 `BOSS_sakaguchi` 别名
+- `resources/level_data/stage_config.json`: L03 条目更新
+  - boss_type: `boss_fortress` → `boss_sakaguchi`
+  - boss_config_path: 指向新 JSON
+  - ally_protect_event: `salween_bridge_building` → `salween_ally_retreat`
+
+### 文件变更清单
+
+| 文件 | 变更类型 | 说明 |
+|------|---------|------|
+| `resources/boss_data/boss_fortress.json` | **删除** | 旧惠通桥 BOSS 配置 |
+| `resources/boss_data/boss_sakaguchi.json` | **新增** | 坂口装甲支队 multi_target 配置 |
+| `scenes/bosses/boss_fortress.tscn` | **删除** | 旧惠通桥场景 |
+| `scenes/bosses/boss_sakaguchi.tscn` | **新增** | 坂口装甲支队场景 |
+| `scenes/map_objects/armored_car.tscn` | **新增** | 95式轻装甲车场景 |
+| `resources/level_data/stage_03_salween.csv` | 重写 | Ki-27/Ki-21 空中堵截波次 |
+| `resources/level_data/stage_03_salween_map.json` | 重写 | 峡谷地形 + 95式装甲车追击 |
+| `resources/level_data/events_stage_03_salween.json` | 重写 | 3 撤退卡车保护事件 |
+| `levels/stage_03_salween.tscn` | 修改 | boss_scene_path 更新 |
+| `autoload/spawn_manager.gd` | 修改 | BOSS_fortress 映射更新 + BOSS_sakaguchi 新增 |
+| `autoload/map_object_manager.gd` | 修改 | SCENE_PATHS 新增 armored_car |
+| `resources/level_data/stage_config.json` | 修改 | L03 条目更新 |
+
+### 验收
+
+- [x] boss_sakaguchi.json 符合 multi_target 格式（vessels 数组完整，5 个 vessel 配置齐全）
+- [x] boss_sakaguchi.tscn 引用 boss_base.gd + boss_type = "multi_target"
+- [x] stage_03_salween.tscn 的 boss_scene_path 指向新场景
+- [x] spawn_manager.gd BOSS_fortress/BOSS_sakaguchi 均映射到 boss_sakaguchi.tscn
+- [x] stage_config.json L03 条目更新（boss_type/boss_config_path/ally_protect_event）
+- [x] stage_03_salween.csv 12 波 + BOSS_sakaguchi，无废弃敌机引用
+- [x] stage_03_salween_map.json 18 个对象（8 canyon_wall + 7 armored_car + 1 aagun + 2 placeholder）
+- [x] events_stage_03_salween.json 3 撤退卡车 HP 800 × 3，时限 45s
+- [x] armored_car.tscn 引用 event_target_car.png（设计明确允许复用）
+- [x] map_object_manager.gd SCENE_PATHS 包含 armored_car 映射
+
+### 已知限制与待后续处理
+
+1. **撤退卡车 Sprite 占位**：ally_position.tscn 默认使用 mg_nest.png，ally_type="retreat_truck" 仅作语义标签，外观未切换。待 Design D7 提供 `ally_retreat_truck.png` 后，需扩展 ally_position.gd 按 ally_type 加载不同 Sprite。
+2. **Ki-48 场景缺失**：设计 §15.4.3 提及 Ki-48 轰炸机，但 `scenes/enemies/` 下无 `enemy_ki48_lily.tscn`（虽有 PNG 素材）。本次以 `ki21_bomber` 代替（与 L01 处理一致）。后续可创建 Ki-48 场景并替换 CSV 引用。
+3. **armored_car 无机枪射击**：当前 armored_car.tscn 使用 map_object.gd，仅作为可击毁地面目标，未实现"机枪射击玩家"。设计 §4.3 标注"机枪射击"为攻击方式。后续可扩展 map_object.gd 支持 bullet_pattern 字段，或创建 armored_car.gd 子类实现射击。
+4. **保护情节来袭敌人未生成**：设计 §19.3 描述保护情节中"3 辆95式装甲车 + 2架Ki-27 + 4架Ki-48"来袭，当前 EventManager 的 protect_ally_event 仅生成友军，未生成来袭敌人波次（友军仅面临背景滚动中的常规敌机威胁）。后续可在 event_manager.gd 的 `_start_protect_ally_event` 中扩展敌人生成逻辑。
+5. **BOSS JSON 文件名 vs boss_id 不匹配**：boss_sakaguchi.json 内 boss_id = `boss_sakaguchi_armored_column`。这是 v1.5 的历史遗留命名约定（其他 BOSS 也存在类似情况），不影响功能。
+
+**v1.5.1 L03 史实修正实施完成**。等待 PM 整体审核。
 
 ---
 

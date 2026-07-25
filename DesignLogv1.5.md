@@ -104,17 +104,82 @@
 
 ---
 
-## 待执行任务 (P1)
+### 2026-07-25 (Session 5) — PM反馈后批量P0素材生成
+
+**PM反馈**: 提供 `docs/v1.5_asset_master_list.md` 完整素材需求清单（v1.5.1），含方向图命名规范和优先级
+
+**P0-1: 玩家战机Roll变体** [完成]
+- 8架 x 2roll = 16张 128x128 PNG-32 RGBA（含Session 3已完成的P-40）
+- 存放于 `assets/sprites/player/{p40,p40b,p40e,p38,p47,p51,b25,b29}/`
+- 工艺: PIL程序化（半边压缩75%/扩展133% + 旋转10° + 裁剪回128x128）
+
+**P0-2: 敌机8方向图** [完成]
+- 7种可转弯敌机 x 8方向 = 56张（含_n复制的源文件）
+- 类型: Ki-27, Ki-43, Ki-44, Ki-61, Ki-84, J2M, Ki-45
+- 命名: `enemy_{type}_{n,ne,e,se,s,sw,w,nw}.png`
+- 存放于 `assets/sprites/enemy/`
+- 工艺: PIL `rotate(-angle)` 从N方向旋转生成
+
+**P0-3: 敌机N/S方向Roll变体** [完成]
+- 7种 x 2方向(N/S) x 2roll = 28张
+- 命名: `enemy_{type}_{n|s}_roll_{l|r}.png`
+
+**P0-4: 地面可转弯单位方向图** [完成]
+- Type97坦克: 8方向 (含_n)
+- 运输船: 4方向
+- 登陆艇: 4方向
+- 卡车(新AI生成): 4方向
+- 民船(新AI生成): 4方向
+- 共24张方向图
+
+**P1-1: 地面固定设施Sprite** [完成]
+- AI生成 + JPG→PNG透明背景转换，12张128x128 PNG
+- map_bunker / map_flak_gun / map_fuel_tank / map_warehouse / map_train_engine / map_train_car / map_hangar / map_command_post / map_bridge / map_ally_nest / map_ally_barricade / map_runway_section
+- 存放于 `assets/sprites/enemy/`
+
+**P1-2: 友军保护素材** [完成]
+- AI生成 + 转PNG，4张128x128 PNG
+- ally_p40_grounded / ally_nest_kmt / ally_transport_boat / ally_transport_boat_damaged
+
+**P1-3: 子弹/特效** [完成]
+- AI生成 + 转PNG，8张子弹 + 3张新特效 = 11张
+- bullet_player_cannon / bullet_enemy_large / bullet_homing / bullet_bomb / bullet_rocket
+- fx_explosion_chain / fx_smoke / fx_fire
+
+**本Session统计**: 新增/程序化生成约 **147张** sprite文件
+
+---
+
+## 当前资产状态（更新后）
+
+| 类别 | 数量 | 尺寸 | 备注 |
+|------|------|------|------|
+| BOSS Sprite | 14 | 512x512 | 90度俯视扁平 |
+| BOSS部件 | 48 | 60x60 | 方案A（代码旋转） |
+| 陆上设施(ground_facilities) | 7 | 128x128 | BOSS关联 |
+| 敌机(含方向图) | 63 | 128x128 | 7种x8方向+6直线 |
+| 敌机Roll变体 | 28 | 128x128 | N/S方向 |
+| 地面固定设施(map_) | 12 | 128x128 | MapObject用 |
+| 地面方向图 | 24 | 128x128 | 坦克/卡车/船 |
+| 玩家战机(含roll) | 21 | 128x128 | 7架x3姿态 |
+| 友军素材 | 4+2event | 128x128 | 保护机制 |
+| 子弹 | 9 | 16-32 | 5新增+4已有 |
+| 特效 | 15 | 64 | 3新增+12已有 |
+
+---
+
+## 待执行任务 (P1/P2)
 
 | # | 任务 | 数量 | 状态 |
 |---|------|------|------|
+| D4 | 12关背景地图全部重做 | 12张(800x2400) | **P0，待执行** |
 | D6 | 隐藏情报素材 | 13张 | 待执行 |
-| D7 | 友军保护素材 | 5张 | 待执行 |
 | D9 | 地图标注追加 | 8张 | 待执行 |
-| D11 | 地面目标Sprite | 5张 | 待执行 |
-| D12 | 新隐藏关背景 | 2张 | 待执行 |
 | D13 | 机库UI素材 | ~8张 | 待执行 |
-| D14 | 旧背景清理/重命名 | 6张 | 待执行 |
+| L03-D1 | 坂口装甲支队BOSS Sprite | 1张(512x512) | 待执行 |
+| L03-D3 | 撤退卡车Sprite | 1张 | 待执行 |
+| L03-D4 | 炸桥特效 | 1张 | 待执行 |
+| L03-D5 | 国军旗Sprite | 1张 | 待执行 |
 
 ---
 

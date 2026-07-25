@@ -3,66 +3,24 @@
     "background_image": "res://assets/sprites/backgrounds/stage_03_salween/bg_salween_full.png",
     "scroll_speed": 90.0,
     "objects": [
-      {
-        "id": "l03_canyon_01",
-        "type": "canyon_wall",
-        "position": { "x": 80, "y": 1200 },
-        "properties": { "contact_damage": 9999, "one_shot": false }
-      },
-      {
-        "id": "l03_canyon_02",
-        "type": "canyon_wall",
-        "position": { "x": 1000, "y": 1200 },
-        "properties": { "contact_damage": 9999, "one_shot": false }
-      },
-      {
-        "id": "l03_bunker_01",
-        "type": "bunker",
-        "position": { "x": 300, "y": 1800 },
-        "properties": { "hp": 20, "score": 800, "is_interactive": true }
-      },
-      {
-        "id": "l03_canyon_03",
-        "type": "canyon_wall",
-        "position": { "x": 80, "y": 2400 },
-        "properties": { "contact_damage": 9999, "one_shot": false }
-      },
-      {
-        "id": "l03_canyon_04",
-        "type": "canyon_wall",
-        "position": { "x": 1000, "y": 2400 },
-        "properties": { "contact_damage": 9999, "one_shot": false }
-      },
-      {
-        "id": "l03_bunker_02",
-        "type": "bunker",
-        "position": { "x": 700, "y": 3000 },
-        "properties": { "hp": 20, "score": 800, "is_interactive": true }
-      },
-      {
-        "id": "l03_aagun_01",
-        "type": "anti_air_gun",
-        "position": { "x": 400, "y": 3600 },
-        "properties": { "hp": 12, "score": 500, "is_interactive": true }
-      },
-      {
-        "id": "l03_canyon_05",
-        "type": "canyon_wall",
-        "position": { "x": 80, "y": 3900 },
-        "properties": { "contact_damage": 9999, "one_shot": false }
-      },
-      {
-        "id": "l03_canyon_06",
-        "type": "canyon_wall",
-        "position": { "x": 1000, "y": 3900 },
-        "properties": { "contact_damage": 9999, "one_shot": false }
-      },
-      {
-        "id": "l03_bunker_03",
-        "type": "bunker",
-        "position": { "x": 540, "y": 4200 },
-        "properties": { "hp": 25, "score": 1000, "is_interactive": true }
-      }
+      {"id": "l03_canyon_w_01", "type": "canyon_wall", "position": {"x": 80, "y": 2350}, "properties": {"contact_damage": 9999, "one_shot": false}},
+      {"id": "l03_canyon_e_01", "type": "canyon_wall", "position": {"x": 1000, "y": 2350}, "properties": {"contact_damage": 9999, "one_shot": false}},
+      {"id": "l03_armored_car_01", "type": "armored_car", "position": {"x": 300, "y": 2150}, "properties": {"hp": 30, "score": 500, "is_interactive": true}},
+      {"id": "l03_armored_car_02", "type": "armored_car", "position": {"x": 540, "y": 2150}, "properties": {"hp": 30, "score": 500, "is_interactive": true}},
+      {"id": "l03_armored_car_03", "type": "armored_car", "position": {"x": 780, "y": 2150}, "properties": {"hp": 30, "score": 500, "is_interactive": true}},
+      {"id": "l03_canyon_w_02", "type": "canyon_wall", "position": {"x": 80, "y": 2050}, "properties": {"contact_damage": 9999, "one_shot": false}},
+      {"id": "l03_canyon_e_02", "type": "canyon_wall", "position": {"x": 1000, "y": 2050}, "properties": {"contact_damage": 9999, "one_shot": false}},
+      {"id": "l03_armored_car_04", "type": "armored_car", "position": {"x": 300, "y": 1650}, "properties": {"hp": 30, "score": 500, "is_interactive": true}},
+      {"id": "l03_armored_car_05", "type": "armored_car", "position": {"x": 540, "y": 1650}, "properties": {"hp": 30, "score": 500, "is_interactive": true}},
+      {"id": "l03_canyon_w_03", "type": "canyon_wall", "position": {"x": 80, "y": 1500}, "properties": {"contact_damage": 9999, "one_shot": false}},
+      {"id": "l03_canyon_e_03", "type": "canyon_wall", "position": {"x": 1000, "y": 1500}, "properties": {"contact_damage": 9999, "one_shot": false}},
+      {"id": "l03_canyon_w_04", "type": "canyon_wall", "position": {"x": 80, "y": 1100}, "properties": {"contact_damage": 9999, "one_shot": false}},
+      {"id": "l03_canyon_e_04", "type": "canyon_wall", "position": {"x": 1000, "y": 1100}, "properties": {"contact_damage": 9999, "one_shot": false}},
+      {"id": "l03_aagun_01", "type": "anti_air_gun", "position": {"x": 540, "y": 850}, "properties": {"hp": 12, "score": 300, "is_interactive": true}},
+      {"id": "l03_armored_car_06", "type": "armored_car", "position": {"x": 400, "y": 700}, "properties": {"hp": 30, "score": 500, "is_interactive": true}},
+      {"id": "l03_armored_car_07", "type": "armored_car", "position": {"x": 680, "y": 700}, "properties": {"hp": 30, "score": 500, "is_interactive": true}},
+      {"id": "l03_canyon_w_05", "type": "canyon_wall", "position": {"x": 80, "y": 500}, "properties": {"contact_damage": 9999, "one_shot": false}},
+      {"id": "l03_canyon_e_05", "type": "canyon_wall", "position": {"x": 1000, "y": 500}, "properties": {"contact_damage": 9999, "one_shot": false}}
     ]
   }
 }

@@ -160,7 +160,8 @@ func _init_enemy_scene_map() -> void:
 	_enemy_scene_map["BOSS_bomber"] = "res://scenes/bosses/boss_bomber.tscn"
 	_enemy_scene_map["BOSS_nachi"] = "res://scenes/bosses/boss_nachi.tscn"
 	_enemy_scene_map["BOSS_cruiser"] = "res://scenes/bosses/boss_nachi.tscn"  # 别名：Design 命名对齐后 boss_nachi = boss_cruiser
-	_enemy_scene_map["BOSS_fortress"] = "res://scenes/bosses/boss_fortress.tscn"
+	_enemy_scene_map["BOSS_fortress"] = "res://scenes/bosses/boss_sakaguchi.tscn"  # v1.5.1: 坂口装甲支队替代惠通桥
+	_enemy_scene_map["BOSS_sakaguchi"] = "res://scenes/bosses/boss_sakaguchi.tscn"
 	# M3-B: Stage 04~08 新增 BOSS 映射
 	_enemy_scene_map["BOSS_ki21_squadron"] = "res://scenes/bosses/boss_ki21_squadron.tscn"
 	_enemy_scene_map["BOSS_kinu"] = "res://scenes/bosses/boss_kinu.tscn"

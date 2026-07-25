@@ -57,10 +57,10 @@
       "bgm": "bgm_stage_03.ogg",
       "bg_layers": ["bg_03_salween"],
       "scroll_speed": 90.0,
-      "boss_type": "boss_fortress",
-      "boss_config_path": "res://resources/boss_data/boss_fortress.json",
+      "boss_type": "boss_sakaguchi",
+      "boss_config_path": "res://resources/boss_data/boss_sakaguchi.json",
       "duration": 55.0,
-      "ally_protect_event": "salween_bridge_building",
+      "ally_protect_event": "salween_ally_retreat",
       "easy": {
         "enemy_hp_mult": 1.0,
         "bullet_speed_mult": 1.0,
