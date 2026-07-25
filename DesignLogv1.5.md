@@ -270,3 +270,34 @@
 | **合计** | — | ~22 |
 
 **注**：commit 6f6d5bf 同步差异——PM Agent 仓库远程仍停留在 86244e5，6f6d5bf 未同步到 GitHub。待同步恢复后需复核实际素材文件。
+
+### 2026-07-25 (Session 6) — 同步恢复 + PM 复核
+
+**同步状态**：commit `91ebf27`（原报告 `6f6d5bf`，经 rebase 后哈希变更）已成功同步到远程仓库。PM Agent 本地已拉取全部 161 个新素材文件。
+
+**PM 复核结论**：
+- L03 史实修正代码全部验证通过（boss_sakaguchi.json 配置正确，5 个 vessels 史实准确）
+- multi_target/mixed-final BOSS 逻辑经实际读取 `boss_base.gd` 确认已完整实现（F4/F5 无需再实施）
+- 用户报告"基础框架"描述不准确，实际为完整实现
+
+**发现的新问题**：
+- L03 敌机波次 CSV 中 Ki-48 场景未实现，暂以 ki21_bomber 代替（需 Code 补充 Ki-48 场景，任务 F6）
+
+**待补 Design 素材清单（修正后）**：
+
+| 优先级 | 任务 ID | 缺失内容 | 状态 | 说明 |
+|--------|---------|---------|------|------|
+| P1 | F1 | BOSS 部件 Sprite（炮塔/防空炮/雷达等）| 待执行 | ~22 个部件，详见 Session 5 |
+| P1 | F3 | 友军保护专用素材 | 待执行 | 撤退卡车/运输船/高炮/军旗，详见 Session 5 |
+| P2 | F2 | 4 个情报专用图标 | 待执行 | L02/L04/L05/L07 各 1 |
+| P2 | F6 | Ki-48 敌机 Sprite（如 Design 负责）| 待确认 | stage_03 CSV 暂以 ki21_bomber 代替；需确认是否由 Design 创建 Ki-48 Sprite 还是 Code 复用现有素材 |
+
+**L03 专属素材状态更新**：
+
+| 任务 ID | 内容 | 状态 | 说明 |
+|---------|------|------|------|
+| L03-D1 | BOSS Sprite `boss_sakaguchi_armored_column.png` | ⏳ 待执行 | BOSS JSON 当前复用 `enemy_type97_tank.png`，需新建多目标编队 Sprite |
+| L03-D2 | 95式轻装甲车 Sprite | ✅ 占位可用 | 复用 `event_target_car.png`（BOSS vessel 配置已使用）|
+| L03-D3 | 撤退卡车 Sprite | ⏳ 待执行 | AllyPosition 复用 mg_nest.png，需新建 `ally_retreat_truck.png` |
+| L03-D4 | 炸桥特效 | ⏳ 待执行 | `fx_bridge_explosion.png` 尚未创建 |
+| L03-D5 | 国军旗 Sprite | ⏳ 待执行 | `ally_chinese_flag.png` 尚未创建 |

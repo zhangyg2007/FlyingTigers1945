@@ -2364,5 +2364,56 @@ PM 审核发现 L03 存在史实问题：惠通桥非重型设施，不适合做
 - **可能原因**：① E13 实现不完整即标记完成；② 6f6d5bf 重构时回退了部分逻辑；③ "基础框架"指 vessels 配置数据缺失而非代码逻辑
 - **行动**：待同步恢复后，PM 需对比 86244e5 与 6f6d5bf 的 `boss_base.gd` diff，确认实际状态
 
+### 复核结论 (同步恢复后 2026-07-25)
+
+**同步状态**：commit `91ebf27`（原报告 `6f6d5bf`，经 rebase 后哈希变更）已成功同步。本地拉取后所有新文件就位。
+
+**问题 4/5 复核结果：E13 记录正确，用户报告"基础框架"描述不准确**
+
+经 PM 实际读取 `boss_base.gd`（1532 行）验证：
+
+| 方法 | 行号 | 实现状态 | 说明 |
+|------|------|---------|------|
+| `_init_multi_target_boss()` | 346 | ✅ 完整 | 初始化 vessel 索引 + 调用 `_apply_vessel(_vessels_config[0])` |
+| `_apply_vessel()` | 436 | ✅ 完整 | 应用 vessel 配置（HP/sprite/bullet_pattern）|
+| `_switch_to_next_vessel()` | 723 | ✅ 完整 | 分数奖励 + 索引推进 + 切换 + HP 重置 + HUD 通知 |
+| `_init_mixed_boss()` | 357 | ✅ 完整 | 初始化 segment 索引 + 调用 `_apply_segment(_segments_config[0])` |
+| `_apply_segment()` | 370 | ✅ 完整 | 设置 `_current_segment_boss_type` + 调用 `_apply_segment_config` |
+| `_switch_to_next_segment()` | 664 | ✅ 完整 | 索引推进 + 终止判定 + 切换 + 配置应用 |
+| take_damage 触发 | 1165 | ✅ 完整 | multi_target 满足条件触发 `_switch_to_next_vessel`；mixed 触发 `_switch_to_next_segment` |
+
+**结论**：multi_target vessels 和 mixed/final segments 逻辑**均已完整实现**，与 E13 记录一致。用户报告"基础框架，详细实现待完善"的描述不准确。
+
+**F4/F5 任务状态修正**：
+
+| 任务 | 原状态 | 修正后状态 | 依据 |
+|------|--------|-----------|------|
+| F4 (multi_target vessels 逻辑完善) | P0 待实施 | ✅ 已完成 | `_apply_vessel`/`_switch_to_next_vessel` 已完整实现（行 346/436/723）|
+| F5 (mixed/final segments 逻辑完善) | P0 待实施 | ✅ 已完成 | `_apply_segment`/`_switch_to_next_segment` 已完整实现（行 357/370/664）|
+
+### L03 史实修正代码验证
+
+| 验证项 | 文件 | 结果 |
+|--------|------|------|
+| BOSS JSON | `resources/boss_data/boss_sakaguchi.json` | ✅ multi_target 类型，5 个 vessels（指挥坦克HP3000+2×95式装甲车HP1500+2×Ki-27 HP800），史实准确 |
+| BOSS 场景 | `scenes/bosses/boss_sakaguchi.tscn` | ✅ 由 boss_fortress.tscn 重命名而来 |
+| 地面对象 | `scenes/map_objects/armored_car.tscn` | ✅ 95 式装甲车场景已创建 |
+| 友军保护事件 | `resources/level_data/events_stage_03_salween.json` | ✅ `salween_ally_retreat`（3 辆撤退卡车 HP800），已从架桥改为撤退 |
+| 敌机波次 | `resources/level_data/stage_03_salween.csv` | ✅ Ki-27/Ki-21 交替空中堵截（注：Ki-48 因场景未实现暂以 ki21_bomber 代替）|
+| 旧文件清理 | `resources/boss_data/boss_fortress.json` | ✅ 已删除 |
+
+**注**：CSV 注释指出 Ki-48 场景未实现，暂以 ki21_bomber 代替。需补充 Ki-48 敌机场景（见后续任务 F6）。
+
+### 修正后的后续任务规划
+
+| # | 部门 | 任务 | 优先级 | 说明 |
+|---|------|------|--------|------|
+| ~~F4~~ | ~~Code~~ | ~~multi_target vessels 逻辑完善~~ | ~~P0~~ | ✅ 已完成（复核确认）|
+| ~~F5~~ | ~~Code~~ | ~~mixed/final segments 逻辑完善~~ | ~~P0~~ | ✅ 已完成（复核确认）|
+| F1 | Design | BOSS 部件 Sprite 补全 | P1 | 炮塔/防空炮/雷达等独立 Sprite |
+| F2 | Design | 4 个情报专用图标 | P2 | L02/L04/L05/L07 各 1 |
+| F3 | Design | 友军保护专用素材 | P1 | 撤退卡车/运输船/高炮/军旗 |
+| **F6** | **Code** | **Ki-48 敌机场景创建** | **P2** | stage_03 CSV 注释指出 Ki-48 场景未实现，暂以 ki21_bomber 代替；需创建 `enemy_ki48.tscn` 并更新 CSV |
+
 ---
 
