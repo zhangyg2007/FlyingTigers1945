@@ -2120,3 +2120,58 @@ P-40B(66.7) → P-40E(50.0) → P-38(61.5) → P-47(44.4) → B-25(72.7) → P-5
 
 ---
 
+## PM 审核与阶段总结 (2026-07-25)
+
+### Commit 5ee0c5f 推送确认
+
+**分支**: main  
+**推送范围**: 825eae1..5ee0c5f  
+**提交信息**: `v1.5.0 M4-A~M4-E: 关卡重排+BOSS重构+隐藏情报+友军保护系统`  
+**文件统计**: 522 files changed, 9838 insertions(+), 1757 deletions(-)
+
+#### 已完成代码交付物
+
+| 类别 | 交付内容 | 状态 |
+|------|---------|------|
+| BOSS 系统 | `boss_base.gd` 重构（8 种类型 + difficulty_curve + weak_points + parts）| ✅ |
+| BOSS 系统 | `assault_boss.gd`（naval_assault 专用，含退场动画）| ✅ |
+| 友军保护 | `ally_position.gd/.tscn`（友军阵地 + 保护系统）| ✅ |
+| 隐藏情报 | `intel_briefcase.gd/.tscn`（牛皮纸袋道具）| ✅ |
+| 机库 UI | `hangar.gd/.tscn`（战机选择界面）| ✅ |
+| 关卡配置 | 10 主线 + 2 隐藏关重排，6 旧关删除 | ✅ |
+| BOSS 数据 | 12 个 BOSS JSON 迁移到 v1.5 格式 | ✅ |
+| 事件系统 | 4 个情报事件 + 4 个友军保护事件配置 | ✅ |
+| Bug 修复 | boss_base.gd 循环依赖（self is AssaultBoss → boss_type 判断）| ✅ |
+| Bug 修复 | ally_position.gd 敌机碰撞检测类型转换错误 | ✅ |
+
+### L03 史实修正 — 待 Code 实施任务
+
+PM 审核发现 L03（怒江惠通桥）存在史实问题：惠通桥非重型设施，不适合做 BOSS；实际战役为掩护远征军撤退过桥后炸桥，日军坂口支队以装甲车辆源源不断追击 + 飞机堵截。
+
+**设计文档已修正**（`docs/v1.5.0_upgrade_design.md` + `docs/v1.5_task_breakdown.md`），以下为待 Code 实施任务：
+
+| # | 任务 | 文件 | 说明 |
+|---|------|------|------|
+| L03-C1 | BOSS 重构 | `resources/boss_data/boss_fortress.json` → `boss_sakaguchi.json` | ground_facility → multi_target；指挥坦克 HP3000 + 2×95式装甲车 HP1500 + 2×Ki-27 HP800 |
+| L03-C2 | BOSS 场景 | `scenes/bosses/boss_fortress.tscn` → `boss_sakaguchi.tscn` | 多目标编队场景（指挥坦克 + 装甲车 + 护航机）|
+| L03-C3 | 事件配置 | `resources/level_data/events_stage_03_salween.json` | `salween_ally_bridge_building`（3机枪阵地）→ `salween_ally_retreat`（3撤退卡车 HP800）|
+| L03-C4 | 地图配置 | `resources/level_data/stage_03_salween_map.json` | 新增 95 式轻装甲车地面目标（沿滇缅公路追击）|
+| L03-C5 | 地面目标 | `scenes/map_objects/armored_car.tscn`（新增）| 95 式轻装甲车场景（HP中/机枪射击/500分）|
+| L03-C6 | 波次配置 | `resources/level_data/stage_03_salween.csv` | 按 v1.5.0_upgrade_design.md §15.4.3 敌机波次表更新（Ki-27/Ki-48/95式装甲车交替）|
+| L03-C7 | BOSS 类型表 | `devlogv1.5.md` 第 31 行 | `ground_facility` 列移除 L03；`multi_target` 列增加 L03（待 Code 实施后更新）|
+
+### 阶段完成状态
+
+| 里程碑 | 任务范围 | 状态 |
+|--------|---------|------|
+| M4-A | 关卡重排 + BOSS 重设计（C1-C6）| ✅ 完成 |
+| M4-B | 敌机/地面目标 + 环境系统 + Combo（C7-C8）| ✅ 完成 |
+| M4-C | 多战机系统 + 机库 UI（C9-C10）| ✅ 完成 |
+| M4-D | 隐藏情报 + 友军保护（C11-C14）| ✅ 完成 |
+| M4-E | 平衡调优 + 冒烟测试（C15-C22）| ✅ 完成 |
+| **L03 修正** | 史实修正（L03-C1~C7）| ⏳ 待实施 |
+
+**v1.5.0 M4-A~M4-E 阶段全部完成并推送。L03 史实修正为后续迭代任务。**
+
+---
+
