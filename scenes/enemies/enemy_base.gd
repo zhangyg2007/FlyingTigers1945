@@ -161,6 +161,10 @@ func die() -> void:
 	# 发送死亡信号（加分等）
 	enemy_died.emit(score_value)
 
+	# v1.5: 注册 Combo 击落
+	if ComboManager:
+		ComboManager.register_kill()
+
 	# 随机掉落道具
 	_try_drop_powerup()
 

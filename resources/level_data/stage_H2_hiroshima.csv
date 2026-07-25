@@ -1,0 +1,24 @@
+# 隐藏关H2"轰炸广岛"波次配置（v1.5 重排，原 stage_H2_tokyo_bombing）
+# 格式：time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+# BOSS: BOSS_shinden_kai（震电改J7W2+防空高炮群，final 类型，终极拦截）
+# 历史背景：1945.8.6 B-29 原子弹任务（提尼安→太平洋→广岛三段式）
+# 关卡类型：终极轰炸关
+# 机制：逆向卷轴（上→下），地面防空高炮密集+震电改追击
+# 难度：极高（防空火网+终极拦截机）
+time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+2.0,anti_air_gun,4,line,200,-50,1.0,straight
+4.5,anti_air_gun,4,line,400,-50,1.0,straight
+7.5,ki44_shoki,3,diamond,300,-50,1.8,straight
+10.5,anti_air_gun,5,v_formation,300,-50,1.0,dive
+14.0,ki84_hayate,4,line,200,-50,1.9,straight
+14.0,ki84_hayate,4,line,400,-50,1.9,straight
+18.0,ki45_toryu,2,solo,200,-50,1.7,straight
+18.0,ki45_toryu,2,solo,400,-50,1.7,straight
+22.0,anti_air_gun,6,swarm,300,-50,1.0,straight
+26.0,ki44_shoki,5,v_formation,300,-50,2.0,dive
+30.0,anti_air_gun,6,diamond,300,-50,1.0,straight
+34.0,ki84_hayate,6,swarm,300,-50,2.0,straight
+38.0,ki45_toryu,4,v_formation,300,-50,1.8,straight
+42.0,anti_air_gun,8,swarm,300,-50,1.0,dive
+46.0,ki44_shoki,6,diamond,300,-50,2.1,straight
+50.0,BOSS_shinden_kai,1,boss,300,-150,0.5,boss_enter

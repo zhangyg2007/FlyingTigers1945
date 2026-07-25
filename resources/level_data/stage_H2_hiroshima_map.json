@@ -1,0 +1,140 @@
+{
+  "map": {
+    "background_image": "res://assets/sprites/backgrounds/stage_H2_hiroshima/bg_hiroshima_full.png",
+    "scroll_speed": 100.0,
+    "objects": [
+      {
+        "id": "h2_aagun_01",
+        "type": "anti_air_gun",
+        "position": { "x": 250, "y": 800 },
+        "properties": { "hp": 12, "score": 700, "is_interactive": true }
+      },
+      {
+        "id": "h2_aagun_02",
+        "type": "anti_air_gun",
+        "position": { "x": 780, "y": 800 },
+        "properties": { "hp": 12, "score": 700, "is_interactive": true }
+      },
+      {
+        "id": "h2_bunker_01",
+        "type": "bunker",
+        "position": { "x": 540, "y": 1200 },
+        "properties": { "hp": 20, "score": 1000, "is_interactive": true }
+      },
+      {
+        "id": "h2_fuel_depot_01",
+        "type": "fuel_depot",
+        "position": { "x": 320, "y": 1600 },
+        "properties": { "hp": 15, "score": 800, "is_interactive": true }
+      },
+      {
+        "id": "h2_fuel_depot_02",
+        "type": "fuel_depot",
+        "position": { "x": 760, "y": 1600 },
+        "properties": { "hp": 15, "score": 800, "is_interactive": true }
+      },
+      {
+        "id": "h2_aagun_03",
+        "type": "anti_air_gun",
+        "position": { "x": 540, "y": 2000 },
+        "properties": { "hp": 12, "score": 700, "is_interactive": true }
+      },
+      {
+        "id": "h2_airfield_01",
+        "type": "airfield_runway",
+        "position": { "x": 540, "y": 2400 },
+        "properties": { "hp": 30, "score": 1500, "is_interactive": true }
+      },
+      {
+        "id": "h2_aagun_04",
+        "type": "anti_air_gun",
+        "position": { "x": 200, "y": 2800 },
+        "properties": { "hp": 12, "score": 700, "is_interactive": true }
+      },
+      {
+        "id": "h2_aagun_05",
+        "type": "anti_air_gun",
+        "position": { "x": 880, "y": 2800 },
+        "properties": { "hp": 12, "score": 700, "is_interactive": true }
+      },
+      {
+        "id": "h2_bunker_02",
+        "type": "bunker",
+        "position": { "x": 350, "y": 3200 },
+        "properties": { "hp": 20, "score": 1000, "is_interactive": true }
+      },
+      {
+        "id": "h2_bunker_03",
+        "type": "bunker",
+        "position": { "x": 730, "y": 3200 },
+        "properties": { "hp": 20, "score": 1000, "is_interactive": true }
+      },
+      {
+        "id": "h2_fuel_depot_03",
+        "type": "fuel_depot",
+        "position": { "x": 540, "y": 3600 },
+        "properties": { "hp": 15, "score": 800, "is_interactive": true }
+      },
+      {
+        "id": "h2_aagun_06",
+        "type": "anti_air_gun",
+        "position": { "x": 250, "y": 4000 },
+        "properties": { "hp": 12, "score": 700, "is_interactive": true }
+      },
+      {
+        "id": "h2_aagun_07",
+        "type": "anti_air_gun",
+        "position": { "x": 540, "y": 4000 },
+        "properties": { "hp": 12, "score": 700, "is_interactive": true }
+      },
+      {
+        "id": "h2_aagun_08",
+        "type": "anti_air_gun",
+        "position": { "x": 830, "y": 4000 },
+        "properties": { "hp": 12, "score": 700, "is_interactive": true }
+      },
+      {
+        "id": "h2_bunker_04",
+        "type": "bunker",
+        "position": { "x": 400, "y": 4400 },
+        "properties": { "hp": 20, "score": 1000, "is_interactive": true }
+      },
+      {
+        "id": "h2_bunker_05",
+        "type": "bunker",
+        "position": { "x": 680, "y": 4400 },
+        "properties": { "hp": 20, "score": 1000, "is_interactive": true }
+      },
+      {
+        "id": "h2_aagun_09",
+        "type": "anti_air_gun",
+        "position": { "x": 300, "y": 4800 },
+        "properties": { "hp": 12, "score": 700, "is_interactive": true }
+      },
+      {
+        "id": "h2_aagun_10",
+        "type": "anti_air_gun",
+        "position": { "x": 780, "y": 4800 },
+        "properties": { "hp": 12, "score": 700, "is_interactive": true }
+      },
+      {
+        "id": "h2_civilian_01",
+        "type": "civilian_car",
+        "position": { "x": 420, "y": 5200 },
+        "properties": { "hp": 1, "score": 0, "is_interactive": false }
+      },
+      {
+        "id": "h2_civilian_02",
+        "type": "civilian_car",
+        "position": { "x": 660, "y": 5200 },
+        "properties": { "hp": 1, "score": 0, "is_interactive": false }
+      },
+      {
+        "id": "h2_aagun_11",
+        "type": "anti_air_gun",
+        "position": { "x": 540, "y": 5600 },
+        "properties": { "hp": 12, "score": 700, "is_interactive": true }
+      }
+    ]
+  }
+}

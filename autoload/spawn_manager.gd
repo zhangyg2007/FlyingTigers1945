@@ -146,13 +146,15 @@ func _init_enemy_scene_map() -> void:
 	_enemy_scene_map["ki27_fighter"] = "res://scenes/enemies/enemy_ki27_fighter.tscn"
 	_enemy_scene_map["ki43_hayabusa"] = "res://scenes/enemies/enemy_ki43_hayabusa.tscn"
 	_enemy_scene_map["ki21_bomber"] = "res://scenes/enemies/enemy_ki21_bomber.tscn"
-	_enemy_scene_map["a6m_zero"] = "res://scenes/enemies/enemy_a6m_zero.tscn"
 	_enemy_scene_map["ki61_hien"] = "res://scenes/enemies/enemy_ki61_hien.tscn"
 	_enemy_scene_map["ki84_hayate"] = "res://scenes/enemies/enemy_ki84_hayate.tscn"
 	_enemy_scene_map["d3a_val"] = "res://scenes/enemies/enemy_d3a_val.tscn"
 	_enemy_scene_map["ki45_toryu"] = "res://scenes/enemies/enemy_ki45_toryu.tscn"
 	_enemy_scene_map["j7w_shinden"] = "res://scenes/enemies/enemy_j7w_shinden.tscn"
-	_enemy_scene_map["ohka_kamikaze"] = "res://scenes/enemies/enemy_ohka_kamikaze.tscn"
+	# v1.5 新增敌机
+	_enemy_scene_map["j2m_raiden"] = "res://scenes/enemies/enemy_j2m_raiden.tscn"
+	_enemy_scene_map["ki51_sonia"] = "res://scenes/enemies/enemy_ki51_sonia.tscn"
+	_enemy_scene_map["g3m_nell"] = "res://scenes/enemies/enemy_g3m_nell.tscn"
 
 	# BOSS 类型 → 精确映射到 scenes/bosses/ 下的 BOSS 场景
 	_enemy_scene_map["BOSS_bomber"] = "res://scenes/bosses/boss_bomber.tscn"
@@ -161,20 +163,19 @@ func _init_enemy_scene_map() -> void:
 	_enemy_scene_map["BOSS_fortress"] = "res://scenes/bosses/boss_fortress.tscn"
 	# M3-B: Stage 04~08 新增 BOSS 映射
 	_enemy_scene_map["BOSS_ki21_squadron"] = "res://scenes/bosses/boss_ki21_squadron.tscn"
-	_enemy_scene_map["BOSS_akitsushima"] = "res://scenes/bosses/boss_akitsushima.tscn"
 	_enemy_scene_map["BOSS_kinu"] = "res://scenes/bosses/boss_kinu.tscn"
 	_enemy_scene_map["BOSS_shiden_squadron"] = "res://scenes/bosses/boss_shiden_squadron.tscn"
 	_enemy_scene_map["BOSS_kongo"] = "res://scenes/bosses/boss_kongo.tscn"
-	# M3-C: Stage 09~12 + 隐藏关 BOSS 映射
+	# M3-C: Stage 09~10 BOSS 映射
 	_enemy_scene_map["BOSS_tone"] = "res://scenes/bosses/boss_tone.tscn"
 	_enemy_scene_map["BOSS_shokaku"] = "res://scenes/bosses/boss_shokaku.tscn"
-	_enemy_scene_map["BOSS_yamato"] = "res://scenes/bosses/boss_yamato.tscn"
-	_enemy_scene_map["BOSS_yahata"] = "res://scenes/bosses/boss_yahata.tscn"
-	_enemy_scene_map["BOSS_shinden_final"] = "res://scenes/bosses/boss_shinden_final.tscn"
+	# v1.5: 新增 BOSS 映射（替代已删除的 yamato/yahata/shinden_final）
+	_enemy_scene_map["BOSS_ammo_depot"] = "res://scenes/bosses/boss_ammo_depot.tscn"
+	_enemy_scene_map["BOSS_elite_ki44"] = "res://scenes/bosses/boss_elite_ki44.tscn"
+	_enemy_scene_map["BOSS_shinden_kai"] = "res://scenes/bosses/boss_shinden_kai.tscn"
 
 	# CSV 中可能出现的别名/旧名 → 映射到对应场景
-	_enemy_scene_map["zero"] = "res://scenes/enemies/enemy_a6m_zero.tscn"        # zero = a6m_zero
-	_enemy_scene_map["ohka"] = "res://scenes/enemies/enemy_ohka_kamikaze.tscn"   # ohka = ohka_kamikaze
+	# v1.5: a6m_zero / ohka_kamikaze 已删除（历史不准确）
 
 	# 事件目标类型（M3-B 隐藏事件系统）
 	_enemy_scene_map["event_target_car"] = "res://scenes/enemies/event_target_car.tscn"

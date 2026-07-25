@@ -33,7 +33,8 @@ const SAVE_FILE_PATH: String = "user://save_data.cfg"
 const SAVE_VERSION: int = 1
 
 ## 默认已解锁飞机列表
-const DEFAULT_UNLOCKED_PLANES: Array[String] = ["p40_warhawk"]
+## v1.5 修复：原 "p40_warhawk" 与 player_data.json 中的实际 ID 不匹配
+const DEFAULT_UNLOCKED_PLANES: Array[String] = ["p40b_tomahawk"]
 
 # ============================================================
 # 存档数据变量
@@ -77,6 +78,15 @@ var s_rank_count: int = 0
 
 ## 各关卡S评级状态：key=关卡索引字符串, value=true表示已获得S
 var stage_s_ranks: Dictionary = {}
+
+## v1.5: 当前选中的战机 ID（机库 UI 选择，默认 p40b_tomahawk）
+var selected_aircraft: String = "p40b_tomahawk"
+
+## v1.5: 已收集的情报 ID 列表（4 个情报，关底通关后写入）
+var intel_collected: Array[String] = []
+
+## v1.5: 已完成的友军保护事件 ID 列表
+var ally_protected: Array[String] = []
 
 # ============================================================
 # 内部变量
@@ -144,6 +154,11 @@ func save_game() -> bool:
 	# 各关卡S评级状态
 	for stage_key in stage_s_ranks:
 		config.set_value("stage_s_ranks", stage_key, stage_s_ranks[stage_key])
+
+	# v1.5: 战机选择 + 情报 + 友军保护
+	config.set_value("v15", "selected_aircraft", selected_aircraft)
+	config.set_value("v15", "intel_collected", intel_collected)
+	config.set_value("v15", "ally_protected", ally_protected)
 
 	# 保存到文件
 	var err: int = config.save(SAVE_FILE_PATH)
@@ -233,6 +248,21 @@ func load_game() -> bool:
 	var s_rank_section_keys: PackedStringArray = config.get_section_keys("stage_s_ranks")
 	for key in s_rank_section_keys:
 		stage_s_ranks[key] = config.get_value("stage_s_ranks", key, false)
+
+	# v1.5: 读取战机选择 + 情报 + 友军保护
+	selected_aircraft = config.get_value("v15", "selected_aircraft", "p40b_tomahawk")
+	var intel_variant = config.get_value("v15", "intel_collected", [])
+	intel_collected.clear()
+	if intel_variant is Array:
+		for iid in intel_variant:
+			if iid is String:
+				intel_collected.append(iid as String)
+	var ally_variant = config.get_value("v15", "ally_protected", [])
+	ally_protected.clear()
+	if ally_variant is Array:
+		for aid in ally_variant:
+			if aid is String:
+				ally_protected.append(aid as String)
 
 	_initialized = true
 
@@ -363,6 +393,43 @@ func is_event_completed(event_id: String) -> bool:
 	return false
 
 # ============================================================
+# v1.5: 情报 / 友军保护 / 战机选择接口
+# ============================================================
+
+## 记录已收集的情报（关底通关后调用）
+func add_intel(intel_id: String) -> void:
+	if not intel_id in intel_collected:
+		intel_collected.append(intel_id)
+		print("SaveManager: 收集情报 '%s'（共 %d/4）" % [intel_id, intel_collected.size()])
+
+## 检查情报是否已收集
+func has_intel(intel_id: String) -> bool:
+	return intel_id in intel_collected
+
+## 获取已收集情报数量
+func get_intel_count() -> int:
+	return intel_collected.size()
+
+## 记录已完成的友军保护事件
+func add_ally_protected(event_id: String) -> void:
+	if not event_id in ally_protected:
+		ally_protected.append(event_id)
+		print("SaveManager: 友军保护完成 '%s'（共 %d/4）" % [event_id, ally_protected.size()])
+
+## 检查友军保护是否已完成
+func has_ally_protected(event_id: String) -> bool:
+	return event_id in ally_protected
+
+## 设置当前选中的战机 ID
+func set_selected_aircraft(aircraft_id: String) -> void:
+	selected_aircraft = aircraft_id
+	print("SaveManager: 已选中战机 '%s'" % aircraft_id)
+
+## 获取当前选中的战机 ID
+func get_selected_aircraft() -> String:
+	return selected_aircraft
+
+# ============================================================
 # 军衔系统接口（M3-F）
 # ============================================================
 
@@ -433,6 +500,10 @@ func reset_all_data() -> void:
 	s_rank_count = 0
 	stage_s_ranks.clear()
 	_last_save_time = 0
+	# v1.5 修复：补充 v1.5 新增字段的重置（原遗漏导致重置存档后数据残留）
+	selected_aircraft = "p40b_tomahawk"
+	intel_collected.clear()
+	ally_protected.clear()
 
 	print("SaveManager: 所有数据已重置为默认值。")
 

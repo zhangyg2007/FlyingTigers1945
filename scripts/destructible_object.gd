@@ -62,9 +62,10 @@ func _destroy() -> void:
 		_sprite.texture = broken_texture
 
 	# 通知 EventManager 目标被摧毁
+	# v1.5 E12 修复：传递 global_position 供 destroy_targets 事件掉落情报纸袋定位
 	var em: Node = _get_event_manager()
 	if em != null and em.has_method("report_target_destroyed"):
-		em.report_target_destroyed(object_id)
+		em.report_target_destroyed(object_id, global_position)
 
 	# 禁用碰撞（防止继续受击）
 	collision_layer = 0

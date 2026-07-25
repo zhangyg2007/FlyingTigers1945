@@ -1,42 +1,66 @@
 {
-  "boss_id": "boss_ki21_squadron",
-  "boss_name": "一式陆攻编队",
-  "max_hp": 500,
-  "phase_hps": [200, 300],
-  "phase_attack_intervals": [1.4, 1.0],
-  "phase_bullets": [
-    ["fan_shoot", "aimed_shoot"],
-    ["fan_shoot", "aimed_shoot", "turret_fire"]
+  "boss_id": "boss_myoko",
+  "boss_name": "妙高号重巡洋舰+Ki-44王牌机",
+  "boss_type": "mixed",
+  "max_hp": -1,
+  "indestructible": true,
+  "sprite": "res://assets/sprites/boss/boss_myoko.png",
+  "move_speed": 40.0,
+  "entry_target_y": 150.0,
+  "contact_damage": 0,
+  "drop_count": 5,
+  "segments": [
+    {
+      "segment_id": "myoko_strait",
+      "segment_name": "海峡段-妙高号重巡",
+      "boss_type": "naval_assault",
+      "trigger_y": 1700,
+      "config": {
+        "indestructible": true,
+        "sprite": "res://assets/sprites/boss/boss_myoko.png",
+        "parts": [
+          {"part_id": "main_turret_a", "name": "前主炮塔", "position": {"x": 0, "y": -140}, "hp": 650, "sprite": "res://assets/sprites/boss/parts/myoko_turret_1.png", "bullet_pattern": "turret_fire"},
+          {"part_id": "main_turret_b", "name": "后主炮塔", "position": {"x": 0, "y": 120}, "hp": 650, "sprite": "res://assets/sprites/boss/parts/myoko_turret_4.png", "bullet_pattern": "turret_fire"},
+          {"part_id": "sec_turret_c", "name": "左舷副炮", "position": {"x": -90, "y": -40}, "hp": 500, "sprite": "res://assets/sprites/boss/parts/myoko_turret_2.png", "bullet_pattern": "fan_shoot"},
+          {"part_id": "sec_turret_d", "name": "右舷副炮", "position": {"x": 90, "y": -40}, "hp": 500, "sprite": "res://assets/sprites/boss/parts/myoko_turret_3.png", "bullet_pattern": "fan_shoot"},
+          {"part_id": "aa_gun_e", "name": "左舷防空炮群", "position": {"x": -70, "y": 60}, "hp": 400, "sprite": "res://assets/sprites/boss/parts/myoko_aa_port.png", "bullet_pattern": "aimed_shoot"},
+          {"part_id": "aa_gun_f", "name": "右舷防空炮群", "position": {"x": 70, "y": 60}, "hp": 400, "sprite": "res://assets/sprites/boss/parts/myoko_aa_starboard.png", "bullet_pattern": "aimed_shoot"}
+        ],
+        "time_limit": 90.0,
+        "victory_text": "妙高号冒烟撤退",
+        "defeat_text": "我方战机撤退"
+      }
+    },
+    {
+      "segment_id": "ki44_airport",
+      "segment_name": "机场段-Ki-44钟馗王牌",
+      "boss_type": "ace",
+      "trigger_y": 600,
+      "config": {
+        "max_hp": 3000,
+        "indestructible": false,
+        "sprite": "res://assets/sprites/boss/boss_ki44_ace.png",
+        "move_speed": 120.0,
+        "entry_target_y": 150.0,
+        "contact_damage": 8,
+        "weak_points": [
+          {"name": "engine", "region": {"x": -15, "y": -10, "w": 30, "h": 20}, "damage_mult": 2.0}
+        ],
+        "difficulty_curve": {
+          "attack_interval_start": 1.2,
+          "attack_interval_end": 0.5,
+          "bullet_speed_mult_start": 1.0,
+          "bullet_speed_mult_end": 1.6,
+          "ramp_duration": 45.0
+        },
+        "bullet_patterns": ["aimed_shoot", "fan_shoot"],
+        "summon": {"type": "ki43", "count": 2, "interval": 18.0}
+      }
+    }
   ],
   "bullet_params": {
-    "fan_shoot": {
-      "count_base": 6,
-      "count_per_phase": 2,
-      "spread_angle": 70.0,
-      "speed_base": 220.0,
-      "speed_per_phase": 30.0,
-      "damage": 1
-    },
-    "aimed_shoot": {
-      "count_base": 2,
-      "count_per_phase": 1,
-      "speed_base": 320.0,
-      "spread_offset_deg": 8.0,
-      "damage": 2
-    },
-    "turret_fire": {
-      "speed_base": 280.0,
-      "speed_per_phase": 40.0,
-      "damage": 2,
-      "aim_on_center": true
-    }
-  },
-  "phase_sprites": [
-    "res://assets/sprites/boss/boss_ki21_squadron_phase1.png",
-    "res://assets/sprites/boss/boss_ki21_squadron_phase2.png"
-  ],
-  "move_speed": 90.0,
-  "contact_damage": 12,
-  "entry_target_y": 180.0,
-  "drop_count": 3
+    "turret_fire": {"speed_base": 300.0, "damage": 2, "aim_on_center": true},
+    "fan_shoot": {"count_base": 6, "spread_angle": 70.0, "speed_base": 220.0, "damage": 1},
+    "aimed_shoot": {"count_base": 3, "speed_base": 320.0, "damage": 2, "aim_on_center": true}
+  }
 }

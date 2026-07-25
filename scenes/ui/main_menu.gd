@@ -27,6 +27,7 @@ const GAME_TITLE: String = "FLYING TIGERS 1945"
 const SCENE_STAGE_SELECT: String = "res://scenes/ui/stage_select.tscn"
 const SCENE_LEADERBOARD: String = "res://scenes/ui/leaderboard.tscn"
 const SCENE_SETTINGS: String = "res://scenes/ui/settings_menu.tscn"
+const SCENE_HANGAR: String = "res://scenes/ui/hangar.tscn"
 const SCENE_FIRST_STAGE: String = "res://levels/stage_01_kunming.tscn"
 
 # ============================================================
@@ -41,6 +42,9 @@ const SCENE_FIRST_STAGE: String = "res://levels/stage_01_kunming.tscn"
 
 ## 关卡选择按钮 -- 节点路径: $VBoxContainer/StageSelectButton
 @onready var stage_select_button: Button = %StageSelectButton
+
+## 机库按钮 -- 节点路径: $VBoxContainer/HangarButton
+@onready var hangar_button: Button = %HangarButton
 
 ## 设置按钮 -- 节点路径: $VBoxContainer/SettingsButton
 @onready var settings_button: Button = %SettingsButton
@@ -83,6 +87,7 @@ func _ready() -> void:
 	# 连接按钮信号
 	start_button.pressed.connect(_on_start_button_pressed)
 	stage_select_button.pressed.connect(_on_stage_select_button_pressed)
+	hangar_button.pressed.connect(_on_hangar_button_pressed)
 	settings_button.pressed.connect(_on_settings_button_pressed)
 	leaderboard_button.pressed.connect(_on_leaderboard_button_pressed)
 	quit_button.pressed.connect(_on_quit_button_pressed)
@@ -122,7 +127,8 @@ func _update_high_score_display() -> void:
 # ============================================================
 
 func _on_start_button_pressed() -> void:
-	## 开始游戏按钮回调：重置游戏状态并加载第1关场景
+	## 开始游戏按钮回调：使用已选战机开始第一关
+	## 玩家可先通过"机库"按钮选择战机，未选择时使用默认 p40b_tomahawk
 	_play_button_click_effect(start_button)
 	_start_game_stage(0)
 
@@ -131,6 +137,12 @@ func _on_stage_select_button_pressed() -> void:
 	## 关卡选择按钮回调：加载关卡选择场景
 	_play_button_click_effect(stage_select_button)
 	get_tree().change_scene_to_file(SCENE_STAGE_SELECT)
+
+
+## v1.5: 机库按钮回调：进入机库选择/更换战机
+func _on_hangar_button_pressed() -> void:
+	_play_button_click_effect(hangar_button)
+	get_tree().change_scene_to_file(SCENE_HANGAR)
 
 
 func _on_settings_button_pressed() -> void:
@@ -162,6 +174,7 @@ func _connect_hover_effects() -> void:
 	var buttons: Array[Button] = [
 		start_button,
 		stage_select_button,
+		hangar_button,
 		settings_button,
 		leaderboard_button,
 		quit_button,

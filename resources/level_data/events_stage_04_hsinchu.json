@@ -1,0 +1,32 @@
+{
+  "stage_id": "04_hsinchu",
+  "events": [
+    {
+      "event_id": "hsinchu_intel_car",
+      "event_type": "intel_event_briefcase",
+      "trigger": {
+        "timing": "on_time",
+        "time": 40.0,
+        "probability": 1.0
+      },
+      "target": {
+        "enemy_type": "event_target_car",
+        "spawn_x": 100,
+        "spawn_y": -100,
+        "speed": 220,
+        "hp": 40,
+        "escape_time": 8.0
+      },
+      "rewards": {
+        "score": 4000,
+        "drop_intel": "intel_tokyo_bombing",
+        "unlock_hidden": "H2_hiroshima"
+      },
+      "ui": {
+        "alert_text": "敌军将领黑色轿车正在新竹机场撤离！8秒内击毁",
+        "complete_text": "东京轰炸坐标",
+        "escape_text": "情报已转移！轿车已逃脱"
+      }
+    }
+  ]
+}

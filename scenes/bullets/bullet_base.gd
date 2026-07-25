@@ -95,6 +95,12 @@ func _on_area_entered(area: Node) -> void:
 		return
 	# 玩家子弹检测敌机和地面对象
 	if is_player_bullet and (area is EnemyBase or area is MapObject):
+		# v1.5 C14: 玩家子弹对 ally / civilian 阵营无碰撞，直接穿透
+		# 避免误伤友军 / 平民（v1.5 已删除误伤扣分机制）
+		if area is MapObject:
+			var mo: MapObject = area as MapObject
+			if mo.faction != "enemy":
+				return
 		hit_target.emit(area)
 		_on_hit(area)
 

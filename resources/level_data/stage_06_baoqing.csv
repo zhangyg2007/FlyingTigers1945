@@ -1,0 +1,24 @@
+# 第6关"轰炸宝庆"波次配置（v1.5 新增）
+# 格式：time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+# BOSS: BOSS_ammo_depot（弹药库综合体+油库群，ground_facility 类型，连锁爆炸）
+# 历史背景：1944 宝庆补给中心战略轰炸
+# 关卡类型：战略轰炸
+# 难度：中高（速度倍率1.4~1.7，地面目标密集，需精准轰炸）
+time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+2.0,ki43_hayabusa,4,line,200,-50,1.4,straight
+4.5,ki43_hayabusa,4,line,400,-50,1.4,straight
+7.5,ki61_hien,3,diamond,300,-50,1.4,dive
+10.5,type97_tank,3,line,200,-50,0.9,straight
+10.5,type97_tank,3,line,400,-50,0.9,straight
+14.0,ki21_bomber,2,solo,200,-80,0.8,straight
+14.0,ki21_bomber,2,solo,400,-80,0.8,straight
+18.0,ki84_hayate,4,v_formation,300,-50,1.5,straight
+22.0,fuel_depot,4,line,300,-50,0.7,straight
+26.0,ki43_hayabusa,6,swarm,300,-50,1.5,dive
+30.0,type97_tank,4,diamond,300,-50,1.0,straight
+34.0,ki61_hien,4,diamond,200,-50,1.6,straight
+34.0,ki61_hien,4,diamond,400,-50,1.6,straight
+38.0,fuel_depot,5,v_formation,300,-50,0.8,straight
+42.0,ki84_hayate,5,swarm,300,-50,1.7,dive
+46.0,ki21_bomber,3,v_formation,300,-80,1.0,straight
+50.0,BOSS_ammo_depot,1,boss,300,-150,0.5,boss_enter

@@ -1,44 +1,32 @@
 {
-  "boss_id": "boss_shiden_squadron",
-  "boss_name": "紫电改中队",
-  "max_hp": 600,
-  "phase_hps": [250, 350],
-  "phase_attack_intervals": [1.0, 0.7],
-  "phase_bullets": [
-    ["fan_shoot", "aimed_shoot"],
-    ["fan_shoot", "aimed_shoot", "spiral_shoot"]
+  "boss_id": "boss_xiangjiang_squadron",
+  "boss_name": "湘江日军舰艇编队",
+  "boss_type": "multi_target",
+  "max_hp": -1,
+  "indestructible": true,
+  "sprite": "res://assets/sprites/boss/boss_escort_boat.png",
+  "move_speed": 30.0,
+  "entry_target_y": 150.0,
+  "contact_damage": 8,
+  "drop_count": 5,
+  "vessels": [
+    {"id": "escort_boat_1", "name": "护卫炮艇", "hp": 1500, "sprite": "res://assets/sprites/boss/boss_escort_boat.png", "score": 5000, "bullet_pattern": "fan_shoot"},
+    {"id": "gunboat_2", "name": "炮舰", "hp": 2000, "sprite": "res://assets/sprites/boss/boss_gunboat.png", "score": 8000, "bullet_pattern": "turret_fire"},
+    {"id": "supply_ship_3", "name": "补给舰", "hp": 2500, "sprite": "res://assets/sprites/boss/boss_supply_ship.png", "score": 12000, "bullet_pattern": "aimed_shoot"}
+  ],
+  "difficulty_curve": {
+    "attack_interval_start": 1.5,
+    "attack_interval_end": 0.6,
+    "bullet_speed_mult_start": 1.0,
+    "bullet_speed_mult_end": 1.8,
+    "ramp_duration": 60.0
+  },
+  "weak_points": [
+    {"name": "bridge", "region": {"x": -20, "y": -30, "w": 40, "h": 30}, "damage_mult": 1.5}
   ],
   "bullet_params": {
-    "fan_shoot": {
-      "count_base": 7,
-      "count_per_phase": 2,
-      "spread_angle": 80.0,
-      "speed_base": 240.0,
-      "speed_per_phase": 30.0,
-      "damage": 1
-    },
-    "aimed_shoot": {
-      "count_base": 3,
-      "count_per_phase": 1,
-      "speed_base": 360.0,
-      "spread_offset_deg": 6.0,
-      "damage": 2
-    },
-    "spiral_shoot": {
-      "arms_base": 4,
-      "arms_per_phase": 1,
-      "bullets_per_arm": 2,
-      "speed_base": 200.0,
-      "speed_per_phase": 25.0,
-      "damage": 1
-    }
-  },
-  "phase_sprites": [
-    "res://assets/sprites/boss/boss_shiden_squadron_phase1.png",
-    "res://assets/sprites/boss/boss_shiden_squadron_phase2.png"
-  ],
-  "move_speed": 110.0,
-  "contact_damage": 13,
-  "entry_target_y": 180.0,
-  "drop_count": 4
+    "fan_shoot": {"count_base": 5, "spread_angle": 60.0, "speed_base": 220.0, "damage": 1},
+    "turret_fire": {"speed_base": 300.0, "damage": 2, "aim_on_center": true},
+    "aimed_shoot": {"count_base": 3, "speed_base": 320.0, "damage": 2, "aim_on_center": true}
+  }
 }

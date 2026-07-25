@@ -58,16 +58,22 @@ func _on_escape() -> void:
 
 ## 死亡处理（重写 EnemyBase.die）
 ## 先通知 EventManager 事件完成，再调用父类 die（爆炸/加分/掉落/归还）
+## v1.5 C11: 如果是 intel_event_briefcase 事件，调用 report_target_killed
+## 让 EventManager 在原位置掉落 IntelBriefcase（玩家拾取后才完成事件）
 func die() -> void:
 	if _resolved:
 		return
 	_resolved = true
 
-	# 如果未逃脱，通知 EventManager 事件完成
+	# 如果未逃脱，通知 EventManager 事件目标被击毁
 	if not _escaped:
 		var em: Node = _get_event_manager()
 		if em != null:
-			em.report_event_completed(event_id)
+			# v1.5: 优先调用统一接口 report_target_killed（EventManager 内部路由）
+			if em.has_method("report_target_killed"):
+				em.report_target_killed(event_id, global_position)
+			else:
+				em.report_event_completed(event_id)
 
 	# 调用父类 die（播放爆炸、加分、掉落道具、归还对象池）
 	super.die()

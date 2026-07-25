@@ -1,0 +1,27 @@
+# 第10关"芷江保卫战"波次配置（v1.5 重排，原 stage_10_shanghai）
+# 格式：time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+# BOSS: BOSS_shokaku（强化Ki-45屠龙·改+机场综合塔台，mixed 类型，终极关）
+# 历史背景：1945.4–6 芷江保卫战（湘西会战）
+# 关卡类型：基地防卫（终极）
+# 难度：极高（速度倍率1.8~2.1，机场+山地场景，全弹幕压制）
+# 友军保护：zhijiang_airbase（保卫机场核心区，高炮阵地×4 + Ki-45/Ki-84）
+time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+2.0,ki43_hayabusa,5,line,200,-50,1.8,straight
+4.5,ki84_hayate,5,line,400,-50,1.8,straight
+7.5,ki44_shoki,4,diamond,300,-50,1.8,straight
+10.5,ki61_hien,4,v_formation,300,-50,1.8,dive
+13.5,ki45_toryu,2,solo,200,-50,1.6,straight
+13.5,ki45_toryu,2,solo,400,-50,1.6,straight
+17.0,ki84_hayate,3,diamond,300,-50,1.9,straight
+20.5,ki21_bomber,3,line,200,-80,1.2,straight
+20.5,ki21_bomber,3,line,400,-80,1.2,straight
+24.0,ki43_hayabusa,8,swarm,300,-50,1.9,dive
+28.0,ki84_hayate,6,v_formation,300,-50,2.0,straight
+32.0,ki44_shoki,5,diamond,200,-50,1.8,straight
+32.0,ki44_shoki,5,diamond,400,-50,1.8,straight
+36.0,ki61_hien,6,swarm,300,-50,2.0,dive
+40.0,ki45_toryu,3,v_formation,300,-50,1.7,straight
+44.0,ki84_hayate,5,diamond,300,-50,2.0,straight
+48.0,ki43_hayabusa,8,swarm,300,-50,2.1,straight
+52.0,ki21_bomber,4,v_formation,300,-80,1.3,straight
+56.0,BOSS_shokaku,1,boss,300,-150,0.5,boss_enter

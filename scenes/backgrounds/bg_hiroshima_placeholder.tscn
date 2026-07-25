@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/stage_H2_tokyo_raid/bg_tokyo_raid_far.png" id="1_tex"]
+
+[node name="BgHiroshimaPlaceholder" type="ParallaxLayer"]
+motion_mirroring = Vector2(0, 2048)
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+centered = false
+position = Vector2(284, 0)
+texture = ExtResource("1_tex")

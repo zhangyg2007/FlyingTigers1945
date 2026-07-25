@@ -64,7 +64,7 @@ const TIER1_ENEMIES: Dictionary = {
 const TIER2_ENEMIES: Dictionary = {
 	"ki27_fighter": 8,
 	"ki43_hayabusa": 6,
-	"a6m_zero": 5,
+	"ki51_sonia": 5,
 	"d3a_val": 4,
 }
 
@@ -72,7 +72,7 @@ const TIER2_ENEMIES: Dictionary = {
 const TIER3_ENEMIES: Dictionary = {
 	"ki27_fighter": 6,
 	"ki43_hayabusa": 5,
-	"a6m_zero": 5,
+	"ki51_sonia": 5,
 	"d3a_val": 4,
 	"ki61_hien": 4,
 	"ki84_hayate": 3,
@@ -82,7 +82,7 @@ const TIER3_ENEMIES: Dictionary = {
 const TIER4_ENEMIES: Dictionary = {
 	"ki27_fighter": 4,
 	"ki43_hayabusa": 4,
-	"a6m_zero": 5,
+	"j2m_raiden": 5,
 	"d3a_val": 4,
 	"ki61_hien": 5,
 	"ki84_hayate": 4,
@@ -94,14 +94,14 @@ const TIER4_ENEMIES: Dictionary = {
 const TIER5_ENEMIES: Dictionary = {
 	"ki27_fighter": 3,
 	"ki43_hayabusa": 3,
-	"a6m_zero": 4,
+	"j2m_raiden": 4,
 	"d3a_val": 3,
 	"ki61_hien": 4,
 	"ki84_hayate": 4,
 	"j7w_shinden": 4,
 	"ki45_toryu": 4,
 	"ki21_bomber": 2,
-	"ohka_kamikaze": 2,
+	"g3m_nell": 2,
 }
 
 ## 各层级速度倍率范围（Vector2(min, max)）

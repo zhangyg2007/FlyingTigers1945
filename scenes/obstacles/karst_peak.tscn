@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/obstacles/obstacle_base.gd" id="1_script"]
+
+[sub_resource type="CircleShape2D" id="2_shape"]
+radius = 80.0
+
+[node name="KarstPeak" type="Area2D"]
+script = ExtResource("1_script")
+obstacle_type = "karst_peak"
+contact_damage = 9999
+one_shot = false
+
+[node name="Polygon2D" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-80, -80, 80, -80, 80, 80, -80, 80)
+color = Color(0.18, 0.35, 0.2, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("2_shape")

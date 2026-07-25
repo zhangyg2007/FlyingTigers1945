@@ -38,6 +38,37 @@ signal level_cleared()
 ## 地图配置 JSON 路径（M3-G 单图层地图对象配置，留空则不加载）
 @export var map_config_path: String = ""
 
+## v1.5: 玩家生成位置（关卡 tscn 不再硬编码 Player 节点，由 level_base 动态加载）
+@export var player_spawn_position: Vector2 = Vector2(540, 1620)
+
+## v1.5 C16: 环境侧风（持续推力，单位：像素/秒）
+## L04 新竹跨海突袭使用 Vector2(40, 0) 等横向推力，Vector2.ZERO = 无侧风
+## 由 _process 每帧写入 player_node.external_force
+@export var wind_force: Vector2 = Vector2.ZERO
+
+## v1.5 C17: 是否启用护送系统（H1 驼峰绝径专用）
+## 启用后 _ready 中实例化 EscortManager 并生成 C-47 编队
+## 关卡结束时自动结算护送奖励
+@export var enable_escort_system: bool = false
+
+## v1.5 C17: 护送编队数量（默认 3 架）
+@export var escort_formation_count: int = 3
+
+## v1.5: 玩家战机场景路径映射（aircraft_id -> scene path）
+## 与 HangarUI.AIRCRAFT_SCENES 保持一致，避免循环依赖 HangarUI 类
+const PLAYER_SCENE_PATHS: Dictionary = {
+	"p40b_tomahawk": "res://scenes/player/player_p40.tscn",
+	"p40e_kittyhawk": "res://scenes/player/player_p40e.tscn",
+	"p38_lightning": "res://scenes/player/player_p38.tscn",
+	"p47_thunderbolt": "res://scenes/player/player_p47.tscn",
+	"p51_mustang": "res://scenes/player/player_p51.tscn",
+	"b25_mitchell": "res://scenes/player/player_b25.tscn",
+	"b29_superfortress": "res://scenes/player/player_b29.tscn",
+}
+
+## v1.5: 当前玩家节点引用（动态加载后保存）
+var player_node: Node2D = null
+
 # ============================================================
 # 内部状态
 # ============================================================
@@ -75,6 +106,18 @@ var ui_layer: CanvasLayer = null
 ## 事件管理器（隐藏事件系统，M3-B）
 var event_manager: EventManager = null
 
+## v1.5: HUD 节点引用（动态加载 scenes/ui/hud.tscn）
+var hud_node: CanvasLayer = null
+
+## v1.5: HUD 场景路径
+const HUD_SCENE_PATH: String = "res://scenes/ui/hud.tscn"
+
+## v1.5 C17: EscortManager 场景路径
+const ESCORT_MANAGER_SCENE_PATH: String = "res://scripts/escort_manager.gd"
+
+## v1.5 C17: 护送管理器引用（仅 H1 等启用护送系统的关卡存在）
+var escort_manager: Node2D = null
+
 # ============================================================
 # 生命周期
 # ============================================================
@@ -84,6 +127,10 @@ func _ready() -> void:
 	set_process(false)
 	set_physics_process(false)
 
+	# v1.5: 动态加载玩家战机（根据 SaveManager.selected_aircraft）
+	# 关卡 tscn 不再硬编码 Player 节点，统一由 level_base 实例化
+	_spawn_player()
+
 	# 创建背景视差滚动层
 	_create_parallax_background()
 
@@ -92,6 +139,9 @@ func _ready() -> void:
 
 	# 确保UI层存在
 	_ensure_ui_layer()
+
+	# v1.5: 加载 HUD 场景（显示分数/生命/Combo/情报提示等）
+	_load_hud()
 
 	# 连接GameManager信号（如果存在）
 	_connect_signals()
@@ -111,9 +161,116 @@ func _ready() -> void:
 	if map_config_path != "" and MapObjectManager:
 		MapObjectManager.load_map_config(map_config_path, self)
 
+	# v1.5 C17: 加载护送系统（H1 驼峰绝径专用）
+	if enable_escort_system:
+		_load_escort_manager()
+
 	# 自动开始关卡（M2阶段简化：场景加载后立即开始，无需按键触发）
 	# 未来如有"按任意键开始"需求，可移除此行改为外部调用 start_level()
 	start_level()
+
+
+# ============================================================
+# v1.5 C17: 护送系统加载
+# ============================================================
+
+## 加载 EscortManager 并生成 C-47 编队
+func _load_escort_manager() -> void:
+	var script: GDScript = load(ESCORT_MANAGER_SCENE_PATH) as GDScript
+	if script == null:
+		push_error("[LevelBase] 无法加载 EscortManager 脚本: %s" % ESCORT_MANAGER_SCENE_PATH)
+		return
+	escort_manager = Node2D.new()
+	escort_manager.set_script(script)
+	escort_manager.name = "EscortManager"
+	add_child(escort_manager)
+	# v1.5 E12 修复：连接护送信号到 HUD（原代码生成编队后未连接信号，导致 HUD 无法显示护送进度）
+	if escort_manager.has_signal("escort_lost"):
+		escort_manager.escort_lost.connect(_on_escort_lost)
+	if escort_manager.has_signal("escort_success"):
+		escort_manager.escort_success.connect(_on_escort_success)
+	if escort_manager.has_signal("escort_failed"):
+		escort_manager.escort_failed.connect(_on_escort_failed)
+	# 生成 C-47 编队
+	if escort_manager.has_method("spawn_escort_formation"):
+		escort_manager.spawn_escort_formation(escort_formation_count)
+	# 通知 HUD 显示护送进度
+	if hud_node != null and hud_node.has_method("show_escort_progress"):
+		hud_node.show_escort_progress(escort_formation_count)
+	print("[LevelBase] 护送系统已启用，编队数量: %d" % escort_formation_count)
+
+
+# ============================================================
+# v1.5 C17: 护送信号回调（更新 HUD）
+# ============================================================
+
+## 单架 C-47 被摧毁：更新 HUD 存活计数
+func _on_escort_lost(_escort_id: String, remaining_count: int) -> void:
+	if hud_node != null and hud_node.has_method("update_escort_count"):
+		var initial: int = escort_formation_count
+		if escort_manager != null and escort_manager.has_method("get_initial_count"):
+			initial = escort_manager.get_initial_count()
+		hud_node.update_escort_count(remaining_count, initial)
+
+
+## 护送成功（至少 1 架存活通过关卡）
+func _on_escort_success(survivor_count: int) -> void:
+	if hud_node != null and hud_node.has_method("hide_escort_progress"):
+		hud_node.hide_escort_progress()
+	if GameManager and GameManager.has_signal("event_alert"):
+		GameManager.event_alert.emit("护送成功！存活 %d 架 C-47" % survivor_count)
+	print("[LevelBase] 护送成功: 存活 %d 架" % survivor_count)
+
+
+## 护送失败（全部 C-47 被摧毁）
+func _on_escort_failed() -> void:
+	if hud_node != null and hud_node.has_method("hide_escort_progress"):
+		hud_node.hide_escort_progress()
+	if GameManager and GameManager.has_signal("event_alert"):
+		GameManager.event_alert.emit("护送失败！全部 C-47 被摧毁")
+	print("[LevelBase] 护送失败: 全部 C-47 被摧毁")
+
+
+# ============================================================
+# v1.5: 玩家战机动态加载
+# ============================================================
+
+## 根据 SaveManager.selected_aircraft 动态加载玩家战机场景
+## 关卡 tscn 不再硬编码 Player 节点，统一由本方法实例化
+## 战机属性由 PlayerBase._ready() 内的 load_aircraft_config() 数据驱动加载
+func _spawn_player() -> void:
+	# 如果场景中已存在 Player 节点（旧版 tscn 兼容），先记录位置并移除
+	var existing_player := get_node_or_null("Player")
+	if existing_player != null:
+		player_spawn_position = existing_player.position
+		existing_player.queue_free()
+		print("[LevelBase] 移除旧版硬编码 Player 节点，将动态加载选中战机")
+
+	# 获取玩家选中的战机 ID
+	var aircraft_id: String = "p40b_tomahawk"
+	if SaveManager != null:
+		aircraft_id = SaveManager.get_selected_aircraft()
+		if aircraft_id.is_empty():
+			aircraft_id = "p40b_tomahawk"
+
+	# 查找战机场景路径
+	var scene_path: String = String(PLAYER_SCENE_PATHS.get(aircraft_id, ""))
+	if scene_path.is_empty():
+		push_warning("[LevelBase] 未知战机 ID '%s'，回退到 p40b_tomahawk" % aircraft_id)
+		aircraft_id = "p40b_tomahawk"
+		scene_path = "res://scenes/player/player_p40.tscn"
+
+	# 加载并实例化玩家场景
+	var player_scene := load(scene_path)
+	if player_scene == null:
+		push_error("[LevelBase] 无法加载玩家场景: %s" % scene_path)
+		return
+
+	player_node = player_scene.instantiate()
+	player_node.global_position = player_spawn_position
+	add_child(player_node)
+
+	print("[LevelBase] 已加载玩家战机 '%s' (场景: %s)" % [aircraft_id, scene_path])
 
 
 func _process(delta: float) -> void:
@@ -126,9 +283,16 @@ func _process(delta: float) -> void:
 	# 更新背景滚动
 	_update_bg_scroll(delta)
 
-	# 检查并生成敌机波次（H1 等无敌人关卡跳过）
+	# v1.5 C16: 应用环境侧风到玩家（每帧写入 external_force，player 在 _physics_process 叠加）
+	if player_node != null and is_instance_valid(player_node) and "external_force" in player_node:
+		player_node.external_force = wind_force
+
+	# 检查并生成敌机波次
+	# H1 等无敌人关卡跳过普通敌机生成，但仍然处理 BOSS 波次（否则关卡无法结束）
 	if not skip_enemy_spawning:
 		_check_and_spawn_waves()
+	else:
+		_check_and_spawn_boss_only()
 
 	# 更新地图对象（M3-G 根据滚动偏移生成地面对象）
 	if MapObjectManager:
@@ -178,6 +342,14 @@ func end_level() -> void:
 	# 停止BGM
 	_stop_bgm()
 
+	# v1.5 C17: 结算护送奖励（仅启用护送系统的关卡）
+	if escort_manager != null and is_instance_valid(escort_manager):
+		if escort_manager.has_method("settle_rewards"):
+			var bonus: int = escort_manager.settle_rewards()
+			print("[LevelBase] 护送奖励: %d 分" % bonus)
+		if escort_manager.has_method("clear"):
+			escort_manager.clear()
+
 	# 场景切换前清理对象池（归还所有活跃对象，避免内存泄漏/残留）
 	if PoolManager.has_method("return_all_active"):
 		PoolManager.return_all_active()
@@ -202,6 +374,13 @@ func force_end_level() -> void:
 	set_process(false)
 	set_physics_process(false)
 	_stop_bgm()
+
+	# v1.5 C17: 清理护送系统（玩家死亡时不结算奖励，但需隐藏 HUD 并释放 C-47）
+	if escort_manager != null and is_instance_valid(escort_manager):
+		if hud_node != null and hud_node.has_method("hide_escort_progress"):
+			hud_node.hide_escort_progress()
+		if escort_manager.has_method("clear"):
+			escort_manager.clear()
 
 	# 场景切换前清理对象池
 	if PoolManager.has_method("return_all_active"):
@@ -311,6 +490,25 @@ func _check_and_spawn_waves() -> void:
 
 		# 生成此波次
 		_spawn_wave(wave)
+		current_wave_index += 1
+
+
+## v1.5: 仅检查并生成 BOSS 波次（skip_enemy_spawning=true 时使用）
+## 跳过普通敌机，但仍然处理 BOSS_xxx 行，确保关卡可以正常结束
+func _check_and_spawn_boss_only() -> void:
+	while current_wave_index < wave_configs.size():
+		var wave: Dictionary = wave_configs[current_wave_index]
+		var wave_time: float = wave.get("time", 0.0)
+
+		# 时间未到，停止检查
+		if level_timer < wave_time:
+			break
+
+		var enemy_type: String = String(wave.get("enemy_type", ""))
+		# 仅处理 BOSS 波次，跳过普通敌机
+		if enemy_type.to_upper().begins_with("BOSS"):
+			_spawn_wave(wave)
+		# 无论是否生成，都推进索引（避免死循环）
 		current_wave_index += 1
 
 
@@ -572,9 +770,14 @@ func _check_level_complete(delta: float) -> void:
 			# 无BOSS的关卡：检查场景中是否还有敌人
 			var enemies := get_tree().get_nodes_in_group("enemies")
 			if enemies.size() == 0:
-				end_timer -= delta
+				# v1.5 修复：首次检测到敌人清空时初始化 end_timer，避免立即结束关卡
 				if end_timer <= 0.0:
-					end_level()
+					end_timer = END_DELAY
+					print("[LevelBase] 敌机已清空，%.1f秒后结算" % END_DELAY)
+				else:
+					end_timer -= delta
+					if end_timer <= 0.0:
+						end_level()
 
 
 # ============================================================
@@ -599,6 +802,26 @@ func _ensure_ui_layer() -> void:
 	ui_layer.name = "UILayer"
 	ui_layer.layer = 10  # UI层在较高层级
 	add_child(ui_layer)
+
+
+## v1.5: 加载 HUD 场景（分数/生命/Combo/情报提示/友军保护进度）
+## HUD 作为独立 CanvasLayer 添加到关卡，不与 UILayer 冲突
+func _load_hud() -> void:
+	if hud_node != null:
+		return
+	# 查找已存在的 HUD（避免重复加载）
+	var existing_hud := get_node_or_null("HUD")
+	if existing_hud != null and existing_hud is CanvasLayer:
+		hud_node = existing_hud as CanvasLayer
+		return
+
+	var hud_scene := load(HUD_SCENE_PATH)
+	if hud_scene == null:
+		push_warning("[LevelBase] 无法加载 HUD 场景: %s" % HUD_SCENE_PATH)
+		return
+	hud_node = hud_scene.instantiate()
+	add_child(hud_node)
+	print("[LevelBase] HUD 已加载")
 
 
 # ============================================================

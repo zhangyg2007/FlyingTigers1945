@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/escort/c47_transport.gd" id="1_script"]
+
+[sub_resource type="RectangleShape2D" id="2_shape"]
+size = Vector2(80, 80)
+
+[node name="C47Transport" type="Area2D"]
+script = ExtResource("1_script")
+max_hp = 30
+scroll_speed = 130.0
+
+[node name="Polygon2D" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-40, -40, 40, -40, 40, 40, -40, 40)
+color = Color(0.7, 0.75, 0.8, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("2_shape")

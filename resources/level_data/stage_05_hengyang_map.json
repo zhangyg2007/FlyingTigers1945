@@ -1,0 +1,106 @@
+{
+  "map": {
+    "background_image": "res://assets/sprites/backgrounds/stage_05_hengyang/bg_hengyang_full.png",
+    "scroll_speed": 100.0,
+    "objects": [
+      {
+        "id": "l05_bunker_01",
+        "type": "bunker",
+        "position": { "x": 300, "y": 1500 },
+        "properties": {
+          "hp": 20,
+          "score": 800,
+          "is_interactive": true,
+          "reveals_on_destroy": [
+            {
+              "type": "anti_air_gun",
+              "properties": { "hp": 15, "score": 500, "is_interactive": true }
+            }
+          ]
+        }
+      },
+      {
+        "id": "l05_bunker_02",
+        "type": "bunker",
+        "position": { "x": 700, "y": 2200 },
+        "properties": {
+          "hp": 20,
+          "score": 800,
+          "is_interactive": true,
+          "reveals_on_destroy": [
+            {
+              "type": "anti_air_gun",
+              "properties": { "hp": 15, "score": 500, "is_interactive": true }
+            }
+          ]
+        }
+      },
+      {
+        "id": "l05_aagun_01",
+        "type": "anti_air_gun",
+        "position": { "x": 540, "y": 2800 },
+        "properties": { "hp": 12, "score": 500, "is_interactive": true }
+      },
+      {
+        "id": "l05_bunker_03",
+        "type": "bunker",
+        "position": { "x": 250, "y": 3400 },
+        "properties": {
+          "hp": 25,
+          "score": 1000,
+          "is_interactive": true,
+          "reveals_on_destroy": [
+            {
+              "type": "anti_air_gun",
+              "properties": { "hp": 15, "score": 500, "is_interactive": true }
+            }
+          ]
+        }
+      },
+      {
+        "id": "l05_bunker_04",
+        "type": "bunker",
+        "position": { "x": 800, "y": 3400 },
+        "properties": {
+          "hp": 25,
+          "score": 1000,
+          "is_interactive": true,
+          "reveals_on_destroy": [
+            {
+              "type": "anti_air_gun",
+              "properties": { "hp": 15, "score": 500, "is_interactive": true }
+            }
+          ]
+        }
+      },
+      {
+        "id": "l05_aagun_02",
+        "type": "anti_air_gun",
+        "position": { "x": 400, "y": 4000 },
+        "properties": { "hp": 12, "score": 500, "is_interactive": true }
+      },
+      {
+        "id": "l05_aagun_03",
+        "type": "anti_air_gun",
+        "position": { "x": 680, "y": 4000 },
+        "properties": { "hp": 12, "score": 500, "is_interactive": true }
+      },
+      {
+        "id": "l05_bunker_05",
+        "type": "bunker",
+        "position": { "x": 540, "y": 4600 },
+        "properties": {
+          "hp": 30,
+          "score": 1200,
+          "is_interactive": true,
+          "reveals_on_destroy": [
+            {
+              "type": "anti_air_gun",
+              "properties": { "hp": 20, "score": 700, "is_interactive": true }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

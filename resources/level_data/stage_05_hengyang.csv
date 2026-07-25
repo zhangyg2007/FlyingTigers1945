@@ -1,0 +1,26 @@
+# 第5关"衡阳保卫战"波次配置（v1.5 重排，原 stage_06_hengyang）
+# 格式：time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+# BOSS: BOSS_kinu（筑垒要塞群，ground_facility 类型）
+# 历史背景：1944.6–8 衡阳会战
+# 关卡类型：对地支援+空战
+# 难度：高（速度倍率1.4~1.7，城市废墟+稻田场景，地面目标+空中敌机混编）
+# 情报事件：hengyang_arsenal（军火库+精英坦克两段式）
+# 友军保护：hengyang_stronghold（死守城内据点，机枪阵地×4 + 97式改坦克/Ki-45）
+time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+2.0,ki43_hayabusa,4,line,200,-50,1.4,straight
+4.5,ki43_hayabusa,4,line,400,-50,1.4,straight
+7.5,ki61_hien,4,diamond,300,-50,1.4,straight
+10.5,ki84_hayate,3,v_formation,300,-50,1.5,dive
+13.5,ki21_bomber,2,line,200,-80,1.0,straight
+13.5,ki21_bomber,2,line,400,-80,1.0,straight
+17.0,ki43_hayabusa,5,v_formation,300,-50,1.5,straight
+20.5,ki84_hayate,4,diamond,200,-50,1.5,straight
+20.5,ki84_hayate,4,diamond,400,-50,1.5,straight
+24.0,ki61_hien,6,swarm,300,-50,1.6,dive
+28.0,type97_tank,3,line,300,-50,0.8,straight
+32.0,ki84_hayate,4,diamond,200,-50,1.6,straight
+32.0,ki84_hayate,4,diamond,400,-50,1.6,straight
+36.0,ki84_hayate,5,swarm,300,-50,1.7,dive
+40.0,ki21_bomber,3,v_formation,300,-80,1.1,straight
+44.0,ki61_hien,7,diamond,300,-50,1.7,straight
+48.0,BOSS_kinu,1,boss,300,-150,0.5,boss_enter

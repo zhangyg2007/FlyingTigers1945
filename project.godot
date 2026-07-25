@@ -38,6 +38,7 @@ UnlockManager="*res://autoload/unlock_manager.gd"
 PerformanceManager="*res://autoload/performance_manager.gd"
 RankManager="*res://autoload/rank_manager.gd"
 MapObjectManager="*res://autoload/map_object_manager.gd"
+ComboManager="*res://autoload/combo_manager.gd"
 
 [display]
 

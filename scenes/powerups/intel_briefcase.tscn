@@ -1,0 +1,29 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/powerups/intel_briefcase.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/intel_hump_route.png" id="2_tex"]
+
+[sub_resource type="CircleShape2D" id="3_shape"]
+radius = 18.0
+
+[node name="IntelBriefcase" type="Area2D"]
+script = ExtResource("1_script")
+powerup_type = 0
+fall_speed = 40.0
+float_amplitude = 5.0
+float_frequency = 2.5
+effect_value = 0
+screen_margin = 50.0
+intel_id = ""
+event_id = ""
+unlock_hidden = ""
+intel_display_name = "机密情报"
+collision_layer = 16
+collision_mask = 1
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_tex")
+scale = Vector2(0.5, 0.5)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("3_shape")

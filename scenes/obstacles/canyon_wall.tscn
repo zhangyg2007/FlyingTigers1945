@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/obstacles/obstacle_base.gd" id="1_script"]
+
+[sub_resource type="RectangleShape2D" id="2_shape"]
+size = Vector2(120, 480)
+
+[node name="CanyonWall" type="Area2D"]
+script = ExtResource("1_script")
+obstacle_type = "canyon_wall"
+contact_damage = 9999
+one_shot = false
+
+[node name="Polygon2D" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-60, -240, 60, -240, 60, 240, -60, 240)
+color = Color(0.25, 0.18, 0.12, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("2_shape")

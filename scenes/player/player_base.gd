@@ -73,6 +73,30 @@ signal power_changed(new_level: int)
 ## 蓄力特效场景
 @export var charge_effect_scene: PackedScene = null
 
+## v1.5: 战机 ID（数据驱动配置，见 resources/player_data.json）
+@export var aircraft_id: String = ""
+
+## v1.5: 子弹数量（数据驱动，按战机配置）
+@export var bullet_count: int = 2
+
+## v1.5: 子弹散射角度（度，0=直线）
+@export var bullet_spread: float = 0.0
+
+## v1.5: 子弹伤害
+@export var bullet_damage: int = 1
+
+## v1.5: 子弹速度
+@export var bullet_speed: float = 600.0
+
+## v1.5: 武器类型标识
+@export var weapon_type: String = "dual_50cal"
+
+## v1.5: 炸弹类型标识
+@export var bomb_type: String = "standard"
+
+## v1.5: 战机显示名
+@export var aircraft_display_name: String = ""
+
 
 ## ============================================================
 ## 运行时状态
@@ -123,6 +147,10 @@ var object_pool: ObjectPool = null
 ## 是否已死亡（防止重复死亡处理）
 var _is_dead: bool = false
 
+## v1.5 C16: 外部施加的力（侧风/水流等持续推力，由 LevelBase 设置）
+## 在 _handle_movement 中叠加到 velocity 上，每帧由外部更新
+var external_force: Vector2 = Vector2.ZERO
+
 ## Sprite2D节点引用
 @onready var _sprite: Sprite2D = _find_sprite_node()
 
@@ -137,6 +165,10 @@ func _ready() -> void:
 	# 加入 "player" 组，便于 BOSS/敌机/道具等通过 get_nodes_in_group("player") 查找
 	if not is_in_group("player"):
 		add_to_group("player")
+
+	# v1.5: 数据驱动加载战机配置（aircraft_id 非空时从 player_data.json 加载）
+	if not aircraft_id.is_empty():
+		load_aircraft_config(aircraft_id)
 
 	# 初始化运行时状态（与GameManager同步）
 	if GameManager:
@@ -181,6 +213,58 @@ func _ready() -> void:
 	_target_tilt = 0.0
 
 
+## v1.5: 从 player_data.json 加载战机配置（数据驱动）
+## 覆盖导出参数，实现多战机差异化
+func load_aircraft_config(id: String) -> void:
+	var path: String = "res://resources/player_data.json"
+	if not FileAccess.file_exists(path):
+		push_warning("[PlayerBase] player_data.json 不存在")
+		return
+	var text: String = FileAccess.get_file_as_string(path)
+	var json := JSON.new()
+	if json.parse(text) != OK:
+		push_error("[PlayerBase] player_data.json 解析失败")
+		return
+	var data: Dictionary = json.data
+	var aircrafts: Array = data.get("aircrafts", [])
+	for ac in aircrafts:
+		if String(ac.get("aircraft_id", "")) == id:
+			aircraft_display_name = String(ac.get("display_name", ""))
+			max_lives = int(ac.get("max_hp", max_lives))
+			speed = float(ac.get("speed", speed))
+			shoot_interval = float(ac.get("shoot_interval", shoot_interval))
+			charge_threshold = float(ac.get("charge_threshold", charge_threshold))
+			max_bombs = int(ac.get("max_bombs", max_bombs))
+			weapon_type = String(ac.get("weapon_type", weapon_type))
+			bullet_count = int(ac.get("bullet_count", bullet_count))
+			bullet_spread = float(ac.get("bullet_spread", bullet_spread))
+			bullet_damage = int(ac.get("bullet_damage", bullet_damage))
+			bullet_speed = float(ac.get("bullet_speed", bullet_speed))
+			bomb_type = String(ac.get("bomb_type", bomb_type))
+			# 加载 Sprite
+			var sprite_path: String = String(ac.get("sprite", ""))
+			if not sprite_path.is_empty() and _sprite != null:
+				var tex: Texture2D = load(sprite_path) as Texture2D
+				if tex != null:
+					_sprite.texture = tex
+			print("[PlayerBase] 已加载战机配置: %s (%s)" % [id, aircraft_display_name])
+			return
+	push_warning("[PlayerBase] 未找到战机配置: %s" % id)
+
+
+## v1.5: 获取所有战机配置（静态辅助，供机库 UI 调用）
+static func get_all_aircrafts() -> Array:
+	var path: String = "res://resources/player_data.json"
+	if not FileAccess.file_exists(path):
+		return []
+	var text: String = FileAccess.get_file_as_string(path)
+	var json := JSON.new()
+	if json.parse(text) != OK:
+		return []
+	var data: Dictionary = json.data
+	return data.get("aircrafts", [])
+
+
 func _physics_process(delta: float) -> void:
 	if _is_dead:
 		return
@@ -210,8 +294,8 @@ func _handle_movement(_delta: float) -> void:
 	# 获取输入向量（8方向）
 	var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_up", "move_down")
 
-	# 设置速度
-	velocity = input_dir * speed
+	# 设置速度（v1.5 C16: 叠加外部侧风/水流推力）
+	velocity = input_dir * speed + external_force
 
 	# 计算倾斜目标角度（根据水平速度）
 	_target_tilt = -input_dir.x * tilt_max_angle
@@ -341,8 +425,8 @@ func _spawn_bullet(local_offset: Vector2, dir: Vector2) -> void:
 		bullet_node.global_position = global_position + local_offset
 		bullet_node.direction = dir
 		bullet_node.is_player_bullet = true
-		bullet_node.speed = 500.0
-		bullet_node.damage = 1
+		bullet_node.speed = bullet_speed
+		bullet_node.damage = bullet_damage
 
 	var parent_node: Node = get_parent()
 	if parent_node != null:
@@ -514,7 +598,8 @@ func _create_bomb_flash() -> void:
 
 	var flash := ColorRect.new()
 	flash.name = "BombFlash"
-	flash.rect_size = viewport_size
+	# v1.5 修复：Godot 4 中 rect_size 已改名为 size
+	flash.size = viewport_size
 	flash.color = Color(1, 1, 1, 0.8)
 	flash.z_index = 100
 
@@ -610,6 +695,10 @@ func lose_life() -> void:
 		GameManager.lives = lives
 		GameManager.lives_changed.emit(lives)
 
+	# v1.5 修复：玩家被击中时中断 Combo（原 on_player_hit() 从未被调用）
+	if ComboManager:
+		ComboManager.on_player_hit()
+
 	if lives <= 0:
 		# 没有生命了，游戏结束
 		_player_die()
@@ -642,6 +731,10 @@ func _player_die() -> void:
 
 	# 发出死亡信号
 	died.emit()
+
+	# v1.5 修复：玩家死亡时清零 Combo（原 reset_combo() 从未被调用）
+	if ComboManager:
+		ComboManager.reset_combo()
 
 	# 通知GameManager
 	_notify_game_manager_game_over()
@@ -773,10 +866,14 @@ func _notify_game_manager_life_lost() -> void:
 
 
 ## 通知GameManager游戏结束
+## v1.5 修复：原调用不存在的 on_game_over()，改为 notify_player_died() + set_state(GAME_OVER)
 func _notify_game_manager_game_over() -> void:
-	var game_manager: Node = get_node_or_null("/root/GameManager")
-	if game_manager != null and game_manager.has_method("on_game_over"):
-		game_manager.on_game_over(self)
+	if GameManager == null:
+		return
+	if GameManager.has_method("notify_player_died"):
+		GameManager.notify_player_died()
+	# State.GAME_OVER = 4（枚举：MENU=0/PLAYING=1/PAUSED=2/STAGE_CLEAR=3/GAME_OVER=4）
+	GameManager.set_state(GameManager.State.GAME_OVER)
 
 
 ## ============================================================

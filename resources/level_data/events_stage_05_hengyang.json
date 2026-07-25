@@ -1,0 +1,98 @@
+{
+  "stage_id": "05_hengyang",
+  "events": [
+    {
+      "event_id": "hengyang_intel_two_phase",
+      "event_type": "destroy_targets",
+      "trigger": {
+        "timing": "on_time",
+        "time": 30.0,
+        "probability": 1.0
+      },
+      "target": {
+        "scene_path": "res://scenes/events/event_target_bridge.tscn",
+        "count": 2,
+        "targets": [
+          {
+            "id": "hengyang_ammo_depot",
+            "x": 380,
+            "y": 400,
+            "hp": 60
+          },
+          {
+            "id": "hengyang_elite_tank",
+            "x": 700,
+            "y": 550,
+            "hp": 80
+          }
+        ]
+      },
+      "rewards": {
+        "score": 5000,
+        "drop_intel": "intel_hengyang_status",
+        "unlock_hidden": "H2_hiroshima"
+      },
+      "ui": {
+        "alert_text": "衡阳壕沟发现军火库与精英坦克！全部摧毁以获取战况密报",
+        "complete_text": "衡阳战况密报"
+      }
+    },
+    {
+      "event_id": "hengyang_ally_defense",
+      "event_type": "protect_ally_event",
+      "trigger": {
+        "timing": "on_time",
+        "time": 50.0,
+        "probability": 1.0
+      },
+      "target": {
+        "scene_path": "res://scenes/map_objects/ally_position.tscn",
+        "duration": 35.0,
+        "required_count": 3,
+        "allies": [
+          {
+            "id": "hengyang_mg_nest_1",
+            "x": 200,
+            "y": 700,
+            "hp": 60,
+            "ally_type": "mg_nest",
+            "is_critical": true
+          },
+          {
+            "id": "hengyang_mg_nest_2",
+            "x": 540,
+            "y": 720,
+            "hp": 60,
+            "ally_type": "mg_nest",
+            "is_critical": true
+          },
+          {
+            "id": "hengyang_mg_nest_3",
+            "x": 880,
+            "y": 700,
+            "hp": 60,
+            "ally_type": "mg_nest",
+            "is_critical": true
+          },
+          {
+            "id": "hengyang_mg_nest_4",
+            "x": 360,
+            "y": 780,
+            "hp": 40,
+            "ally_type": "mg_nest",
+            "is_critical": false
+          }
+        ]
+      },
+      "rewards": {
+        "score": 5000
+      },
+      "ui": {
+        "alert_text": "死守城内据点！保护机枪阵地 35 秒",
+        "complete_text": "友军据点坚守成功！+5000 分",
+        "ally_lost_text": "友军损失！机枪阵地被毁",
+        "fail_text": "友军据点全部失守"
+      }
+    }
+  ]
+}

@@ -1,35 +1,42 @@
 {
-  "boss_id": "boss_bomber",
-  "boss_name": "九七重爆领队",
-  "max_hp": 350,
-  "phase_hps": [150, 200],
-  "phase_attack_intervals": [1.5, 1.0],
-  "phase_bullets": [
-    ["fan_shoot"],
-    ["turret_fire", "fan_shoot"]
+  "boss_id": "boss_ki48_squadron",
+  "boss_name": "Ki-48长机+Ki-27护航",
+  "boss_type": "formation",
+  "max_hp": 3000,
+  "indestructible": false,
+  "sprite": "res://assets/sprites/boss/boss_ki48_squadron.png",
+  "move_speed": 60.0,
+  "entry_target_y": 200.0,
+  "contact_damage": 5,
+  "drop_count": 3,
+  "difficulty_curve": {
+    "attack_interval_start": 1.5,
+    "attack_interval_end": 0.6,
+    "bullet_speed_mult_start": 1.0,
+    "bullet_speed_mult_end": 1.8,
+    "ramp_duration": 60.0
+  },
+  "weak_points": [
+    {"name": "bomb_bay", "region": {"x": -20, "y": 10, "w": 40, "h": 20}, "damage_mult": 2.0}
   ],
+  "bullet_patterns": ["fan_shoot", "aimed_shoot"],
   "bullet_params": {
     "fan_shoot": {
       "count_base": 5,
-      "count_per_phase": 2,
       "spread_angle": 60.0,
       "speed_base": 200.0,
-      "speed_per_phase": 30.0,
       "damage": 1
     },
-    "turret_fire": {
+    "aimed_shoot": {
+      "count_base": 3,
       "speed_base": 280.0,
-      "speed_per_phase": 40.0,
       "damage": 2,
       "aim_on_center": true
     }
   },
-  "phase_sprites": [
-    "res://assets/sprites/boss/boss_bomber_phase1.png",
-    "res://assets/sprites/boss/boss_bomber_phase2.png"
-  ],
-  "move_speed": 60.0,
-  "contact_damage": 10,
-  "entry_target_y": 200.0,
-  "drop_count": 3
+  "summon": {
+    "type": "ki27",
+    "count": 2,
+    "interval": 15.0
+  }
 }

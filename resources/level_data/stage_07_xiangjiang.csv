@@ -1,0 +1,25 @@
+# 第7关"湘江猎杀"波次配置（v1.5 新增）
+# 格式：time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+# BOSS: BOSS_shiden_squadron（3艘中型内河炮舰编队，multi_target 类型，依次击沉）
+# 历史背景：1944.9 湘江补给船队猎杀
+# 关卡类型：多舰艇对舰
+# 难度：高（速度倍率1.5~1.8，江面场景，舰艇+护航机混编）
+# 情报事件：xiangjiang_transport（运输舰追击逃逸型）
+# 友军保护：xiangjiang_convoy（护航渡江运输船×2 + Ki-21/Ki-43）
+time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+2.0,ki43_hayabusa,4,line,200,-50,1.5,straight
+4.5,ki43_hayabusa,4,line,400,-50,1.5,straight
+7.5,ki61_hien,3,diamond,300,-50,1.5,dive
+10.5,landing_craft,2,line,200,-50,0.9,straight
+10.5,landing_craft,2,line,400,-50,0.9,straight
+14.0,ki21_bomber,2,solo,300,-80,0.9,straight
+18.0,ki84_hayate,4,v_formation,300,-50,1.6,straight
+22.0,patrol_boat,3,line,300,-50,0.8,straight
+26.0,ki43_hayabusa,6,swarm,300,-50,1.6,dive
+30.0,ki61_hien,4,diamond,200,-50,1.6,straight
+30.0,ki61_hien,4,diamond,400,-50,1.6,straight
+34.0,landing_craft,4,v_formation,300,-50,0.9,straight
+38.0,ki84_hayate,5,swarm,300,-50,1.7,dive
+42.0,ki21_bomber,3,v_formation,300,-80,1.0,straight
+46.0,ki43_hayabusa,6,swarm,300,-50,1.8,straight
+50.0,BOSS_shiden_squadron,1,boss,300,-150,0.5,boss_enter

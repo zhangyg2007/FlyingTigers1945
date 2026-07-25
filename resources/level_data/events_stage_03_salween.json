@@ -1,0 +1,54 @@
+{
+  "stage_id": "03_salween",
+  "events": [
+    {
+      "event_id": "salween_ally_bridge_building",
+      "event_type": "protect_ally_event",
+      "trigger": {
+        "timing": "on_time",
+        "time": 30.0,
+        "probability": 1.0
+      },
+      "target": {
+        "scene_path": "res://scenes/map_objects/ally_position.tscn",
+        "duration": 30.0,
+        "required_count": 2,
+        "allies": [
+          {
+            "id": "salween_mg_nest_1",
+            "x": 240,
+            "y": 750,
+            "hp": 50,
+            "ally_type": "mg_nest",
+            "is_critical": true
+          },
+          {
+            "id": "salween_mg_nest_2",
+            "x": 540,
+            "y": 780,
+            "hp": 50,
+            "ally_type": "mg_nest",
+            "is_critical": true
+          },
+          {
+            "id": "salween_mg_nest_3",
+            "x": 840,
+            "y": 750,
+            "hp": 50,
+            "ally_type": "mg_nest",
+            "is_critical": true
+          }
+        ]
+      },
+      "rewards": {
+        "score": 5000
+      },
+      "ui": {
+        "alert_text": "掩护远征军架桥！保护 3 处机枪阵地 30 秒",
+        "complete_text": "桥梁搭建完成！+5000 分",
+        "ally_lost_text": "友军损失！机枪阵地被毁",
+        "fail_text": "友军阵地全部失守，架桥失败"
+      }
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "stage_id": "10_zhijiang",
+  "events": [
+    {
+      "event_id": "zhijiang_ally_airfield",
+      "event_type": "protect_ally_event",
+      "trigger": {
+        "timing": "on_time",
+        "time": 55.0,
+        "probability": 1.0
+      },
+      "target": {
+        "scene_path": "res://scenes/map_objects/ally_position.tscn",
+        "duration": 45.0,
+        "required_count": 2,
+        "allies": [
+          {
+            "id": "zhijiang_aa_gun_1",
+            "x": 200,
+            "y": 720,
+            "hp": 70,
+            "ally_type": "aa_gun",
+            "is_critical": true
+          },
+          {
+            "id": "zhijiang_aa_gun_2",
+            "x": 460,
+            "y": 760,
+            "hp": 70,
+            "ally_type": "aa_gun",
+            "is_critical": true
+          },
+          {
+            "id": "zhijiang_aa_gun_3",
+            "x": 720,
+            "y": 760,
+            "hp": 70,
+            "ally_type": "aa_gun",
+            "is_critical": true
+          },
+          {
+            "id": "zhijiang_aa_gun_4",
+            "x": 980,
+            "y": 720,
+            "hp": 70,
+            "ally_type": "aa_gun",
+            "is_critical": true
+          }
+        ]
+      },
+      "rewards": {
+        "score": 5000
+      },
+      "ui": {
+        "alert_text": "保卫芷江机场核心区！保护 4 处高炮阵地 45 秒",
+        "complete_text": "机场核心区坚守成功！+5000 分",
+        "ally_lost_text": "友军损失！高炮阵地被毁",
+        "fail_text": "机场核心区全部失守"
+      }
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+# 第8关"白螺矶突袭"波次配置（v1.5 重排，原 stage_08_wuhan）
+# 格式：time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+# BOSS: BOSS_kongo（最上号重巡+机场综合塔台，mixed 类型）
+# 历史背景：1943–44 汉口白螺矶机场突袭
+# 关卡类型：江面舰艇+机场突袭
+# 难度：极高（速度倍率1.6~2.0，长江城市天际线场景，舰艇+机场双场景）
+time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+2.0,ki43_hayabusa,5,line,200,-50,1.6,straight
+4.5,ki43_hayabusa,5,line,400,-50,1.6,straight
+7.5,ki84_hayate,4,diamond,300,-50,1.6,straight
+10.5,ki61_hien,4,v_formation,300,-50,1.6,dive
+13.5,ki45_toryu,2,solo,200,-50,1.4,straight
+13.5,ki45_toryu,2,solo,400,-50,1.4,straight
+17.0,ki44_shoki,3,diamond,300,-50,1.7,straight
+20.5,ki21_bomber,3,line,200,-80,1.0,straight
+20.5,ki21_bomber,3,line,400,-80,1.0,straight
+24.0,ki43_hayabusa,8,swarm,300,-50,1.7,dive
+28.0,ki84_hayate,6,v_formation,300,-50,1.8,straight
+32.0,patrol_boat,4,diamond,300,-50,0.9,straight
+36.0,ki61_hien,6,swarm,300,-50,1.8,dive
+40.0,ki45_toryu,3,v_formation,300,-50,1.5,straight
+44.0,ki44_shoki,5,diamond,300,-50,1.9,straight
+48.0,ki43_hayabusa,8,swarm,300,-50,2.0,straight
+52.0,ki21_bomber,4,v_formation,300,-80,1.1,straight
+56.0,BOSS_kongo,1,boss,300,-150,0.5,boss_enter

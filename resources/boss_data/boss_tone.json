@@ -1,50 +1,55 @@
 {
-  "boss_id": "boss_tone",
-  "boss_name": "利根号重巡",
-  "max_hp": 1800,
-  "phase_hps": [800, 1000],
-  "phase_attack_intervals": [1.2, 0.9],
-  "phase_bullets": [
-    ["missile_volley", "spiral_shoot", "fan_shoot"],
-    ["missile_volley", "spiral_shoot", "fan_shoot", "turret_fire"]
+  "boss_id": "boss_ki45_toryu",
+  "boss_name": "Ki-45屠龙重战",
+  "boss_type": "ace",
+  "max_hp": 5500,
+  "indestructible": false,
+  "sprite": "res://assets/sprites/boss/boss_ki45_toryu.png",
+  "move_speed": 80.0,
+  "entry_target_y": 180.0,
+  "contact_damage": 8,
+  "drop_count": 5,
+  "difficulty_curve": {
+    "attack_interval_start": 1.2,
+    "attack_interval_end": 0.5,
+    "bullet_speed_mult_start": 1.0,
+    "bullet_speed_mult_end": 1.7,
+    "ramp_duration": 60.0
+  },
+  "weak_points": [
+    {"name": "ventral", "region": {"x": -25, "y": 15, "w": 50, "h": 25}, "damage_mult": 2.0}
   ],
+  "bullet_patterns": ["turret_fire", "aimed_shoot", "fan_shoot"],
   "bullet_params": {
-    "missile_volley": {
+    "turret_fire": {
       "count_base": 4,
-      "count_per_phase": 1,
-      "speed_base": 170.0,
-      "spread_deg": 18.0,
-      "damage": 3
+      "speed_base": 320.0,
+      "damage": 2,
+      "aim_on_center": false,
+      "direction": "forward"
     },
-    "spiral_shoot": {
-      "arms_base": 4,
-      "arms_per_phase": 1,
-      "bullets_per_arm": 3,
-      "speed_base": 200.0,
-      "speed_per_phase": 25.0,
-      "damage": 1
+    "aimed_shoot": {
+      "count_base": 3,
+      "speed_base": 280.0,
+      "damage": 2,
+      "aim_on_center": true,
+      "direction": "backward"
     },
     "fan_shoot": {
-      "count_base": 8,
-      "count_per_phase": 2,
+      "count_base": 6,
       "spread_angle": 80.0,
-      "speed_base": 230.0,
-      "speed_per_phase": 30.0,
+      "speed_base": 240.0,
       "damage": 1
-    },
-    "turret_fire": {
-      "speed_base": 300.0,
-      "speed_per_phase": 40.0,
-      "damage": 2,
-      "aim_on_center": true
     }
   },
-  "phase_sprites": [
-    "res://assets/sprites/boss/boss_tone_phase1.png",
-    "res://assets/sprites/boss/boss_tone_phase2.png"
-  ],
-  "move_speed": 40.0,
-  "contact_damage": 20,
-  "entry_target_y": 150.0,
-  "drop_count": 6
+  "summon": {
+    "type": "ki44",
+    "count": 2,
+    "interval": 20.0
+  },
+  "environment_hazards": {
+    "type": "karst_peaks",
+    "count": 5,
+    "damage": 999
+  }
 }

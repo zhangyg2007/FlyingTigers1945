@@ -1,0 +1,73 @@
+{
+  "stage_id": "07_xiangjiang",
+  "events": [
+    {
+      "event_id": "xiangjiang_intel_transport",
+      "event_type": "intel_event_briefcase",
+      "trigger": {
+        "timing": "on_time",
+        "time": 45.0,
+        "probability": 1.0
+      },
+      "target": {
+        "enemy_type": "event_target_car",
+        "spawn_x": 200,
+        "spawn_y": -100,
+        "speed": 140,
+        "hp": 120,
+        "escape_time": 8.0
+      },
+      "rewards": {
+        "score": 5000,
+        "drop_intel": "intel_hiroshima_target",
+        "unlock_hidden": "H2_hiroshima"
+      },
+      "ui": {
+        "alert_text": "湘江江面发现敌方运输舰！8秒内击毁以获取广岛目标坐标",
+        "complete_text": "广岛目标坐标",
+        "escape_text": "情报已转移！运输舰已逃脱"
+      }
+    },
+    {
+      "event_id": "xiangjiang_ally_convoy",
+      "event_type": "protect_ally_event",
+      "trigger": {
+        "timing": "on_time",
+        "time": 60.0,
+        "probability": 1.0
+      },
+      "target": {
+        "scene_path": "res://scenes/map_objects/ally_position.tscn",
+        "duration": 40.0,
+        "required_count": 1,
+        "allies": [
+          {
+            "id": "xiangjiang_transport_1",
+            "x": 300,
+            "y": 800,
+            "hp": 100,
+            "ally_type": "transport_ship",
+            "is_critical": true
+          },
+          {
+            "id": "xiangjiang_transport_2",
+            "x": 780,
+            "y": 820,
+            "hp": 100,
+            "ally_type": "transport_ship",
+            "is_critical": true
+          }
+        ]
+      },
+      "rewards": {
+        "score": 5000
+      },
+      "ui": {
+        "alert_text": "护航渡江运输船！保护 2 艘运输船 40 秒",
+        "complete_text": "运输船成功渡江！+5000 分",
+        "ally_lost_text": "友军损失！运输船被击沉",
+        "fail_text": "运输船全部被击沉，护航失败"
+      }
+    }
+  ]
+}

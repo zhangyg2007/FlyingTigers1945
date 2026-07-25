@@ -527,6 +527,12 @@ signal event_completed(event_id: String, rewards: Dictionary)
 ## 事件失败时发出
 signal event_failed(event_id: String)
 
+## v1.5: 情报已收集（HUD 可监听显示提示）
+signal intel_collected(intel_id: String, display_name: String)
+
+## v1.5: 事件提示文本（友军损失 / 失败提示等）
+signal event_alert(text: String)
+
 ## 解锁隐藏关卡
 ## [param stage_id]: 隐藏关卡标识符（如 "H1_hump_extreme"）
 func unlock_hidden_stage(stage_id: String) -> void:

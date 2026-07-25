@@ -1,0 +1,92 @@
+{
+  "map": {
+    "background_image": "res://assets/sprites/backgrounds/stage_09_guiliu/bg_guiliu_full.png",
+    "scroll_speed": 120.0,
+    "objects": [
+      {
+        "id": "l09_karst_01",
+        "type": "karst_peak",
+        "position": { "x": 200, "y": 1500 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
+      },
+      {
+        "id": "l09_karst_02",
+        "type": "karst_peak",
+        "position": { "x": 880, "y": 1500 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
+      },
+      {
+        "id": "l09_aagun_01",
+        "type": "anti_air_gun",
+        "position": { "x": 540, "y": 2000 },
+        "properties": { "hp": 12, "score": 500, "is_interactive": true }
+      },
+      {
+        "id": "l09_karst_03",
+        "type": "karst_peak",
+        "position": { "x": 350, "y": 2600 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
+      },
+      {
+        "id": "l09_karst_04",
+        "type": "karst_peak",
+        "position": { "x": 730, "y": 2600 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
+      },
+      {
+        "id": "l09_bunker_01",
+        "type": "bunker",
+        "position": { "x": 540, "y": 3200 },
+        "properties": { "hp": 20, "score": 800, "is_interactive": true }
+      },
+      {
+        "id": "l09_karst_05",
+        "type": "karst_peak",
+        "position": { "x": 150, "y": 3800 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
+      },
+      {
+        "id": "l09_karst_06",
+        "type": "karst_peak",
+        "position": { "x": 930, "y": 3800 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
+      },
+      {
+        "id": "l09_karst_07",
+        "type": "karst_peak",
+        "position": { "x": 540, "y": 3900 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
+      },
+      {
+        "id": "l09_aagun_02",
+        "type": "anti_air_gun",
+        "position": { "x": 300, "y": 4500 },
+        "properties": { "hp": 12, "score": 500, "is_interactive": true }
+      },
+      {
+        "id": "l09_aagun_03",
+        "type": "anti_air_gun",
+        "position": { "x": 780, "y": 4500 },
+        "properties": { "hp": 12, "score": 500, "is_interactive": true }
+      },
+      {
+        "id": "l09_karst_08",
+        "type": "karst_peak",
+        "position": { "x": 250, "y": 5200 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
+      },
+      {
+        "id": "l09_karst_09",
+        "type": "karst_peak",
+        "position": { "x": 830, "y": 5200 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
+      },
+      {
+        "id": "l09_karst_10",
+        "type": "karst_peak",
+        "position": { "x": 540, "y": 5800 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
+      }
+    ]
+  }
+}

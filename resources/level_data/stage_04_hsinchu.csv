@@ -1,0 +1,25 @@
+# 第4关"新竹奇袭"波次配置（v1.5 新增）
+# 格式：time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+# BOSS: BOSS_ki21_squadron（妙高号重巡+Ki-44王牌机，mixed 类型）
+# 历史背景：1943.11.25 台湾新竹机场突袭
+# 关卡类型：跨海突袭+机场突袭
+# 难度：中高（速度倍率1.3~1.6，跨海段+机场段双场景）
+time,enemy_type,count,formation,spawn_x,spawn_y,speed_mult,path_id
+2.0,ki27_fighter,4,line,200,-50,1.3,straight
+4.5,ki27_fighter,4,line,400,-50,1.3,straight
+7.5,ki43_hayabusa,4,diamond,300,-50,1.3,dive
+10.5,ki44_shoki,2,solo,200,-50,1.4,straight
+10.5,ki44_shoki,2,solo,400,-50,1.4,straight
+14.0,ki21_bomber,2,line,200,-80,0.9,straight
+14.0,ki21_bomber,2,line,400,-80,0.9,straight
+18.0,ki43_hayabusa,5,v_formation,300,-50,1.4,straight
+22.0,ki44_shoki,3,diamond,300,-50,1.5,dive
+26.0,ki27_fighter,6,swarm,300,-50,1.5,straight
+30.0,ki21_bomber,3,v_formation,300,-80,1.0,straight
+34.0,ki43_hayabusa,4,diamond,200,-50,1.5,straight
+34.0,ki43_hayabusa,4,diamond,400,-50,1.5,straight
+38.0,ki44_shoki,4,v_formation,300,-50,1.6,dive
+42.0,ki21_bomber,2,line,200,-80,1.1,straight
+42.0,ki21_bomber,2,line,400,-80,1.1,straight
+46.0,ki43_hayabusa,6,swarm,300,-50,1.6,straight
+50.0,BOSS_ki21_squadron,1,boss,300,-150,0.5,boss_enter

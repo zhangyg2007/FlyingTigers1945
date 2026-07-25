@@ -2,29 +2,29 @@
   "stage_id": "02_rangoon",
   "events": [
     {
-      "event_id": "rangoon_general_car",
-      "event_type": "kill_target",
+      "event_id": "rangoon_intel_bunker",
+      "event_type": "intel_event_briefcase",
       "trigger": {
         "timing": "on_time",
         "time": 35.0,
-        "probability": 0.8
+        "probability": 1.0
       },
       "target": {
-        "enemy_type": "event_target_car",
-        "spawn_x": 50,
-        "spawn_y": -100,
-        "speed": 180,
-        "hp": 30,
-        "escape_time": 12.0
+        "enemy_type": "event_target_bunker",
+        "spawn_x": 540,
+        "spawn_y": -80,
+        "speed": 60,
+        "hp": 80,
+        "escape_time": 0.0
       },
       "rewards": {
-        "score": 5000,
-        "drop_items": ["intel_hump_route"],
+        "score": 3000,
+        "drop_intel": "intel_hump_route",
         "unlock_hidden": "H1_hump_extreme"
       },
       "ui": {
-        "alert_text": "截获情报：敌军将领座驾正在撤离！",
-        "complete_text": "获取驼峰路线情报！隐藏关卡已解锁（需军衔：中士）"
+        "alert_text": "仰光树林地堡发现情报！击毁以获取驼峰航线通行证",
+        "complete_text": "驼峰航线通行证"
       }
     }
   ]

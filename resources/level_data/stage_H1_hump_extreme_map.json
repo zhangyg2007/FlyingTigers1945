@@ -1,49 +1,97 @@
 {
   "map": {
     "background_image": "res://assets/sprites/backgrounds/stage_H1_hump_extreme/bg_hump_extreme_full.png",
-    "scroll_speed": 130.0,
+    "scroll_speed": 180.0,
     "objects": [
       {
-        "id": "h1_bunker_01",
-        "type": "bunker",
-        "position": { "x": 300, "y": 800 },
-        "properties": { "hp": 20, "score": 800, "is_interactive": true }
+        "id": "h1_canyon_01",
+        "type": "canyon_wall",
+        "position": { "x": 120, "y": 600 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
       },
       {
-        "id": "h1_bunker_02",
-        "type": "bunker",
-        "position": { "x": 700, "y": 1600 },
-        "properties": { "hp": 20, "score": 800, "is_interactive": true }
+        "id": "h1_canyon_02",
+        "type": "canyon_wall",
+        "position": { "x": 960, "y": 600 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
       },
       {
-        "id": "h1_tank_01",
-        "type": "enemy_tank",
-        "position": { "x": 540, "y": 2400 },
-        "properties": { "hp": 10, "score": 500, "is_interactive": true }
+        "id": "h1_karst_01",
+        "type": "karst_peak",
+        "position": { "x": 300, "y": 1200 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
       },
       {
-        "id": "h1_aagun_01",
-        "type": "anti_air_gun",
-        "position": { "x": 250, "y": 3200 },
-        "properties": { "hp": 12, "score": 700, "is_interactive": true }
+        "id": "h1_karst_02",
+        "type": "karst_peak",
+        "position": { "x": 780, "y": 1600 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
       },
       {
-        "id": "h1_aagun_02",
-        "type": "anti_air_gun",
-        "position": { "x": 800, "y": 4000 },
-        "properties": { "hp": 12, "score": 700, "is_interactive": true }
+        "id": "h1_canyon_03",
+        "type": "canyon_wall",
+        "position": { "x": 100, "y": 2200 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
       },
       {
-        "id": "h1_convoy_01",
-        "type": "convoy",
-        "position": { "x": 540, "y": 4800 },
-        "properties": { "hp": 15, "score": 600, "is_interactive": true }
+        "id": "h1_canyon_04",
+        "type": "canyon_wall",
+        "position": { "x": 980, "y": 2200 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
       },
       {
-        "id": "h1_civilian_01",
-        "type": "civilian_car",
-        "position": { "x": 400, "y": 5200 },
-        "properties": { "hp": 1, "score": 0, "is_interactive": false }
+        "id": "h1_karst_03",
+        "type": "karst_peak",
+        "position": { "x": 540, "y": 2800 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
+      },
+      {
+        "id": "h1_karst_04",
+        "type": "karst_peak",
+        "position": { "x": 220, "y": 3400 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
+      },
+      {
+        "id": "h1_karst_05",
+        "type": "karst_peak",
+        "position": { "x": 860, "y": 3400 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
+      },
+      {
+        "id": "h1_canyon_05",
+        "type": "canyon_wall",
+        "position": { "x": 140, "y": 4000 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
+      },
+      {
+        "id": "h1_canyon_06",
+        "type": "canyon_wall",
+        "position": { "x": 940, "y": 4000 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
+      },
+      {
+        "id": "h1_karst_06",
+        "type": "karst_peak",
+        "position": { "x": 400, "y": 4600 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
+      },
+      {
+        "id": "h1_karst_07",
+        "type": "karst_peak",
+        "position": { "x": 680, "y": 5000 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
+      },
+      {
+        "id": "h1_canyon_07",
+        "type": "canyon_wall",
+        "position": { "x": 80, "y": 5600 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
+      },
+      {
+        "id": "h1_canyon_08",
+        "type": "canyon_wall",
+        "position": { "x": 1000, "y": 5600 },
+        "properties": { "contact_damage": 9999, "one_shot": false }
       }
     ]
   }

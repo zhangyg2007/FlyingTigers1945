@@ -1,50 +1,29 @@
 {
-  "boss_id": "boss_kinu",
-  "boss_name": "鬼怒号轻巡",
-  "max_hp": 750,
-  "phase_hps": [350, 400],
-  "phase_attack_intervals": [1.2, 0.8],
-  "phase_bullets": [
-    ["turret_fire", "spiral_shoot", "aimed_shoot"],
-    ["turret_fire", "spiral_shoot", "fan_shoot", "aimed_shoot"]
+  "boss_id": "boss_fortress_group",
+  "boss_name": "筑垒要塞群",
+  "boss_type": "ground_facility",
+  "max_hp": -1,
+  "indestructible": true,
+  "sprite": "res://assets/sprites/boss/boss_fortress_group.png",
+  "move_speed": 0.0,
+  "entry_target_y": 200.0,
+  "contact_damage": 0,
+  "drop_count": 5,
+  "parts": [
+    {"part_id": "fortress_a", "name": "1号混凝土炮台", "position": {"x": -120, "y": -40}, "hp": 900, "sprite": "res://assets/sprites/boss/boss_fortress_group.png", "bullet_pattern": "turret_fire"},
+    {"part_id": "fortress_b", "name": "2号混凝土炮台", "position": {"x": 120, "y": -40}, "hp": 900, "sprite": "res://assets/sprites/boss/boss_fortress_group.png", "bullet_pattern": "turret_fire"},
+    {"part_id": "fortress_c", "name": "3号混凝土炮台", "position": {"x": 0, "y": -100}, "hp": 900, "sprite": "res://assets/sprites/boss/boss_fortress_group.png", "bullet_pattern": "fan_shoot"},
+    {"part_id": "command_post", "name": "指挥所", "position": {"x": 0, "y": 60}, "hp": 900, "sprite": "res://assets/sprites/boss/boss_fortress_group.png", "bullet_pattern": "aimed_shoot", "is_weak_point": true}
+  ],
+  "time_limit": 90.0,
+  "victory_text": "筑垒要塞群全灭",
+  "defeat_text": "我方战机撤退",
+  "weak_points": [
+    {"name": "command_post", "region": {"x": -25, "y": 40, "w": 50, "h": 40}, "damage_mult": 2.0}
   ],
   "bullet_params": {
-    "turret_fire": {
-      "speed_base": 290.0,
-      "speed_per_phase": 40.0,
-      "damage": 2,
-      "aim_on_center": true
-    },
-    "spiral_shoot": {
-      "arms_base": 4,
-      "arms_per_phase": 1,
-      "bullets_per_arm": 2,
-      "speed_base": 190.0,
-      "speed_per_phase": 20.0,
-      "damage": 1
-    },
-    "fan_shoot": {
-      "count_base": 6,
-      "count_per_phase": 2,
-      "spread_angle": 60.0,
-      "speed_base": 220.0,
-      "speed_per_phase": 30.0,
-      "damage": 1
-    },
-    "aimed_shoot": {
-      "count_base": 2,
-      "count_per_phase": 1,
-      "speed_base": 340.0,
-      "spread_offset_deg": 5.0,
-      "damage": 2
-    }
-  },
-  "phase_sprites": [
-    "res://assets/sprites/boss/boss_kinu_phase1.png",
-    "res://assets/sprites/boss/boss_kinu_phase2.png"
-  ],
-  "move_speed": 70.0,
-  "contact_damage": 14,
-  "entry_target_y": 180.0,
-  "drop_count": 4
+    "turret_fire": {"speed_base": 280.0, "damage": 2, "aim_on_center": true},
+    "fan_shoot": {"count_base": 6, "spread_angle": 70.0, "speed_base": 220.0, "damage": 1},
+    "aimed_shoot": {"count_base": 3, "speed_base": 320.0, "damage": 2, "aim_on_center": true}
+  }
 }

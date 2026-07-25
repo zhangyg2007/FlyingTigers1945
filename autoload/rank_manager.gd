@@ -56,9 +56,7 @@ const RANK_COLORS: Dictionary = {
 
 const HIDDEN_STAGE_RANK_REQUIRED: Dictionary = {
 	"H1_hump_extreme": "SGT",
-	"H2_tokyo_bombing": "CPT",
-	"H3_shinden_duel": "MAJ",
-	"H4_hiroshima_countdown": "COL",
+	"H2_hiroshima": "CPT",
 }
 
 const RANK_ORDER: Array[String] = ["PVT", "CPL", "SGT", "CPT", "MAJ", "COL", "ACE"]

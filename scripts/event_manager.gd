@@ -42,6 +42,12 @@ const EVENTS_DIR: String = "res://resources/level_data/"
 ## 道具场景路径（用于 drop_items 奖励掉落）
 const POWERUP_SCENE_PATH: String = "res://scenes/powerups/powerup.tscn"
 
+## v1.5 C12: 情报牛皮纸袋场景路径（用于 intel_event_briefcase 事件掉落）
+const INTEL_BRIEFCASE_SCENE_PATH: String = "res://scenes/powerups/intel_briefcase.tscn"
+
+## v1.5 C13: 友军阵地场景路径（用于 protect_ally_event）
+const ALLY_POSITION_SCENE_PATH: String = "res://scenes/map_objects/ally_position.tscn"
+
 ## 可摧毁物体场景路径（渡桥等静态目标，用于 destroy_targets 事件）
 const DESTRUCTIBLE_SCENE_PATH: String = "res://scenes/events/event_target_bridge.tscn"
 
@@ -88,6 +94,18 @@ var _target_to_event: Dictionary = {}
 ## area_stay 事件状态：event_id -> {area_center, area_radius, stay_duration, current_stay_time}
 var _area_stay_states: Dictionary = {}
 
+## v1.5 C13: protect_ally_event 状态：
+## event_id -> {allies: Array[AllyPosition], required_count: int, lost_count: int, duration: float, elapsed: float}
+var _protect_ally_states: Dictionary = {}
+
+## v1.5 C11: intel_event_briefcase 状态：
+## event_id -> {intel_id: String, briefcase_spawned: bool, target_destroyed: bool}
+var _intel_event_states: Dictionary = {}
+
+## v1.5 E12 修复：最后被摧毁目标的位置：event_id -> Vector2
+## 用于 destroy_targets 事件掉落情报纸袋时定位（_active_targets 不存储 DestructibleObject）
+var _last_destroyed_pos: Dictionary = {}
+
 
 # ============================================================
 # 生命周期
@@ -108,6 +126,8 @@ func _process(delta: float) -> void:
 	_elapsed_time += delta
 	_check_time_triggers()
 	_process_area_stay_check(delta)
+	# v1.5 C13: 友军保护事件计时检查（超时且关键友军存活 → 事件成功）
+	_process_protect_ally_check(delta)
 
 
 # ============================================================
@@ -241,6 +261,13 @@ func trigger_event(event_id: String) -> void:
 			_spawn_destroy_targets(event_id, event)
 		"area_stay":
 			_start_area_stay_event(event_id, event)
+		"intel_event_briefcase":
+			# v1.5 C11: 隐藏情报事件（目标击毁后掉落牛皮纸袋，玩家碰触完成）
+			_spawn_kill_target(event_id, event)
+			_init_intel_event_state(event_id, event)
+		"protect_ally_event":
+			# v1.5 C13: 友军保护事件（生成友军阵地，限时保护关键友军）
+			_start_protect_ally_event(event_id, event)
 		_:
 			print("[EventManager] 事件类型 '%s' 暂未实现" % event_type)
 
@@ -283,6 +310,12 @@ func _on_event_target_spawned(enemy: Node) -> void:
 	# 类型检查：仅 EventTargetBase 携带 event_id/escape_timer 等事件属性
 	# 使用 is 操作符比 "prop" in node 更可靠（class_name 全局注册）
 	if not (enemy is EventTargetBase):
+		# v1.5 修复：类型不匹配时也需清理 pending 状态并断开信号，避免永久泄漏
+		# （原代码直接 return 导致 _pending_event_id 残留 + 信号永久连接）
+		print("[EventManager] 警告：生成的敌人不是 EventTargetBase，事件 %s 失败" % _pending_event_id)
+		_pending_event_id = ""
+		if SpawnManager.enemy_spawned.is_connected(_on_event_target_spawned):
+			SpawnManager.enemy_spawned.disconnect(_on_event_target_spawned)
 		return
 
 	var target: EventTargetBase = enemy
@@ -417,7 +450,9 @@ func _process_area_stay_check(delta: float) -> void:
 
 ## 报告目标被摧毁（由 DestructibleObject._destroy() 调用）
 ## 用于 destroy_targets 事件：当所有目标被摧毁时自动完成事件
-func report_target_destroyed(target_id: String) -> void:
+## [param target_id]: 被摧毁目标的 object_id
+## [param position]: 被摧毁目标的世界坐标（用于情报纸袋掉落定位）
+func report_target_destroyed(target_id: String, position: Vector2 = Vector2.ZERO) -> void:
 	# 查找目标所属事件
 	var event_id: String = _target_to_event.get(target_id, "")
 	if event_id.is_empty():
@@ -428,6 +463,11 @@ func report_target_destroyed(target_id: String) -> void:
 
 	if _event_states.get(event_id, EventState.INACTIVE) != EventState.ACTIVE:
 		return
+
+	# v1.5 E12 修复：记录最后被摧毁目标的位置，供 report_event_completed 掉落情报纸袋定位
+	# destroy_targets 事件的目标不存入 _active_targets，原代码导致纸袋掉落在 (0,0)
+	if position != Vector2.ZERO:
+		_last_destroyed_pos[event_id] = position
 
 	# 增加已摧毁计数
 	var count: int = int(_destroyed_count.get(event_id, 0)) + 1
@@ -458,6 +498,10 @@ func report_event_completed(event_id: String) -> void:
 	var target_pos: Vector2 = Vector2.ZERO
 	if _active_targets.has(event_id) and is_instance_valid(_active_targets[event_id]):
 		target_pos = (_active_targets[event_id] as Node2D).global_position
+	elif _last_destroyed_pos.has(event_id):
+		# v1.5 E12 修复：destroy_targets 事件的目标不存入 _active_targets，
+		# 使用 report_target_destroyed 中记录的最后摧毁位置作为掉落点
+		target_pos = _last_destroyed_pos[event_id]
 
 	# 发放奖励
 	var event: Dictionary = _events[event_id]
@@ -483,6 +527,8 @@ func report_event_completed(event_id: String) -> void:
 
 	# 清理活跃目标引用
 	_active_targets.erase(event_id)
+	# v1.5 E12 修复：清理最后摧毁位置记录
+	_last_destroyed_pos.erase(event_id)
 
 	print("[EventManager] 事件已完成: %s" % event_id)
 
@@ -504,9 +550,18 @@ func report_event_failed(event_id: String) -> void:
 	# 转发到 GameManager 全局信号
 	if GameManager:
 		GameManager.event_failed.emit(event_id)
+		# v1.5 修复：原代码未读取 JSON 中的 ui.escape_text 字段，
+		# 导致设计要求的"情报已转移"失败提示永远不显示。
+		# 通过 GameManager.event_alert 信号通知 HUD 显示文本。
+		var event: Dictionary = _events[event_id]
+		var ui: Dictionary = event.get("ui", {})
+		var escape_text: String = String(ui.get("escape_text", ""))
+		if not escape_text.is_empty() and GameManager.has_signal("event_alert"):
+			GameManager.event_alert.emit(escape_text)
 
 	# 清理活跃目标引用
 	_active_targets.erase(event_id)
+	_last_destroyed_pos.erase(event_id)
 
 	print("[EventManager] 事件已失败: %s" % event_id)
 
@@ -534,11 +589,46 @@ func _grant_rewards(event_id: String, rewards: Dictionary, position: Vector2) ->
 		var items: Array = rewards["drop_items"]
 		_drop_items(items, position)
 
+	# v1.5 C11: 情报纸袋掉落（destroy_targets 等多目标事件完成后掉落 IntelBriefcase）
+	# v1.5 修复：intel_event_briefcase 类型的纸袋已在 report_intel_target_destroyed 中掉落，
+	# 此处再次掉落会导致玩家拾取后原地生成第二个重复纸袋（BUG #2）。
+	# 通过 event_type 判断跳过：仅 destroy_targets 类型走此处统一掉落。
+	var event_type: String = String(_events.get(event_id, {}).get("event_type", ""))
+	if rewards.has("drop_intel") and event_type != "intel_event_briefcase":
+		var intel_id: String = String(rewards["drop_intel"])
+		var unlock_hidden: String = String(rewards.get("unlock_hidden", ""))
+		_spawn_intel_briefcase(intel_id, event_id, unlock_hidden, position)
+
 	# 隐藏关卡解锁由 UnlockManager 双重条件判定（情报已获取 AND 军衔达标）
 	# 事件完成后自动记录到 event_progress，无需直接调用 unlock_hidden_stage
 	if rewards.has("unlock_hidden"):
 		var hidden_id: String = rewards["unlock_hidden"]
 		print("[EventManager] 事件完成，隐藏关卡解锁条件已满足（情报）: %s" % hidden_id)
+
+
+## v1.5 C11: 在指定位置掉落情报牛皮纸袋
+## 用于 destroy_targets 等多目标事件完成后的纸袋掉落
+func _spawn_intel_briefcase(intel_id: String, event_id: String, unlock_hidden: String, position: Vector2) -> void:
+	var scene: PackedScene = load(INTEL_BRIEFCASE_SCENE_PATH) as PackedScene
+	if scene == null:
+		push_error("[EventManager] 无法加载情报纸袋场景: %s" % INTEL_BRIEFCASE_SCENE_PATH)
+		return
+	var briefcase: Node = scene.instantiate()
+	if briefcase == null:
+		return
+	if briefcase is IntelBriefcase:
+		var ib: IntelBriefcase = briefcase as IntelBriefcase
+		ib.intel_id = intel_id
+		ib.event_id = event_id
+		ib.unlock_hidden = unlock_hidden
+		ib.intel_display_name = _get_intel_display_name(event_id)
+		ib.global_position = position
+	var parent_node: Node = get_parent()
+	if parent_node != null:
+		parent_node.add_child(briefcase)
+	print("[EventManager] 情报纸袋已掉落（多目标事件）: intel_id=%s, pos=(%.0f, %.0f)" % [
+		intel_id, position.x, position.y
+	])
 
 
 ## 在指定位置掉落道具
@@ -610,3 +700,328 @@ func get_all_event_ids() -> Array[String]:
 ## 获取关卡已用时间（供调试查询）
 func get_elapsed_time() -> float:
 	return _elapsed_time
+
+
+# ============================================================
+# v1.5 C11: 隐藏情报系统（intel_event_briefcase）
+# ============================================================
+
+## v1.5: 统一的事件目标被击毁报告入口
+## 由 EventTargetBase.die() 调用，EventManager 内部根据事件类型路由：
+## - intel_event_briefcase: 在原位置掉落 IntelBriefcase（玩家拾取后才完成事件）
+## - kill_target / destroy_targets / area_stay: 直接完成事件
+func report_target_killed(event_id: String, position: Vector2) -> void:
+	if not _events.has(event_id):
+		return
+	var event: Dictionary = _events[event_id]
+	var event_type: String = String(event.get("event_type", ""))
+	if event_type == "intel_event_briefcase":
+		report_intel_target_destroyed(event_id, position)
+	else:
+		# 普通事件：直接完成
+		report_event_completed(event_id)
+
+
+## 初始化情报事件状态（在 trigger_event 中调用）
+## 读取 rewards.drop_intel / rewards.unlock_hidden 字段
+func _init_intel_event_state(event_id: String, event: Dictionary) -> void:
+	var rewards: Dictionary = event.get("rewards", {})
+	var intel_id: String = String(rewards.get("drop_intel", ""))
+	if intel_id.is_empty():
+		# 兼容旧配置：从 drop_items 数组中查找 intel_ 前缀
+		var drop_items: Array = rewards.get("drop_items", [])
+		for item in drop_items:
+			var s: String = String(item)
+			if s.begins_with("intel_"):
+				intel_id = s
+				break
+	if intel_id.is_empty():
+		push_warning("[EventManager] 情报事件 '%s' 缺少 drop_intel 配置" % event_id)
+		intel_id = event_id  # 退化处理：用 event_id 作为 intel_id
+
+	var unlock_hidden: String = String(rewards.get("unlock_hidden", ""))
+
+	_intel_event_states[event_id] = {
+		"intel_id": intel_id,
+		"unlock_hidden": unlock_hidden,
+		"briefcase_spawned": false,
+		"target_destroyed": false,
+	}
+	print("[EventManager] 情报事件状态已初始化: %s (intel_id=%s, unlock=%s)" % [
+		event_id, intel_id, unlock_hidden
+	])
+
+
+## 报告情报事件的目标已被击毁（由 EventTargetBase.die() 调用）
+## 在目标原位置掉落 IntelBriefcase 道具
+func report_intel_target_destroyed(event_id: String, position: Vector2) -> void:
+	if not _intel_event_states.has(event_id):
+		# 非情报事件，回退到普通报告
+		report_event_completed(event_id)
+		return
+
+	var state: Dictionary = _intel_event_states[event_id]
+	if state["briefcase_spawned"]:
+		return  # 已掉落，防止重复
+
+	state["target_destroyed"] = true
+
+	# 加载并生成牛皮纸袋道具
+	var scene: PackedScene = load(INTEL_BRIEFCASE_SCENE_PATH) as PackedScene
+	if scene == null:
+		push_error("[EventManager] 无法加载情报纸袋场景: %s" % INTEL_BRIEFCASE_SCENE_PATH)
+		report_event_failed(event_id)
+		return
+
+	var briefcase: Node = scene.instantiate()
+	if briefcase == null:
+		report_event_failed(event_id)
+		return
+
+	# 配置 IntelBriefcase 属性
+	if briefcase is IntelBriefcase:
+		var ib: IntelBriefcase = briefcase as IntelBriefcase
+		ib.intel_id = String(state["intel_id"])
+		ib.event_id = event_id
+		ib.unlock_hidden = String(state["unlock_hidden"])
+		ib.intel_display_name = _get_intel_display_name(event_id)
+		ib.global_position = position
+
+	# 添加到场景树
+	var parent_node: Node = get_parent()
+	if parent_node != null:
+		parent_node.add_child(briefcase)
+
+	state["briefcase_spawned"] = true
+	print("[EventManager] 情报纸袋已掉落: event_id=%s, intel_id=%s, pos=(%.0f, %.0f)" % [
+		event_id, state["intel_id"], position.x, position.y
+	])
+
+
+## 由 IntelBriefcase._apply_effect() 在玩家拾取后调用
+## 触发事件完成 + 隐藏关解锁条件检查
+func report_intel_collected(event_id: String, intel_id: String) -> void:
+	if not _intel_event_states.has(event_id):
+		return
+
+	var state: Dictionary = _intel_event_states[event_id]
+	if String(state["intel_id"]) != intel_id:
+		push_warning("[EventManager] 情报 ID 不匹配: 期望=%s, 实际=%s" % [state["intel_id"], intel_id])
+
+	# 写入存档（防双保险，IntelBriefcase 已写过一次）
+	if SaveManager and not SaveManager.has_intel(intel_id):
+		SaveManager.add_intel(intel_id)
+
+	# 完成事件（触发奖励发放 + 信号）
+	report_event_completed(event_id)
+
+	# 清理状态
+	_intel_event_states.erase(event_id)
+	print("[EventManager] 情报已收集完成: event_id=%s, intel_id=%s" % [event_id, intel_id])
+
+
+## 获取情报显示名（从事件配置的 ui.complete_text 或 fallback）
+func _get_intel_display_name(event_id: String) -> String:
+	if not _events.has(event_id):
+		return "机密情报"
+	var event: Dictionary = _events[event_id]
+	var ui: Dictionary = event.get("ui", {})
+	var complete_text: String = String(ui.get("complete_text", ""))
+	if not complete_text.is_empty():
+		return complete_text
+	return "机密情报"
+
+
+# ============================================================
+# v1.5 C13: 友军保护系统（protect_ally_event）
+# ============================================================
+
+## 启动友军保护事件
+## 读取 allies 数组生成友军阵地，限时保护关键友军
+func _start_protect_ally_event(event_id: String, event: Dictionary) -> void:
+	var target: Dictionary = event.get("target", {})
+	var allies_config: Array = target.get("allies", [])
+	var duration: float = float(target.get("duration", 30.0))
+	var required_count: int = int(target.get("required_count", allies_config.size()))
+
+	if allies_config.is_empty():
+		push_error("[EventManager] protect_ally_event '%s' 缺少 allies 配置" % event_id)
+		_mark_failed(event_id)
+		return
+
+	# 加载友军阵地场景（可通过 target.scene_path 指定自定义场景）
+	var scene_path: String = String(target.get("scene_path", ALLY_POSITION_SCENE_PATH))
+	var scene: PackedScene = load(scene_path) as PackedScene
+	if scene == null:
+		push_error("[EventManager] 无法加载友军阵地场景: %s" % scene_path)
+		_mark_failed(event_id)
+		return
+
+	var allies: Array = []
+	for ally_cfg in allies_config:
+		var ally_id: String = String(ally_cfg.get("id", ""))
+		var x: float = float(ally_cfg.get("x", 0.0))
+		var y: float = float(ally_cfg.get("y", 0.0))
+		var hp: int = int(ally_cfg.get("hp", 50))
+		var ally_type: String = String(ally_cfg.get("ally_type", "mg_nest"))
+		var is_critical: bool = bool(ally_cfg.get("is_critical", true))
+
+		if ally_id.is_empty():
+			continue
+
+		var ally: Node = scene.instantiate()
+		if ally == null:
+			continue
+
+		# 设置 AllyPosition 属性
+		if ally is AllyPosition:
+			var ap: AllyPosition = ally as AllyPosition
+			ap.object_id = ally_id
+			ap.protect_event_id = event_id
+			ap.ally_type = ally_type
+			ap.is_critical = is_critical
+			ap._max_hp = hp
+			ap._hp = hp
+			ap.position = Vector2(x, y)
+
+		# 注册到保护事件状态
+		var parent_node: Node = get_parent()
+		if parent_node != null:
+			parent_node.add_child(ally)
+			allies.append(ally)
+
+	# 初始化事件状态
+	_protect_ally_states[event_id] = {
+		"allies": allies,
+		"required_count": required_count,
+		"lost_count": 0,
+		"duration": duration,
+		"elapsed": 0.0,
+	}
+
+	print("[EventManager] 友军保护事件已激活: %s（生成 %d 个友军，限时 %.1fs）" % [
+		event_id, allies.size(), duration
+	])
+
+	# v1.5: 通知 HUD 显示友军保护进度条
+	_notify_hud_ally_protect(duration, event)
+
+
+## v1.5: 查找关卡中的 HUD 节点并调用 show_ally_protect_progress
+## EventManager 是 LevelBase 的子节点，通过父节点链查找 HUD
+func _notify_hud_ally_protect(duration: float, event: Dictionary) -> void:
+	var parent: Node = get_parent()
+	if parent == null:
+		return
+	# LevelBase 中保存了 hud_node 引用
+	if "hud_node" in parent and parent.hud_node != null:
+		var hud = parent.hud_node
+		if hud.has_method("show_ally_protect_progress"):
+			var ui: Dictionary = event.get("ui", {})
+			var alert_text: String = String(ui.get("alert_text", "友军保护"))
+			hud.show_ally_protect_progress(duration, alert_text)
+
+
+## v1.5: 通知 HUD 隐藏友军保护进度条
+func _hide_hud_ally_protect() -> void:
+	var parent: Node = get_parent()
+	if parent == null:
+		return
+	if "hud_node" in parent and parent.hud_node != null:
+		var hud = parent.hud_node
+		if hud.has_method("hide_ally_protect_progress"):
+			hud.hide_ally_protect_progress()
+
+
+## 每帧检查友军保护事件计时
+## 超时且关键友军存活 → 事件成功；所有友军被毁 → 事件失败
+func _process_protect_ally_check(delta: float) -> void:
+	if _protect_ally_states.is_empty():
+		return
+	var completed_events: Array[String] = []
+	var failed_events: Array[String] = []
+	for event_id in _protect_ally_states:
+		if _event_states.get(event_id, EventState.INACTIVE) != EventState.ACTIVE:
+			continue
+		var state: Dictionary = _protect_ally_states[event_id]
+		state["elapsed"] = float(state["elapsed"]) + delta
+		# 检查友军存活情况
+		var allies: Array = state["allies"]
+		var alive_critical: int = 0
+		var alive_total: int = 0
+		for ally in allies:
+			if is_instance_valid(ally) and ally is AllyPosition:
+				var ap: AllyPosition = ally as AllyPosition
+				if ap._is_alive:
+					alive_total += 1
+					if ap.is_critical:
+						alive_critical += 1
+		# 失败条件：所有关键友军被毁
+		if alive_critical == 0:
+			failed_events.append(event_id)
+			continue
+		# 成功条件：超时且关键友军仍存活
+		if float(state["elapsed"]) >= float(state["duration"]):
+			completed_events.append(event_id)
+	for eid in completed_events:
+		_complete_protect_ally_event(eid, true)
+	for eid in failed_events:
+		_complete_protect_ally_event(eid, false)
+
+
+## 由 AllyPosition._on_destroyed() 在友军被毁时调用
+## 累加 lost_count，但不立即失败（关键友军被毁才在下一帧检测中失败）
+func report_ally_lost(event_id: String, ally_id: String) -> void:
+	if not _protect_ally_states.has(event_id):
+		return
+	var state: Dictionary = _protect_ally_states[event_id]
+	state["lost_count"] = int(state["lost_count"]) + 1
+	print("[EventManager] 友军 '%s' 被毁（事件: %s，累计损失: %d/%d）" % [
+		ally_id, event_id, state["lost_count"], state["required_count"]
+	])
+	# 显示"友军损失"提示（无扣分）
+	var event: Dictionary = _events.get(event_id, {})
+	var ui: Dictionary = event.get("ui", {})
+	var alert_text: String = String(ui.get("ally_lost_text", "友军损失！"))
+	if not alert_text.is_empty() and GameManager:
+		if GameManager.has_signal("event_alert"):
+			GameManager.event_alert.emit(alert_text)
+		else:
+			print("[EventManager] %s" % alert_text)
+
+
+## 完成友军保护事件
+## [param success] true=保护成功（发放奖励），false=保护失败（无惩罚）
+func _complete_protect_ally_event(event_id: String, success: bool) -> void:
+	if not _protect_ally_states.has(event_id):
+		return
+
+	var state: Dictionary = _protect_ally_states[event_id]
+	var allies: Array = state["allies"]
+
+	# 清理存活的友军节点（事件结束）
+	for ally in allies:
+		if is_instance_valid(ally):
+			ally.queue_free()
+
+	_protect_ally_states.erase(event_id)
+
+	# v1.5: 通知 HUD 隐藏友军保护进度条
+	_hide_hud_ally_protect()
+
+	if success:
+		# 保护成功：记录到存档 + 发放奖励
+		if SaveManager:
+			SaveManager.add_ally_protected(event_id)
+		report_event_completed(event_id)
+		print("[EventManager] 友军保护成功: %s（奖励 +5000）" % event_id)
+	else:
+		# 保护失败：无扣分，仅记录事件失败状态
+		_mark_failed(event_id)
+		var event: Dictionary = _events.get(event_id, {})
+		var ui: Dictionary = event.get("ui", {})
+		var fail_text: String = String(ui.get("fail_text", "友军阵地失守"))
+		print("[EventManager] 友军保护失败: %s — %s（无惩罚）" % [event_id, fail_text])
+		if GameManager and GameManager.has_signal("event_alert"):
+			GameManager.event_alert.emit(fail_text)
+		event_failed.emit(event_id)
