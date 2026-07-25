@@ -385,3 +385,27 @@
 **本 Session 统计**：新增/替换 **69 张** sprite 文件
 
 ---
+
+### 2026-07-26 (Session 9) — PM 最终复核确认
+
+**背景**：commit `3eb2304`（M4-G）同步后，PM 对全部 F1-F6 任务进行最终验证。
+
+**PM 验证结论**：全部 F 系列任务已完成，Design 素材全部就位。
+
+| 任务 | Design 交付物 | PM 验证 | 状态 |
+|------|--------------|---------|------|
+| F1 | 60 张 BOSS 部件 Sprite（含摧毁变体）| ✅ 实际清点 `assets/sprites/boss/parts/` 确认 60 张 | ✅ 已完成 |
+| F2 | 4 张情报专用图标 | ✅ 4 个文件均存在 | ✅ 已完成 |
+| F3 | 9 张友军保护素材（含 4 张额外）| ✅ 9 个文件均存在 | ✅ 已完成 |
+| F6 | Ki-48 Sprite 由 Design 在 Session 5 交付 | ✅ Code 已创建 `.tscn` 场景并更新 CSV | ✅ 已完成 |
+| L03-D1 | `boss_sakaguchi_armored_column.png` | ✅ 文件存在 | ✅ 已完成 |
+| L03-D3 | `ally_retreat_truck.png` | ✅ 文件存在 | ✅ 已完成 |
+| L03-D4 | `fx_bridge_explosion.png` | ✅ 文件存在 | ✅ 已完成 |
+| L03-D5 | `ally_chinese_flag.png` | ✅ 文件存在 | ✅ 已完成 |
+
+**roll 姿态动画逻辑验证**：
+- `scenes/player/player_base.gd` 行 157-262：roll 纹理加载逻辑完整
+- `scenes/player/player_base.gd` 行 341-345：roll 切换逻辑完整
+- `resources/player_data.json`：7 架战机均配置 sprite_roll_left/right
+
+**v1.5.0 后续任务全部闭环**。L03 史实修正全链路（设计文档 → 代码实施 → 素材补全）已完成。Design 部门 v1.5.0 工作全部结束。

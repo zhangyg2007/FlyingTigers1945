@@ -2417,6 +2417,100 @@ PM 审核发现 L03 存在史实问题：惠通桥非重型设施，不适合做
 
 ---
 
+## PM 最终复核 commit 3eb2304 (2026-07-26)
+
+### 同步与配置
+
+- **Git token 更新**：旧 token 过期，已更新 remote URL 使用新 token
+- **同步状态**：commit `3eb2304`（M4-G）已成功拉取，本地与远程完全同步
+- **推送内容**：43 个对象，910KB
+
+### F6 任务验证：Ki-48 敌机场景 ✅ 已完成
+
+| 验证项 | 文件 | 结果 |
+|--------|------|------|
+| Ki-48 场景 | `scenes/enemies/enemy_ki48_lily.tscn` | ✅ 已创建（CharacterBody2D + enemy_base.gd + Sprite + CollisionShape2D）|
+| Ki-48 Sprite | `assets/sprites/enemy/enemy_ki48_lily.png` | ✅ 已创建 |
+| CSV 更新 | `resources/level_data/stage_03_salween.csv` | ✅ ki21_bomber 已替换为 ki48_lily（4 处波次）|
+| CSV 注释 | 同上 | ✅ 注释已更新为"Ki-27 战斗机与 Ki-48 九九式轻轰炸机交替"|
+
+**F6 状态修正**：P2 待执行 → ✅ 已完成
+
+### F1 任务验证：BOSS 部件 Sprite 补全 ✅ 已完成
+
+经实际清点 `assets/sprites/boss/parts/` 目录，5 个部件型 BOSS 的部件 Sprite 全部就位（含摧毁变体）：
+
+| BOSS | 部件数 | 含摧毁变体 | 状态 |
+|------|--------|-----------|------|
+| 天龙号（L02）| 4 炮塔 | ✅ 8 张 | ✅ 已完成 |
+| 妙高号（L04A）| 5 炮塔+2 防空炮+舰桥+烟囱+雷达 | ✅ 20 张 | ✅ 已完成 |
+| 最上号（L08A）| 5 炮塔+防空炮+舰桥+烟囱+雷达+弹射器 | ✅ 20 张 | ✅ 已完成 |
+| 坂口装甲支队（L03）| 指挥坦克炮塔+2 装甲车炮塔 | ✅ 6 张 | ✅ 已完成 |
+| 湘江舰艇编队（L07）| 3 舰桥 | ✅ 6 张 | ✅ 已完成 |
+| **合计** | — | **60 张** | ✅ 全部就位 |
+
+**F1 状态修正**：P1 待执行 → ✅ 已完成（超额完成，原估 22 张实际 60 张）
+
+### F2 任务验证：情报专用图标 ✅ 已完成
+
+| 情报 | 文件 | 状态 |
+|------|------|------|
+| 驼峰航线通行证（L02）| `intel_hump_route.png` | ✅ 已创建 |
+| 东京轰炸坐标（L04）| `intel_tokyo_bombing.png` | ✅ 已创建 |
+| 衡阳战况密报（L05）| `intel_hengyang_status.png` | ✅ 已创建 |
+| 广岛目标坐标（L07）| `intel_hiroshima_target.png` | ✅ 已创建 |
+
+**F2 状态修正**：P2 待执行 → ✅ 已完成
+
+### F3 任务验证：友军保护专用素材 ✅ 已完成
+
+| 文件 | 用途 | 状态 |
+|------|------|------|
+| `ally_retreat_truck.png` | 撤退卡车（L03）| ✅ 已创建 |
+| `ally_transport_ship.png` | 运输船（L07）| ✅ 已创建 |
+| `ally_aa_gun.png` | 高射炮阵地（L10）| ✅ 已创建 |
+| `ally_chinese_flag.png` | 国军军旗（共用）| ✅ 已创建 |
+| `ally_usa_flag.png` | 美军军旗（L10）| ✅ 已创建 |
+| `ally_nest_kmt.png` | 国军机枪阵地（额外）| ✅ 已创建 |
+| `ally_p40_grounded.png` | 地面 P-40（额外）| ✅ 已创建 |
+| `ally_transport_boat.png` | 运输小艇（额外）| ✅ 已创建 |
+| `ally_transport_boat_damaged.png` | 受损运输小艇（额外）| ✅ 已创建 |
+
+**F3 状态修正**：P1 待执行 → ✅ 已完成（超额完成，含 4 个额外素材）
+
+### L03 专属素材验证
+
+| 任务 ID | 内容 | 状态 |
+|---------|------|------|
+| L03-D1 | `boss_sakaguchi_armored_column.png` | ✅ 已创建 |
+| L03-D2 | 95式轻装甲车（复用 event_target_car.png）| ✅ 占位可用 |
+| L03-D3 | `ally_retreat_truck.png` | ✅ 已创建 |
+| L03-D4 | `fx_bridge_explosion.png` | ✅ 已创建 |
+| L03-D5 | `ally_chinese_flag.png` | ✅ 已创建 |
+
+### roll 姿态动画逻辑验证 ✅
+
+| 验证项 | 文件 | 结果 |
+|--------|------|------|
+| roll 纹理加载 | `scenes/player/player_base.gd` 行 157-262 | ✅ 从 player_data.json 加载 sprite_roll_left/right |
+| roll 切换逻辑 | `scenes/player/player_base.gd` 行 341-345 | ✅ 基于 tilt 角度阈值切换 roll 纹理 |
+| player_data 配置 | `resources/player_data.json` | ✅ 7 架战机均配置 sprite_roll_left/right 路径 |
+
+### 最终任务完成状态总览
+
+| 任务 | 部门 | 优先级 | 状态 |
+|------|------|--------|------|
+| F1 BOSS 部件 Sprite 补全 | Design | P1 | ✅ 已完成（60 张）|
+| F2 情报专用图标 | Design | P2 | ✅ 已完成（4 张）|
+| F3 友军保护专用素材 | Design | P1 | ✅ 已完成（9 张）|
+| F4 multi_target vessels 逻辑 | Code | P0 | ✅ 已完成（复核确认）|
+| F5 mixed/final segments 逻辑 | Code | P0 | ✅ 已完成（复核确认）|
+| F6 Ki-48 敌机场景 | Code | P2 | ✅ 已完成 |
+
+**v1.5.0 全部后续任务（F1-F6）已完成。L03 史实修正全链路（设计文档→代码实施→素材补全）闭环。**
+
+---
+
 ## F6: Ki-48 敌机场景创建 (2026-07-25)
 
 **日期**: 2026-07-25
