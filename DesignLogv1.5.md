@@ -301,3 +301,87 @@
 | L03-D3 | 撤退卡车 Sprite | ⏳ 待执行 | AllyPosition 复用 mg_nest.png，需新建 `ally_retreat_truck.png` |
 | L03-D4 | 炸桥特效 | ⏳ 待执行 | `fx_bridge_explosion.png` 尚未创建 |
 | L03-D5 | 国军旗 Sprite | ⏳ 待执行 | `ally_chinese_flag.png` 尚未创建 |
+
+---
+
+### 2026-07-25 (Session 7) — Code F6 任务：Ki-48 敌机场景创建
+
+**背景**：Code 部门完成 PM 反馈的 v1.5.2 后续任务 F6（Ki-48 敌机场景创建）。Design 部门此前已在 Session 5 交付 `enemy_ki48_lily.png` 素材，但 Code 侧一直未创建对应 `.tscn` 场景，导致 L01/L03/L05 CSV 中以 `ki21_bomber` 代替。本次同步记录素材使用情况。
+
+**已使用 Design 素材**：
+
+| 素材文件 | 规格 | 用途 | 关联代码文件 |
+|---------|------|------|-------------|
+| `enemy_ki48_lily.png` | 128×128 PNG-32 RGBA, 90度俯视 | Ki-48 九九式轻轰炸机 Sprite | `scenes/enemies/enemy_ki48_lily.tscn`（新增） |
+
+**Ki-48 设计参数（Code 实施）**：
+
+| 参数 | 值 | 参照 |
+|------|-----|------|
+| HP | 5 | 介于 Ki-21 (6) 与 D3A (3) 之间 |
+| 速度 | 75.0 | 介于 Ki-21 (60) 与 D3A (90) 之间 |
+| 分值 | 250 | 介于 Ki-21 (300) 与 D3A (150) 之间 |
+| 掉落率 | 0.3 | 介于 Ki-21 (0.4) 与 D3A (0.25) 之间 |
+| 碰撞框 | Vector2(40, 40) | 与 Ki-21 一致（同为 128×128 Sprite）|
+
+**关卡波次分配**：
+
+| 关卡 | Ki-48 出现时间 | Ki-21 出现时间 |
+|------|---------------|---------------|
+| L01 昆明 | 22.0s（1 架 solo）| — |
+| L03 怒江 | 11.0s/20.0s/31.0s（共 10 架）| — |
+| L05 衡阳 | 13.5s（4 架 line）| 40.0s（3 架 v_formation）|
+
+**Code 部门文件变更**：
+
+| 文件 | 类型 | 说明 |
+|------|------|------|
+| `scenes/enemies/enemy_ki48_lily.tscn` | 新增 | Ki-48 敌机场景，引用 `enemy_ki48_lily.png` |
+| `autoload/spawn_manager.gd` | 修改 | 注册 `ki48_lily` 类型映射 |
+| `resources/level_data/stage_01_kunming.csv` | 修改 | 22.0s 波次替换为 ki48_lily |
+| `resources/level_data/stage_03_salween.csv` | 修改 | 4 处 ki21_bomber 替换为 ki48_lily，移除占位注释 |
+| `resources/level_data/stage_05_hengyang.csv` | 修改 | 13.5s 早波次替换为 ki48_lily，保留 40.0s Ki-21 压轴 |
+
+**F6 任务状态**：✅ Code 部门已完成。Design 素材 `enemy_ki48_lily.png` 已正确集成。
+
+---
+
+### 2026-07-26 (Session 8) — PM 反馈后 P1/P2 Design 素材补全
+
+**背景**：PM 反馈 F1/F3/F2 待执行 + F6 已完成（Code），Design 依次推进全部待执行素材任务。
+
+**F1: BOSS 部件 Sprite 补全** [完成]
+- 确认现有 48 张 BOSS 部件全部为错误占位图（麦克风图标/像素按钮等），需全部替换
+- 使用 PIL 程序化生成正确的军事舰艇部件，90度俯视低饱和度风格
+- **替换 24 张**（天龙4+妙高10+最上10）+ **新增 12 张**（坂口3+湘江3=6组×2=12张）= 30 组 × 2（正常+摧毁）= **60 张 60×60 PNG-32 RGBA**
+- 部件类型：主炮塔（单管/双联/三联）、防空炮（4管）、舰桥、雷达、烟囱、弹射器、坦克炮塔
+- 存放于 `assets/sprites/boss/parts/`
+
+**F3: 友军保护专用素材** [完成]
+- 新增 3 张缺失素材（已有 6 张基础素材保持不变）：
+  - `ally_transport_ship.png`（80×48，L07 湘江运输船，橄榄绿色+国军旗）
+  - `ally_aa_gun.png`（64×64，L10 芷江高射炮阵地，沙袋+4管炮+国军旗）
+  - `ally_usa_flag.png`（32×32，L10 美军军旗，简化星条旗）
+- 存放于 `assets/sprites/enemy/`
+
+**F2: 情报专用图标** [完成]
+- 4 张 64×64 PNG-32 RGBA，各情报关对应专用公文包图标：
+  - `intel_hump_route.png`（L02 驼峰航线 — 地图路线图案）
+  - `intel_tokyo_bombing.png`（L04 东京轰炸 — 照片图案）
+  - `intel_hengyang_status.png`（L05 衡阳战况 — 文件报告图案）
+  - `intel_hiroshima_target.png`（L07 广岛目标 — 十字准星图案）
+- 存放于 `assets/sprites/enemy/`
+
+**L03-D1: 坂口装甲支队 BOSS Sprite** [完成]
+- AI 生成 512×512 编队俯视图（指挥坦克+2装甲车+2 Ki-27 编队，峡谷背景）
+- 后处理：JPG → PNG-32 RGBA + 亮色/暗色背景透明化 + 缩放至 512×512
+- 存放于 `assets/sprites/boss/boss_sakaguchi_armored_column.png`
+
+**L03-D4: 炸桥特效** [完成]
+- `fx_bridge_explosion.png`（256×128 PNG-32 RGBA）
+- 多层灰色烟云 + 橙色火焰核心 + 碎片粒子 + 桥梁残骸暗示线
+- 存放于 `assets/sprites/effects/`
+
+**本 Session 统计**：新增/替换 **69 张** sprite 文件
+
+---

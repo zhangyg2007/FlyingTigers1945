@@ -154,6 +154,11 @@ var external_force: Vector2 = Vector2.ZERO
 ## Sprite2D节点引用
 @onready var _sprite: Sprite2D = _find_sprite_node()
 
+## v1.5 roll 姿态纹理（机翼抬起/下沉效果）
+var _texture_normal: Texture2D = null
+var _texture_roll_left: Texture2D = null
+var _texture_roll_right: Texture2D = null
+
 ## 判定点可视化节点（调试用）
 @onready var _hitbox: Area2D = $Hitbox if has_node("Hitbox") else null
 
@@ -247,6 +252,14 @@ func load_aircraft_config(id: String) -> void:
 				var tex: Texture2D = load(sprite_path) as Texture2D
 				if tex != null:
 					_sprite.texture = tex
+					_texture_normal = tex
+			# 加载 roll 姿态纹理
+			var roll_left_path: String = String(ac.get("sprite_roll_left", ""))
+			if not roll_left_path.is_empty():
+				_texture_roll_left = load(roll_left_path) as Texture2D
+			var roll_right_path: String = String(ac.get("sprite_roll_right", ""))
+			if not roll_right_path.is_empty():
+				_texture_roll_right = load(roll_right_path) as Texture2D
 			print("[PlayerBase] 已加载战机配置: %s (%s)" % [id, aircraft_display_name])
 			return
 	push_warning("[PlayerBase] 未找到战机配置: %s" % id)
@@ -325,8 +338,24 @@ func _update_tilt_animation(delta: float) -> void:
 	# 平滑插值到目标角度
 	_current_tilt = lerpf(_current_tilt, _target_tilt, tilt_lerp_speed * delta)
 
-	# 应用旋转
-	_sprite.rotation_degrees = _current_tilt
+	# 使用 roll 姿态纹理切换（优先）
+	if _texture_roll_left != null and _texture_roll_right != null:
+		var roll_threshold: float = tilt_max_angle * 0.3
+		if _current_tilt < -roll_threshold:
+			if _sprite.texture != _texture_roll_left:
+				_sprite.texture = _texture_roll_left
+			_sprite.rotation_degrees = 0
+		elif _current_tilt > roll_threshold:
+			if _sprite.texture != _texture_roll_right:
+				_sprite.texture = _texture_roll_right
+			_sprite.rotation_degrees = 0
+		else:
+			if _sprite.texture != _texture_normal:
+				_sprite.texture = _texture_normal
+			_sprite.rotation_degrees = 0
+	else:
+		# 回退方案：单纯旋转
+		_sprite.rotation_degrees = _current_tilt
 
 
 ## ============================================================

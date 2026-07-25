@@ -146,6 +146,8 @@ func _init_enemy_scene_map() -> void:
 	_enemy_scene_map["ki27_fighter"] = "res://scenes/enemies/enemy_ki27_fighter.tscn"
 	_enemy_scene_map["ki43_hayabusa"] = "res://scenes/enemies/enemy_ki43_hayabusa.tscn"
 	_enemy_scene_map["ki21_bomber"] = "res://scenes/enemies/enemy_ki21_bomber.tscn"
+	# v1.5.2 F6: Ki-48 九九式轻轰炸机（Lily），L01/L03/L05 出现
+	_enemy_scene_map["ki48_lily"] = "res://scenes/enemies/enemy_ki48_lily.tscn"
 	_enemy_scene_map["ki61_hien"] = "res://scenes/enemies/enemy_ki61_hien.tscn"
 	_enemy_scene_map["ki84_hayate"] = "res://scenes/enemies/enemy_ki84_hayate.tscn"
 	_enemy_scene_map["d3a_val"] = "res://scenes/enemies/enemy_d3a_val.tscn"

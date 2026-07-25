@@ -2417,3 +2417,117 @@ PM 审核发现 L03 存在史实问题：惠通桥非重型设施，不适合做
 
 ---
 
+## F6: Ki-48 敌机场景创建 (2026-07-25)
+
+**日期**: 2026-07-25
+**任务**: PM 审核后修正的 v1.5.2 后续任务 F6 — 创建 Ki-48 九九式轻轰炸机（Lily）敌机场景，并更新相关 CSV 波次配置。
+**优先级**: P2
+**依赖**: 无（Design 已交付 `enemy_ki48_lily.png` 素材）
+
+### 背景
+
+PM 在 commit `91ebf27` 复核中指出：`stage_03_salween.csv` 注释明确提到 Ki-48 场景未实现，暂以 `ki21_bomber` 代替。根据 `docs/v1.5_asset_master_list.md` §4.2 与 `docs/v1.5.0_upgrade_design.md` §4.2，Ki-48 九九式轻轰炸机应在 L01/L03/L05 三关出现。Design 部门已在 Session 5 交付 `enemy_ki48_lily.png`（128×128 PNG-32 RGBA，90度俯视），但 Code 侧未创建对应场景。
+
+### 设计参数对照
+
+参照 `v1.5.0_upgrade_design.md` §4.2 敌机表与 `v1.5_asset_master_list.md` §4.2：
+
+| 机型 | 代号 | HP | 速度 | 弹幕 | 出现关卡 | 设计定位 |
+|------|------|-----|------|------|----------|---------|
+| 九九式轻轰炸机 | Ki-48 (Lily) | 中 | 中 | 向下投弹 | L01, L03, L05 | 中型轰炸机，介于 Ki-21 重轰与战斗机之间 |
+| 九七式重轰炸机 | Ki-21 (Sally) | 高 | 慢 | 多方向机枪+炸弹 | L05, L09, L10 | 重型轰炸机，HP 高/速度慢 |
+
+参考现有 `enemy_ki21_bomber.tscn` 参数（hp=6, speed=60, score=300, drop=0.4）和 `enemy_d3a_val.tscn` 参数（hp=3, speed=90, score=150, drop=0.25），Ki-48 介于两者之间，定为：
+
+- `hp = 5`（比 Ki-21 的 6 略低，比 D3A 的 3 高）
+- `speed = 75.0`（比 Ki-21 的 60 略快，比 D3A 的 90 慢）
+- `score_value = 250`（比 Ki-21 的 300 略低）
+- `drop_chance = 0.3`（介于 0.25 与 0.4 之间）
+- `collision_layer = 8` / `collision_mask = 3`（与 Ki-21 一致）
+- 碰撞框 `Vector2(40, 40)`（与 Ki-21 一致，因 Sprite 同为 128×128）
+
+### 实施记录
+
+#### 1. 创建 Ki-48 敌机场景
+
+**文件**: [scenes/enemies/enemy_ki48_lily.tscn](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/scenes/enemies/enemy_ki48_lily.tscn)（新增）
+
+```gdscript
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/enemies/enemy_base.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemy/enemy_ki48_lily.png" id="2_tex"]
+
+[sub_resource type="RectangleShape2D" id="3_shape"]
+size = Vector2(40, 40)
+
+[node name="EnemyKi48Lily" type="CharacterBody2D"]
+script = ExtResource("1_script")
+hp = 5
+speed = 75.0
+score_value = 250
+drop_chance = 0.3
+collision_layer = 8
+collision_mask = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_tex")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("3_shape")
+```
+
+#### 2. 注册 SpawnManager 类型映射
+
+**文件**: [autoload/spawn_manager.gd](file:///d:/WORKSPACE/Godot/MYgame/FlyingTigers1945/FlyingTigers1945/autoload/spawn_manager.gd#L148-L150)
+
+在 `_init_enemy_scene_map()` 中新增：
+
+```gdscript
+_enemy_scene_map["ki21_bomber"] = "res://scenes/enemies/enemy_ki21_bomber.tscn"
+# v1.5.2 F6: Ki-48 九九式轻轰炸机（Lily），L01/L03/L05 出现
+_enemy_scene_map["ki48_lily"] = "res://scenes/enemies/enemy_ki48_lily.tscn"
+```
+
+#### 3. 更新 CSV 波次配置
+
+按设计文档，Ki-48 出现在 L01/L03/L05，Ki-21 出现在 L05/L09/L10。L05 两机型并用（Ki-48 先行 + Ki-21 压轴）。
+
+**L01 `stage_01_kunming.csv`**（1 处替换）：
+- 22.0,ki21_bomber,1,solo → 22.0,ki48_lily,1,solo
+- 注释同步更新
+
+**L03 `stage_03_salween.csv`**（4 处替换）：
+- 11.0,ki21_bomber,3,line → 11.0,ki48_lily,3,line
+- 20.0,ki21_bomber,2,line (×2) → 20.0,ki48_lily,2,line (×2)
+- 31.0,ki21_bomber,3,v_formation → 31.0,ki48_lily,3,v_formation
+- 注释移除"Ki-48 场景未实现，暂以 ki21_bomber 代替"说明
+- 注释从"Ki-21 轰炸机"改为"Ki-48 九九式轻轰炸机"
+
+**L05 `stage_05_hengyang.csv`**（2 处替换 + 1 处保留）：
+- 13.5,ki21_bomber,2,line (×2) → 13.5,ki48_lily,2,line (×2)（轻轰炸机先行）
+- 40.0,ki21_bomber,3,v_formation → 保留（重轰炸机压轴，BOSS 前最后一波）
+
+### 关卡波次分配总结
+
+| 关卡 | Ki-48 出现时间 | Ki-21 出现时间 | 说明 |
+|------|---------------|---------------|------|
+| L01 昆明 | 22.0s（1 架 solo）| — | 仅 Ki-48 |
+| L03 怒江 | 11.0s/20.0s/31.0s（共 10 架）| — | 仅 Ki-48 |
+| L05 衡阳 | 13.5s（4 架 line）| 40.0s（3 架 v_formation）| Ki-48 先行 + Ki-21 压轴 |
+| L02/L04/L06/L07/L08/L09/L10 | — | 各关按原配置 | 仅 Ki-21 |
+
+### 验收
+
+- [x] `scenes/enemies/enemy_ki48_lily.tscn` 场景已创建，参数符合设计文档
+- [x] `spawn_manager.gd` 已注册 `ki48_lily` 类型映射
+- [x] `stage_01_kunming.csv` 已更新 Ki-48 波次
+- [x] `stage_03_salween.csv` 已全部替换为 Ki-48，移除占位注释
+- [x] `stage_05_hengyang.csv` 早波次替换为 Ki-48，保留 Ki-21 压轴波次
+- [x] 其他关卡 CSV 保持不变（Ki-21 出现的 L02/L04/L06/L07/L08/L09/L10）
+- [x] 命名规范统一：`ki48_lily`（与 `ki21_bomber`、`ki27_fighter` 风格一致）
+
+**F6 任务完成**。Code 部门 v1.5.2 后续任务（F4/F5/F6）全部完成。等待 PM 最终审核。
+
+---
+
