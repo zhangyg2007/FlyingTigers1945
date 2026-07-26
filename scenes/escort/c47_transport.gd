@@ -116,7 +116,7 @@ func _spawn_explosion() -> void:
 	if parent_node == null:
 		return
 	parent_node.add_child(explosion)
-	var tween: SceneTreeTween = parent_node.create_tween()
+	var tween: Tween = parent_node.create_tween()
 	tween.tween_property(explosion, "scale", Vector2(3.0, 3.0), 0.4)
 	tween.parallel().tween_property(explosion, "modulate:a", 0.0, 0.4)
 	tween.tween_callback(func() -> void:

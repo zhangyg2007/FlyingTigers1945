@@ -725,8 +725,9 @@ func lose_life() -> void:
 		GameManager.lives_changed.emit(lives)
 
 	# v1.5 修复：玩家被击中时中断 Combo（原 on_player_hit() 从未被调用）
-	if ComboManager:
-		ComboManager.on_player_hit()
+	var combo_manager = get_tree().get_first_node_in_group("combo_manager")
+	if combo_manager:
+		combo_manager.on_player_hit()
 
 	if lives <= 0:
 		# 没有生命了，游戏结束
@@ -762,8 +763,9 @@ func _player_die() -> void:
 	died.emit()
 
 	# v1.5 修复：玩家死亡时清零 Combo（原 reset_combo() 从未被调用）
-	if ComboManager:
-		ComboManager.reset_combo()
+	var combo_manager = get_tree().get_first_node_in_group("combo_manager")
+	if combo_manager:
+		combo_manager.reset_combo()
 
 	# 通知GameManager
 	_notify_game_manager_game_over()

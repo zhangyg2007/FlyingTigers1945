@@ -70,21 +70,7 @@ func _create_test_packed_scene() -> PackedScene:
 ## 创建池化对象的脚本（实现 reset_state）
 func _create_poolable_script() -> GDScript:
 	var script: GDScript = GDScript.new()
-	script.source_code = (
-		"extends Node\n"
-		"\n"
-		"## 是否调用了 reset_state\n"
-		"var reset_called: bool = false\n"
-		"\n"
-		"## 测试数据\n"
-		"var test_value: int = 0\n"
-		"\n"
-		"## 归还时重置状态\n"
-		"func reset_state() -> void:\n"
-		"	reset_called = true\n"
-		"	test_value = 0\n"
-		"	position = Vector2.ZERO\n"
-	)
+	script.source_code = "extends Node\n" + "\n" + "## 是否调用了 reset_state\n" + "var reset_called: bool = false\n" + "\n" + "## 测试数据\n" + "var test_value: int = 0\n" + "\n" + "## 归还时重置状态\n" + "func reset_state() -> void:\n" + "\treset_called = true\n" + "\ttest_value = 0\n" + "\tposition = Vector2.ZERO\n"
 	script.reload()
 	return script
 

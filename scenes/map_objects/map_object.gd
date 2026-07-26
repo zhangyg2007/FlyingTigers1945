@@ -123,8 +123,9 @@ func _on_destroyed() -> void:
 	if GameManager:
 		GameManager.add_score(score_value)
 	# v1.5: 注册 Combo 击落
-	if ComboManager:
-		ComboManager.register_kill()
+	var combo_manager = get_tree().get_first_node_in_group("combo_manager")
+	if combo_manager:
+		combo_manager.register_kill()
 	# v1.5 C16: 触发被摧毁时暴露的隐藏对象（L05 废墟暴露隐藏高炮）
 	_reveal_hidden_objects()
 	queue_free()

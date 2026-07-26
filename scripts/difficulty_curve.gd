@@ -132,7 +132,7 @@ static func get_drop_rate_mult(floor: int) -> float:
 # ============================================================
 
 ## 计算综合难度评分（0~100）
-func _calculate_difficulty_score(floor: int) -> float:
+static func _calculate_difficulty_score(floor: int) -> float:
 	var hp_score := get_enemy_hp_mult(floor) / MAX_HP_MULT * 25.0
 	var speed_score := get_bullet_speed_mult(floor) / MAX_SPEED_MULT * 25.0
 	var density_score := float(get_spawn_density(floor)) / float(MAX_SPAWN_DENSITY) * 25.0

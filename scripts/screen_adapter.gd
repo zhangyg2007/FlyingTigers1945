@@ -22,7 +22,7 @@ enum Orientation { PORTRAIT, LANDSCAPE }
 ## ============================================================
 
 ## 当前屏幕方向
-var current_orientation: Orientation = Orientation.PORTRAIT
+var current_orientation: int = Orientation.PORTRAIT
 
 
 func _ready() -> void:

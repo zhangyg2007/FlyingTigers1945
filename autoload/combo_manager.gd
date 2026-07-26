@@ -1,4 +1,3 @@
-class_name ComboManager
 extends Node
 ## Combo 系统（v1.5 C15）
 ## 连续击落计数器：0.5 秒内连续击落累加，每 10 连击奖励 500 分。

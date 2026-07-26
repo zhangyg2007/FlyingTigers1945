@@ -162,8 +162,9 @@ func die() -> void:
 	enemy_died.emit(score_value)
 
 	# v1.5: 注册 Combo 击落
-	if ComboManager:
-		ComboManager.register_kill()
+	var combo_manager = get_tree().get_first_node_in_group("combo_manager")
+	if combo_manager:
+		combo_manager.register_kill()
 
 	# 随机掉落道具
 	_try_drop_powerup()

@@ -23,7 +23,7 @@ blink_interval = 0.08
 hitbox_radius = 4.0
 bullet_scene = ExtResource("2_bullet")
 collision_layer = 1
-collision_mask = 8
+collision_mask = 16
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("3_tex")
@@ -33,7 +33,7 @@ shape = SubResource("4_body_shape")
 
 [node name="Hitbox" type="Area2D" parent="."]
 collision_layer = 0
-collision_mask = 20
+collision_mask = 40
 
 [node name="HitboxShape" type="CollisionShape2D" parent="Hitbox"]
 shape = SubResource("5_hitbox_shape")
