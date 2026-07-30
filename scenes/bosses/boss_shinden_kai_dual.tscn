@@ -1,0 +1,64 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scenes/bosses/boss_shinden_kai_dual.gd" id="1_dual_script"]
+[ext_resource type="Script" path="res://scenes/bosses/boss_base.gd" id="2_boss_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/boss/boss_shinden_kai_red_top.png" id="3_red_top"]
+[ext_resource type="Texture2D" path="res://assets/sprites/boss/boss_shinden_kai_red_side.png" id="4_red_side"]
+[ext_resource type="Texture2D" path="res://assets/sprites/boss/boss_shinden_kai_red_bottom.png" id="5_red_bottom"]
+[ext_resource type="Texture2D" path="res://assets/sprites/boss/boss_shinden_kai_black_top.png" id="6_black_top"]
+[ext_resource type="Texture2D" path="res://assets/sprites/boss/boss_shinden_kai_black_side.png" id="7_black_side"]
+[ext_resource type="Texture2D" path="res://assets/sprites/boss/boss_shinden_kai_black_bottom.png" id="8_black_bottom"]
+
+[sub_resource type="RectangleShape2D" id="9_shape"]
+size = Vector2(100, 100)
+
+[node name="BossShindenKaiDual" type="Node2D"]
+script = ExtResource("1_dual_script")
+
+[node name="RedBoss" type="CharacterBody2D" parent="."]
+script = ExtResource("2_boss_script")
+boss_type = "final"
+max_hp = 8000
+move_speed = 140.0
+entry_target_y = 120.0
+contact_damage = 25
+collision_layer = 16
+collision_mask = 4
+
+[node name="SpriteTop" type="Sprite2D" parent="RedBoss"]
+texture = ExtResource("3_red_top")
+
+[node name="SpriteSide" type="Sprite2D" parent="RedBoss"]
+visible = false
+texture = ExtResource("4_red_side")
+
+[node name="SpriteBottom" type="Sprite2D" parent="RedBoss"]
+visible = false
+texture = ExtResource("5_red_bottom")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RedBoss"]
+shape = SubResource("9_shape")
+
+[node name="BlackBoss" type="CharacterBody2D" parent="."]
+script = ExtResource("2_boss_script")
+boss_type = "final"
+max_hp = 8000
+move_speed = 130.0
+entry_target_y = 380.0
+contact_damage = 25
+collision_layer = 16
+collision_mask = 4
+
+[node name="SpriteTop" type="Sprite2D" parent="BlackBoss"]
+texture = ExtResource("6_black_top")
+
+[node name="SpriteSide" type="Sprite2D" parent="BlackBoss"]
+visible = false
+texture = ExtResource("7_black_side")
+
+[node name="SpriteBottom" type="Sprite2D" parent="BlackBoss"]
+visible = false
+texture = ExtResource("8_black_bottom")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BlackBoss"]
+shape = SubResource("9_shape")

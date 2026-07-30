@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/enemy/enemy_j2m_raiden.png" id="2_tex"]
 
 [sub_resource type="RectangleShape2D" id="3_shape"]
-size = Vector2(34, 34)
+size = Vector2(28, 28)
 
 [node name="EnemyJ2mRaiden" type="CharacterBody2D"]
 script = ExtResource("1_script")

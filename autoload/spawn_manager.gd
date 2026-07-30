@@ -153,6 +153,10 @@ func _init_enemy_scene_map() -> void:
 	_enemy_scene_map["d3a_val"] = "res://scenes/enemies/enemy_d3a_val.tscn"
 	_enemy_scene_map["ki45_toryu"] = "res://scenes/enemies/enemy_ki45_toryu.tscn"
 	_enemy_scene_map["j7w_shinden"] = "res://scenes/enemies/enemy_j7w_shinden.tscn"
+	# H1 零式拦截机
+	_enemy_scene_map["a6m_zero"] = "res://scenes/enemies/enemy_a6m_zero.tscn"
+	# H2 秋水火箭截击机
+	_enemy_scene_map["j8m_shusui"] = "res://scenes/enemies/enemy_j8m_shusui.tscn"
 	# v1.5 新增敌机
 	_enemy_scene_map["j2m_raiden"] = "res://scenes/enemies/enemy_j2m_raiden.tscn"
 	_enemy_scene_map["ki51_sonia"] = "res://scenes/enemies/enemy_ki51_sonia.tscn"
@@ -176,9 +180,10 @@ func _init_enemy_scene_map() -> void:
 	_enemy_scene_map["BOSS_ammo_depot"] = "res://scenes/bosses/boss_ammo_depot.tscn"
 	_enemy_scene_map["BOSS_elite_ki44"] = "res://scenes/bosses/boss_elite_ki44.tscn"
 	_enemy_scene_map["BOSS_shinden_kai"] = "res://scenes/bosses/boss_shinden_kai.tscn"
+	# v1.6 H2: 震电改·赤玄双机编队（双 Boss 三 Sprite 滚筒翻滚）
+	_enemy_scene_map["BOSS_shinden_kai_dual"] = "res://scenes/bosses/boss_shinden_kai_dual.tscn"
 
 	# CSV 中可能出现的别名/旧名 → 映射到对应场景
-	# v1.5: a6m_zero / ohka_kamikaze 已删除（历史不准确）
 
 	# 事件目标类型（M3-B 隐藏事件系统）
 	_enemy_scene_map["event_target_car"] = "res://scenes/enemies/event_target_car.tscn"

@@ -409,3 +409,32 @@
 - `resources/player_data.json`：7 架战机均配置 sprite_roll_left/right
 
 **v1.5.0 后续任务全部闭环**。L03 史实修正全链路（设计文档 → 代码实施 → 素材补全）已完成。Design 部门 v1.5.0 工作全部结束。
+
+---
+
+# ═══════════════════════════════════════════
+# v1.6b 阶段工作记录
+# ═══════════════════════════════════════════
+
+> **阶段目标**: 外包素材审核 + 补充素材制作
+> **真理源文档**: `docs/v1.6b-level-design-spec/v1.6b-level-design-spec.html`
+> **外包规范**: `docs/` 下各 `*-spec/` 目录
+> **任务清单**: 见 `WORKFLOW.md` 第二部分（v1.6b-D1 ~ D7）
+> **日志格式**: 每个任务追加一个章节，按 WORKFLOW.md 规定格式记录
+>
+> **任务概览**:
+> | 编号 | 标题 | 优先级 | 关联文档 |
+> |------|------|--------|---------|
+> | D1 | 审核外包飞机精灵图 P0（J7W/J8M/A6M） | P0 | aircraft-sprite-outsourcing-spec/ |
+> | D2 | 审核外包飞机精灵图 P1（其余敌机+Boss） | P1 | 同 D1 |
+> | D3 | 审核外包地面作战单位（30项含装甲列车） | P1 | ground-combat-unit-outsourcing-spec/ |
+> | D4 | 审核外包场景元素（33项） | P1 | scene-element-outsourcing-spec/ |
+> | D5 | 审核外包水面/海军单位 | P2 | ground-naval-asset-manifest/ |
+> | D6 | 任务简报背景图审核（12张AI生图） | P2 | v1.6b-level-design-spec/ 附录 |
+> | D7 | 补充缺失素材（浮桥/油库/塔台等） | P2 | v1.6b-level-design-spec/ 附录 |
+>
+> **执行顺序**: D1（P0）→ D2→D3→D4（P1）→ D5→D6→D7（P2）
+> **审核要点**: PNG-32 RGBA / 9px/m 比例 / snake_case 命名 / 90°纯俯视 / 低饱和度写实风格
+> **协作依赖**: Code C1 等待 D1 审核通过的三图素材；Code C4 等待 D3 审核通过的装甲列车素材
+
+---

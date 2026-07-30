@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/enemy/enemy_ki84_hayate.png" id="2_tex"]
 
 [sub_resource type="RectangleShape2D" id="3_shape"]
-size = Vector2(32, 32)
+size = Vector2(28, 28)
 
 [node name="EnemyKi84Hayate" type="CharacterBody2D"]
 script = ExtResource("1_script")

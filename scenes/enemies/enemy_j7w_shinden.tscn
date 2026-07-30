@@ -1,10 +1,12 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=6 format=3]
 
-[ext_resource type="Script" path="res://scenes/enemies/enemy_base.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/sprites/enemy/enemy_j7w_shinden.png" id="2_tex"]
+[ext_resource type="Script" path="res://scenes/enemies/enemy_j7w_shinden.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemy/enemy_j7w_shinden_top.png" id="2_tex_top"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemy/enemy_j7w_shinden_side.png" id="3_tex_side"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemy/enemy_j7w_shinden_bottom.png" id="4_tex_bottom"]
 
-[sub_resource type="RectangleShape2D" id="3_shape"]
-size = Vector2(32, 32)
+[sub_resource type="RectangleShape2D" id="5_shape"]
+size = Vector2(28, 28)
 
 [node name="EnemyJ7wShinden" type="CharacterBody2D"]
 script = ExtResource("1_script")
@@ -15,8 +17,16 @@ drop_chance = 0.4
 collision_layer = 8
 collision_mask = 3
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
-texture = ExtResource("2_tex")
+[node name="SpriteTop" type="Sprite2D" parent="."]
+texture = ExtResource("2_tex_top")
+
+[node name="SpriteSide" type="Sprite2D" parent="."]
+visible = false
+texture = ExtResource("3_tex_side")
+
+[node name="SpriteBottom" type="Sprite2D" parent="."]
+visible = false
+texture = ExtResource("4_tex_bottom")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("3_shape")
+shape = SubResource("5_shape")

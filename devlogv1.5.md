@@ -2625,3 +2625,28 @@ _enemy_scene_map["ki48_lily"] = "res://scenes/enemies/enemy_ki48_lily.tscn"
 
 ---
 
+# ═══════════════════════════════════════════
+# v1.6b 阶段工作记录
+# ═══════════════════════════════════════════
+
+> **阶段目标**: 按 v1.6b 关卡设计文档实施新需求与功能调优
+> **真理源文档**: `docs/v1.6b-level-design-spec/v1.6b-level-design-spec.html`
+> **任务清单**: 见 `WORKFLOW.md` 第二部分（v1.6b-C1 ~ C7）
+> **日志格式**: 每个任务追加一个章节，按 WORKFLOW.md 规定格式记录
+>
+> **任务概览**:
+> | 编号 | 标题 | 优先级 | 关联文档 |
+> |------|------|--------|---------|
+> | C1 | 滚筒翻滚动画系统（J7W/J8M） | P0 | v1.6_h2_roll_animation_design.md |
+> | C2 | 倾斜转弯动画系统（7种敌机） | P1 | aircraft-bank-turn-spec/ |
+> | C3 | 地图渲染系统升级（1080×4800） | P1 | v1.6_map_rendering_design.md |
+> | C4 | 关卡配置更新（12关 CSV+Boss JSON） | P0 | v1.6b-level-design-spec/ |
+> | C5 | 隐藏情报系统更新（H2四情报） | P1 | v1.6b-level-design-spec/ 附录14b |
+> | C6 | 武器系统与弹幕模式 | P2 | v1.6_weapon_system_design.md |
+> | C7 | H1驼峰关护送机制 | P2 | v1.6b-level-design-spec/ H1章节 |
+>
+> **执行顺序**: C1→C4（P0）→ C2→C3→C5（P1）→ C6→C7（P2）
+> **协作依赖**: C1 依赖 D1 审核通过的 J7W/J8M 三图素材；C4 依赖 D3 审核通过的装甲列车素材
+
+---
+
