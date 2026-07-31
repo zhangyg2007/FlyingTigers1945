@@ -309,7 +309,7 @@ hr {
   <h1>飞虎队1945 — 全机型精灵图外包设计需求文档</h1>
   <p class="subtitle">日军敌机21种（三视图/滚筒翻滚+倾斜转弯） + 美军玩家机6种（正视/倾斜转弯） · 9px/m 统一比例尺 · 四种飞行姿态全覆盖</p>
   <div class="meta">
-    版本 v1.6-OUT-03 &nbsp;|&nbsp; 日期 2026-07-31 &nbsp;|&nbsp; 引擎 Godot 4.7 &nbsp;|&nbsp; 项目 FlyingTigers1945
+    版本 v1.6-OUT-04 &nbsp;|&nbsp; 日期 2026-07-31 &nbsp;|&nbsp; 引擎 Godot 4.7 &nbsp;|&nbsp; 项目 FlyingTigers1945
   </div>
 </div>
 
@@ -321,6 +321,7 @@ hr {
     <li><a href="#sec2">需求总览</a></li>
     <li><a href="#sec3">通用技术规格</a></li>
     <li><a href="#sec3b">四种飞行姿态与素材需求总览</a></li>
+    <li><a href="#sec3c">资产质量分级与游戏内尺寸验收</a></li>
     <li><a href="#sec4">滚筒翻滚动画原理</a></li>
     <li><a href="#sec5">J7W1 震电 — 杂兵级（绿色，三视图）</a></li>
     <li><a href="#sec6">J7W2 震电改 — Boss级（红色 + 黑色，各三视图）</a></li>
@@ -605,13 +606,25 @@ hr {
 </ul>
 
 <h3>3.4 风格统一要求</h3>
+
+<div class="callout info">
+  <div class="callout-title">核心美术方向：WWII Realistic Arcade（二战写实街机）</div>
+  借鉴《iFighter 2: The Pacific 1942》的二战军事街机视觉语言——<strong>高清军事模型感</strong>、<strong>俯视 STG 构图</strong>、<strong>强方向光</strong>、<strong>高结构细节</strong>、<strong>清晰可读的轮廓</strong>。目标是"缩小后的真实军事模型"，而非卡通图标。爆炸、子弹和战斗特效可以明显街机化，但飞机、舰船、地面设施必须保持写实质感。
+</div>
+
 <ul>
-  <li><strong>画风</strong>：手绘赛璐璐风格（cel-shaded），类似经典街机射击游戏（如《打击骑士1945》《雷电》系列）</li>
-  <li><strong>光影</strong>：统一光源从上方照射，顶部高光、底部阴影</li>
-  <li><strong>线条</strong>：清晰黑色轮廓线，粗细一致（杂兵 1px，Boss 2px）</li>
-  <li><strong>质感</strong>：金属蒙皮质感，可见面板线、铆钉、接缝等细节</li>
+  <li><strong>画风</strong>：高清写实军事插画，类似 iFighter 2 的 2D 数字拼贴质感。不使用手绘赛璐璐（cel-shaded）的平涂色块风格</li>
+  <li><strong>轮廓</strong>：<strong>不使用明显的纯黑卡通描边</strong>。轮廓主要通过深色材质、阴影、明度差和结构边缘高光形成。飞机边缘可使用 1px 抗锯齿过渡，但不画粗黑线</li>
+  <li><strong>光影</strong>：统一使用<strong>左上方主光源</strong>（fixed directional light from upper-left）。顶部结构有明显但克制的明暗层次，右下方形成自然阴影。顶部高光、底部阴影过渡自然</li>
+  <li><strong>材质</strong>：至少包含三层表现——①基础涂装色 ②大面积明暗关系 ③结构细节。结构细节包括：面板线、铆钉、舵面、翼根、发动机罩、散热器、排气管、座舱框、炮口、起落架舱门。细节必须服务于缩小后的可读性，不要制造噪点</li>
+  <li><strong>质感</strong>：金属蒙皮质感，低饱和度军事涂装。可见风化效果（灰尘、锈迹、划痕）但不可过度，保持军事模型的"出厂后使用中"状态</li>
   <li><strong>三视图一致性</strong>：同一机型的三张图必须保持<strong>完全相同的比例、涂装风格和细节水平</strong>，仅视角不同</li>
 </ul>
+
+<div class="callout warning">
+  <div class="callout-title">与旧版规范的变更说明</div>
+  旧版规范（v1.6-OUT-03 及之前）写有"清晰黑色轮廓线，粗细一致（杂兵 1px，Boss 2px）"和"手绘赛璐璐风格"。经审核后修正为<strong>不使用纯黑描边</strong>、<strong>写实军事模型质感</strong>，以更好地匹配 iFighter 2 的视觉语言。外包团队如已按旧规范制作，无需返工轮廓部分，后续批次按新规范执行即可。
+</div>
 
 <h3>3.5 机头朝向约定</h3>
 <div class="callout warning">
@@ -673,6 +686,56 @@ hr {
     <li><strong>姿态4（滚筒翻滚）</strong>：仅 J7W 和 J8M，与姿态2互斥（同一时刻只显示一种）</li>
   </ul>
   玩家机只需姿态1和2；敌机轰炸机和大型机也需1和2；几乎所有飞机都要准备姿态1和2的素材。
+</div>
+
+<!-- ==================== 3C. 资产质量分级 ==================== -->
+<h2 id="sec3c"><span class="num">3C</span>资产质量分级与游戏内尺寸验收</h2>
+
+<h3>3C.1 资产质量分级</h3>
+<p>不同重要性的飞机应投入不同的细节密度。外包团队按以下分级控制绘制精度，避免在小机型上过度堆砌细节导致噪点，也避免在 Boss 级机型上细节不足。</p>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>级别</th><th>适用机型</th><th>细节要求</th><th>绘制重点</th></tr>
+</thead>
+<tbody>
+<tr><td><span class="badge red">S 级</span></td><td>Boss：J7W2 震电改（赤/玄）、B-29 超级堡垒</td><td>最高细节</td><td>全结构细节：面板线、铆钉、舵面、翼根、发动机罩、散热器、排气管、座舱框、炮口、起落架舱门、风化痕迹。涂装层次丰富，明暗过渡精细</td></tr>
+<tr><td><span class="badge orange">A 级</span></td><td>大型敌人：Ki-21、G4M、G3M、Ki-67、Ki-49、G8N 连山</td><td>较高结构细节</td><td>保持较高结构细节，重点表现发动机、翼面、机腹武器舱等识别特征。可省略部分微小铆钉</td></tr>
+<tr><td><span class="badge yellow">B 级</span></td><td>普通飞机：A6M、Ki-27、Ki-43、Ki-44、Ki-61、Ki-84、Ki-100、J2M、J7W、J8M、D3A、Ki-45、Ki-102、Ki-48、Ki-51、玩家机 P-40/P-51/P-47/P-38/B-25</td><td>历史识别特征+轮廓</td><td>重点是历史识别特征和清晰轮廓。面板线和主要结构线保留，微小铆钉可省略。确保在 128×128 画布中缩放后仍可识别机型</td></tr>
+<tr><td><span class="badge green">C 级</span></td><td>远距离杂兵（如有）</td><td>轮廓+大色块</td><td>重点是轮廓、涂装大色块和基本武器方向。最小可读性优先</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout info">
+  <div class="callout-title">分级原则</div>
+  细节密度应与机型在屏幕上的<strong>实际显示尺寸</strong>成正比。S 级 Boss（256×256 画布，游戏中显示最大）可以有最多细节；B 级战斗机（128×128 画布，游戏中显示较小）过度细节反而变成噪点。外包团队应参考 iFighter 2 中不同大小单位的细节密度差异。
+</div>
+
+<h3>3C.2 游戏内尺寸验收</h3>
+<p>每个主要素材应经过实际游戏尺寸的可读性测试。由于精灵图在游戏中会按 9px/m 比例尺绘制，且画布层级不同（T2~T6），最终在屏幕上的显示尺寸差异很大。外包团队交付后，PM/Design 将按以下标准验收：</p>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>缩放比例</th><th>可读性要求</th><th>测试方法</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>100%</strong></td><td>应能识别<strong>具体单位型号</strong>（如区分 Ki-27 与 Ki-43）</td><td>在 Godot 编辑器中按原始画布尺寸查看</td></tr>
+<tr><td><strong>50%</strong></td><td>应能识别<strong>单位类别</strong>（如区分战斗机与轰炸机）</td><td>在 Godot 中将 Sprite2D scale 设为 0.5 查看</td></tr>
+<tr><td><strong>25%</strong></td><td>至少保持清晰的<strong>玩家/敌人轮廓</strong>（如区分友军与敌军）</td><td>在 Godot 中将 Sprite2D scale 设为 0.25 查看</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>最终验收以<strong>游戏实际显示效果</strong>为准，而非像素级检查。如果 100% 下细节丰富但 25% 下轮廓模糊，说明细节噪点过多、轮廓不够清晰，需要调整。</p>
+
+<h3>3C.3 最终美术原则</h3>
+<div class="callout">
+  <div class="callout-title">核心原则</div>
+  <strong>飞机真实、舰船真实、地面设施真实；爆炸、子弹和战斗特效可以明显街机化。</strong><br><br>
+  最终目标不是复制任何既有游戏，而是形成自己的<strong>二战高清街机 STG 美术体系</strong>。所有飞机/舰船/地面单位的造型、比例、涂装、结构细节应以历史资料为准，追求"缩小后的真实军事模型"的视觉感受。而爆炸、子弹轨迹、得分弹出等战斗反馈则可采用夸张、明快的街机化表现，增强游戏爽快感。
 </div>
 
 <!-- ==================== 4. 滚筒翻滚动画原理 ==================== -->
@@ -1373,6 +1436,11 @@ hr {
   <li>零式俯视图正确体现大翼展+机头三叶螺旋桨+单垂尾</li>
   <li>红色和黑色 Boss 的机体外形完全一致，仅涂装不同</li>
   <li>侧视图为窄长纵向轮廓（宽高比 1:5~1:8），机翼呈薄横线</li>
+  <li><strong>轮廓</strong>：不使用纯黑卡通描边，通过深色材质和明暗差形成轮廓（参见 §3.4）</li>
+  <li><strong>光照</strong>：统一左上方主光源，右下方阴影（参见 §3.4）</li>
+  <li><strong>细节分级</strong>：按 §3C.1 资产质量分级（S/A/B/C）控制细节密度</li>
+  <li><strong>游戏内尺寸验收</strong>：100% 可识别型号 / 50% 可识别类别 / 25% 可识别敌我（参见 §3C.2）</li>
+  <li><strong>9px/m 比例尺</strong>：实际绘制尺寸符合 sizing-spec 规定，不填满画布</li>
 </ul>
 
 <!-- ==================== 11. Code 占位文件 ==================== -->
@@ -1925,17 +1993,33 @@ const PLAYER_AIRCRAFT = {
 
 <p>以下为外包团队可用的 AI 生图提示词模板，用于生成各机型的参考图。AI 生成的图片仅作为<strong>视觉风格和构图的参考</strong>，必须由专业画师重新绘制为高质量 PNG 透明背景精灵图。</p>
 
+<h3>17.0 通用基础提示词方向</h3>
+<div class="callout info">
+  <div class="callout-title">WWII Realistic Arcade 基础方向（所有提示词的前缀）</div>
+  所有 AI 生图提示词应以以下基础方向为前缀，再追加具体机型、涂装和尺寸：
+</div>
+<p style="font-family:'Geist Mono',monospace;font-size:0.82rem;color:var(--code-ink);background:var(--code-bg);padding:0.8rem;border-radius:4px;line-height:1.6;">
+WWII military aircraft, realistic game asset, high-detail 3D-rendered appearance, top-down view,<br>
+arcade vertical shooter asset, historically accurate proportions, realistic metal skin,<br>
+panel lines, rivets, subtle weathering, directional lighting from upper left,<br>
+strong readable silhouette, clean edges, isolated transparent background,<br>
+no text, no UI, no explosion, no smoke.
+</p>
+<p>具体机型、涂装和尺寸另行追加。注意：<strong>不使用 cel-shaded / clean black outline</strong>，改为写实军事模型质感。</p>
+
 <h3>17.1 敌机正视俯视图通用提示词</h3>
 
 <div class="spec-block">
 <h4>模板（替换 {机型} 和 {特征}）</h4>
 <p style="font-family:'Geist Mono',monospace;font-size:0.82rem;color:var(--code-ink);background:var(--code-bg);padding:0.8rem;border-radius:4px;line-height:1.6;">
-Top-down view of a WW2 Japanese {机型} aircraft, pure 90° overhead angle, nose pointing up.<br>
+WWII military aircraft, realistic game asset, high-detail 3D-rendered appearance, top-down view.<br>
+Japanese {机型} aircraft, pure 90° overhead angle, nose pointing up.<br>
 Key features: {特征}.<br>
-Painting: deep olive green (#4A5D3A) with visible panel lines and rivets.<br>
+Painting: deep olive green (#4A5D3A) with visible panel lines and rivets, subtle weathering.<br>
 Red hinomaru (rising sun) markings on both wings.<br>
 Dark semi-transparent bubble canopy.<br>
-Style: cel-shaded illustration, clean black outline, metallic skin texture.<br>
+Directional lighting from upper left, strong readable silhouette, clean edges (no black outline).<br>
+Realistic metal skin texture, NOT cel-shaded.<br>
 Transparent background, centered in frame, 128×128 pixel canvas equivalent.<br>
 Historical accuracy: 1940s Imperial Japanese Army Air Service livery.
 </p>
@@ -1946,13 +2030,15 @@ Historical accuracy: 1940s Imperial Japanese Army Air Service livery.
 <div class="spec-block">
 <h4>模板</h4>
 <p style="font-family:'Geist Mono',monospace;font-size:0.82rem;color:var(--code-ink);background:var(--code-bg);padding:0.8rem;border-radius:4px;line-height:1.6;">
-Top-down view of a WW2 {机型} aircraft banking LEFT at 45° roll angle.<br>
+WWII military aircraft, realistic game asset, top-down view.<br>
+WW2 {机型} aircraft banking LEFT at 45° roll angle.<br>
 Nose still pointing up — only the wings tilt, NOT the heading.<br>
-Right wing RAISED and BRIGHTENED (catching light), left wing LOWERED and DARKENED.<br>
+Right wing RAISED and BRIGHTENED (catching light from upper left), left wing LOWERED and DARKENED.<br>
 Asymmetric: right wing appears longer/fuller, left wing appears shorter due to perspective.<br>
 Right side of fuselage partially visible (not flat top-down anymore).<br>
 Key features visible: {特征}.<br>
-Style: cel-shaded, clean outline, metallic texture, transparent background.
+Realistic metal skin texture, directional lighting from upper left, clean edges (no black outline).<br>
+Transparent background.
 </p>
 </div>
 
@@ -1961,12 +2047,14 @@ Style: cel-shaded, clean outline, metallic texture, transparent background.
 <div class="spec-block">
 <h4>模板（以 P-40 为例）</h4>
 <p style="font-family:'Geist Mono',monospace;font-size:0.82rem;color:var(--code-ink);background:var(--code-bg);padding:0.8rem;border-radius:4px;line-height:1.6;">
-Top-down view of a WW2 Curtiss P-40 Warhawk fighter, pure 90° overhead angle, nose pointing up.<br>
+WWII military aircraft, realistic game asset, high-detail 3D-rendered appearance, top-down view.<br>
+Curtiss P-40 Warhawk fighter, pure 90° overhead angle, nose pointing up.<br>
 Key features: shark mouth nose art (white teeth, red eyes), large radiator intake under nose,<br>
 Allison V-12 inline engine (pointed nose), bubble canopy forward, straight wings with rounded tips.<br>
-Painting: Olive Drab (#5C6B4A) upper surface, Neutral Gray (#A0A498) lower surface.<br>
+Painting: Olive Drab (#5C6B4A) upper surface, Neutral Gray (#A0A498) lower surface, subtle weathering.<br>
 USAAF blue-circle white-star insignia on both wings.<br>
-Style: cel-shaded illustration like Striker 1945 / Raiden arcade games.<br>
+Directional lighting from upper left, strong readable silhouette, clean edges (no black outline).<br>
+Realistic metal skin texture, NOT cel-shaded, NOT cartoon style.<br>
 Transparent background, centered, 128×128 canvas, actual sprite ~87×102px (9px/m scale).
 </p>
 </div>
@@ -1976,21 +2064,25 @@ Transparent background, centered, 128×128 canvas, actual sprite ~87×102px (9px
 <div class="spec-block">
 <h4>俯视图模板</h4>
 <p style="font-family:'Geist Mono',monospace;font-size:0.82rem;color:var(--code-ink);background:var(--code-bg);padding:0.8rem;border-radius:4px;line-height:1.6;">
-Top-down view of {机型}, pure 90° overhead, nose up. Shows full wingspan and fuselage back.<br>
-{特征}. Red hinomaru on wings. Dark canopy. Olive green livery.
+WWII military aircraft, realistic game asset, top-down view.<br>
+{机型}, pure 90° overhead, nose up. Shows full wingspan and fuselage back.<br>
+{特征}. Red hinomaru on wings. Dark canopy. Olive green livery.<br>
+Directional lighting from upper left, realistic metal skin, clean edges (no black outline).
 </p>
 <h4>侧视图模板</h4>
 <p style="font-family:'Geist Mono',monospace;font-size:0.82rem;color:var(--code-ink);background:var(--code-bg);padding:0.8rem;border-radius:4px;line-height:1.6;">
 EXTREME narrow side silhouette of {机型} — wings rotated to face camera directly.<br>
 Width is only 1/6 to 1/8 of the top view width. Same height as top view.<br>
 Wings appear as a thin horizontal line. Shows fuselage side profile only.<br>
-Nose pointing UP. This is NOT a ground-side-view, it's the moment of barrel roll at 90°.
+Nose pointing UP. This is NOT a ground-side-view, it's the moment of barrel roll at 90°.<br>
+Realistic metal skin texture, directional lighting from upper left.
 </p>
 <h4>仰视图模板</h4>
 <p style="font-family:'Geist Mono',monospace;font-size:0.82rem;color:var(--code-ink);background:var(--code-bg);padding:0.8rem;border-radius:4px;line-height:1.6;">
 Bottom-up view of {机型}, nose up. Mirror of top view but shows belly details:<br>
 landing gear doors, cooling vents, exhaust ports, wing-mounted weapons.<br>
-Same proportions and wingspan as top view. Red hinomaru on wing undersides.
+Same proportions and wingspan as top view. Red hinomaru on wing undersides.<br>
+Realistic metal skin texture, directional lighting from upper left, clean edges.
 </p>
 </div>
 

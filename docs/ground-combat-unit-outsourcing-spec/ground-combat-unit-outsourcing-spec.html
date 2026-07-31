@@ -120,7 +120,7 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 2rem 0; }
   <h1>飞虎队1945 — 地面作战单位外包规范</h1>
   <p class="subtitle">可交互/可摧毁的地面作战单位 · 坦克 · 装甲车 · 炮台 · 装甲列车 · 卡车</p>
   <div class="meta">
-    版本 v1.6-GROUND-COMBAT-01 &nbsp;|&nbsp; 日期 2026-07-30 &nbsp;|&nbsp; 引擎 Godot 4.7 &nbsp;|&nbsp; 项目 FlyingTigers1945
+    版本 v1.6-GROUND-COMBAT-02 &nbsp;|&nbsp; 日期 2026-07-31 &nbsp;|&nbsp; 引擎 Godot 4.7 &nbsp;|&nbsp; 项目 FlyingTigers1945
   </div>
 </div>
 
@@ -176,11 +176,53 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 2rem 0; }
 </ul>
 
 <h3><span class="num">1.2</span>渲染风格</h3>
+
+<div class="callout info">
+  <div class="callout-title">核心美术方向：WWII Realistic Arcade（二战写实街机）</div>
+  借鉴《iFighter 2》的高清军事模型感——<strong>写实纹理</strong>、<strong>强方向光</strong>、<strong>高结构细节</strong>、<strong>清晰可读轮廓</strong>。目标是"缩小后的真实军事模型"，不使用纯黑卡通描边。爆炸/子弹特效可街机化，但地面单位/舰船必须写实。详细美术方向参见 <code>aircraft-sprite-outsourcing-spec.html</code> §3.4 + §3C。
+</div>
+
 <ul>
   <li>参照 <strong>iFighter 2 的高清 2D 数字拼贴</strong>风格——写实纹理但低饱和度地形，单位采用<strong>高对比、高识别度</strong>的涂装。</li>
   <li>地形/地面铺底使用低饱和度的泥土、碎石、草地纹理；作战单位则用更高对比的装甲金属与涂装色，确保在复杂背景中仍可清晰辨识。</li>
-  <li>手绘赛璐璐着色（cel-shaded），金属/木质纹理保留面板线、铆钉、焊缝等结构细节。</li>
+  <li><strong>不使用纯黑卡通描边</strong>。轮廓通过深色材质、阴影、明度差和结构边缘高光形成。</li>
+  <li><strong>统一左上方主光源</strong>，右下方形成自然阴影。顶部结构有明显但克制的明暗层次。</li>
+  <li>写实金属/木质纹理，保留面板线、铆钉、焊缝等结构细节。低饱和度军事涂装，可见风化效果（灰尘、锈迹、划痕）但不可过度。</li>
 </ul>
+
+<h4>资产质量分级</h4>
+<div class="table-wrap">
+<table>
+<thead><tr><th>级别</th><th>适用单位</th><th>细节要求</th></tr>
+</thead>
+<tbody>
+<tr><td><span class="badge red">S 级</span></td><td>装甲列车 Boss（8 节车厢+20 炮台）</td><td>最高细节：全结构细节、铆钉、焊缝、风化痕迹。涂装层次丰富</td></tr>
+<tr><td><span class="badge orange">A 级</span></td><td>坦克、重型炮台、指挥车</td><td>较高细节：炮塔高度、车体明暗、履带、炮管和顶部结构清晰</td></tr>
+<tr><td><span class="badge yellow">B 级</span></td><td>卡车、防空炮、碉堡</td><td>轮廓+武器方向+大色块。确保缩放后可识别单位类别</td></tr>
+<tr><td><span class="badge green">C 级</span></td><td>杂兵单位（如有）</td><td>最小可读性优先：轮廓+涂装大色块</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>游戏内尺寸验收</h4>
+<p>每个主要地面单位素材应经过实际游戏尺寸的可读性测试。由于地面单位在游戏中显示尺寸较小（约 16~32 px 短边），缩放后可读性是关键验收指标。外包团队交付后，PM/Design 将按以下标准验收：</p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>缩放比例</th><th>可读性要求</th><th>测试方法</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>100%</strong></td><td>应能识别<strong>具体单位型号</strong>（如区分九七式中战车与九五式重坦克）</td><td>在 Godot 编辑器中按原始画布尺寸查看</td></tr>
+<tr><td><strong>50%</strong></td><td>应能识别<strong>单位类别</strong>（如区分坦克与卡车）</td><td>在 Godot 中将 Sprite2D scale 设为 0.5 查看</td></tr>
+<tr><td><strong>25%</strong></td><td>至少保持清晰的<strong>敌方轮廓</strong>（如区分地面单位与背景建筑）</td><td>在 Godot 中将 Sprite2D scale 设为 0.25 查看</td></tr>
+</tbody>
+</table>
+</div>
+<p>最终验收以<strong>游戏实际显示效果</strong>为准。如果 100% 下细节丰富但 25% 下轮廓模糊，说明细节噪点过多、轮廓不够清晰，需要调整。</p>
+
+<div class="callout warning">
+  <div class="callout-title">舰船尾迹不烘焙</div>
+  舰船/船只的<strong>尾迹（wake trail）不要烘焙到精灵图主体 PNG 中</strong>。尾迹应由 Code 团队通过程序特效（粒子/Shader）生成。精灵图仅包含舰船本体。
+</div>
 
 <h3><span class="num">1.3</span>尺寸基准</h3>
 <div class="table-wrap">
@@ -566,6 +608,13 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 2rem 0; }
 
 <p>本章提供地面作战单位的 AI 生图提示词模板，供外包/美术团队使用 AI 图像生成工具产出精灵图底稿。模板遵循第 1 章视觉规范：90° 垂直俯视、深橄榄绿涂装、向右下偏移软边阴影、iFighter 2 风格的高对比高识别度。</p>
 
+<div class="callout info">
+  <div class="callout-title">提示词风格已更新（v1.6-OUT-04 同步）</div>
+  以下所有提示词模板已将原有的 <code>Hand-painted cel-shaded game sprite</code> 替换为 WWII Realistic Arcade 风格描述：<br>
+  <code>WWII realistic game asset, high-detail 3D-rendered appearance, realistic texture, directional lighting from upper left, clean edges without black outline, NOT cel-shaded</code><br>
+  这与飞机外包规范 §3.4 的 WWII Realistic Arcade 美术方向保持一致。<strong>外包团队直接使用以下模板即可，无需手动替换。</strong>
+</div>
+
 <h3><span class="num">8.1</span>地面单位通用模板</h3>
 
 <div class="prompt-block">
@@ -574,7 +623,7 @@ Top-down orthographic view (90° vertical, zero perspective) of WWII Japanese [U
 viewed from directly above. Dark olive green (#4A5548) military camouflage with weathering, dust and rust.
 [KEY FEATURES visible from top: turret layout, wheels/tracks, gun barrels].
 Cast shadow on ground (offset to lower-right, soft edge).
-Hand-painted cel-shaded game sprite, metallic armor with rivets and panel lines,
+WWII realistic game asset, high-detail 3D-rendered appearance, realistic texture, directional lighting from upper left, clean edges without black outline, NOT cel-shaded, metallic armor with rivets and panel lines,
 classic arcade vertical scrolling shooter art style (like Strikers 1945 / Raiden / iFighter 2),
 [CANVAS SIZE] pixel canvas with unit centered at [SPRITE SIZE] pixels,
 PNG transparent background, NO water reflection, NO perspective distortion.
@@ -589,7 +638,7 @@ Top-down orthographic view (90° vertical, zero perspective) of WWII Japanese Ty
 medium tank, viewed from directly above. Dark olive green (#4A5548) with dust weathering and rust streaks.
 Asymmetrical turret offset to the right of hull center, 57mm gun barrel pointing forward,
 four road wheels per side, rear engine deck visible. Riveted armor surface. Cast shadow on ground
-(offset to lower-right, soft edge). Hand-painted cel-shaded game sprite, metallic armor with rivets
+(offset to lower-right, soft edge). WWII realistic game asset, high-detail 3D-rendered appearance, realistic texture, directional lighting from upper left, clean edges without black outline, NOT cel-shaded, metallic armor with rivets
 and panel lines, classic arcade vertical scrolling shooter art style (like iFighter 2),
 96x96 pixel canvas with tank centered at 96x48 pixels, PNG transparent background, NO water reflection.
 </div>
@@ -603,8 +652,7 @@ subtle rust and dust weathering. Distinctive triple-turret layout: one large cen
 (cylindrical with conical cupola) offset slightly forward, two smaller secondary turrets at diagonal
 corners (front-left and rear-right). Main 70mm gun barrel projecting forward, 37mm gun on front turret.
 Riveted armor surface visible. Rhomboid hull widest at center, narrowing at bow and stern. Long tracks
-visible at sides. Cast shadow on ground (offset to lower-right, soft edge). Hand-painted cel-shaded game
-sprite, metallic armor with rivets and panel lines, classic arcade vertical scrolling shooter art style
+visible at sides. Cast shadow on ground (offset to lower-right, soft edge). WWII realistic game asset, high-detail 3D-rendered appearance, realistic texture, directional lighting from upper left, clean edges without black outline, NOT cel-shaded, metallic armor with rivets and panel lines, classic arcade vertical scrolling shooter art style
 (like iFighter 2), 56x56 pixel canvas with tank centered at 56x28 pixels, PNG transparent background.
 </div>
 
@@ -616,8 +664,7 @@ Train locomotive (car #1, final boss target), viewed from directly above along v
 Armored steam locomotive with thick riveted armor plates, dark gray-green (#3E4A3C) cold tone. Two main
 gun turrets (105mm) mounted on top side-by-side, two smaller machine gun turrets at front edge.
 Smokestack visible between turrets with soot stains. Rail wheels visible at bottom. Heavy weathering and
-soot stains around smokestack. Cast shadow on ground (offset to lower-right, soft edge). Hand-painted
-cel-shaded game sprite, metallic armor with rivets, classic arcade vertical scrolling shooter art style
+soot stains around smokestack. Cast shadow on ground (offset to lower-right, soft edge). WWII realistic game asset, high-detail 3D-rendered appearance, realistic texture, directional lighting from upper left, clean edges without black outline, NOT cel-shaded, metallic armor with rivets, classic arcade vertical scrolling shooter art style
 (like iFighter 2), 80x44 pixel canvas, PNG transparent background, railroad tracks NOT included (separate asset).
 </div>
 
@@ -629,7 +676,7 @@ heavy weapons car (car #2), viewed from directly above along vertical railroad t
 with three weapon mounts arranged vertically: one large elevated missile launcher in center (with launch
 rail visible and warning light), two anti-aircraft gun turrets at upper and lower ends. Dark gray-green
 (#3E4A3C) cold tone riveted armor. Rail wheels visible at bottom. Cast shadow on ground (offset to
-lower-right, soft edge). Hand-painted cel-shaded game sprite, metallic armor with rivets, classic arcade
+lower-right, soft edge). WWII realistic game asset, high-detail 3D-rendered appearance, realistic texture, directional lighting from upper left, clean edges without black outline, NOT cel-shaded, metallic armor with rivets, classic arcade
 vertical scrolling shooter art style (like iFighter 2), 72x44 pixel canvas, PNG transparent background.
 </div>
 
@@ -641,7 +688,7 @@ Train guard car (car #8, tail end), viewed from directly above along vertical ra
 flatcar with searchlight housing at center (armored shutter closed), two machine gun turrets at rear-left
 and rear-right corners (270° traverse). Railroad track repair materials (railroad ties and rails) stacked
 at sides. Dark gray-green (#3E4A3C) cold tone riveted armor. Rail wheels visible at bottom. Cast shadow
-on ground (offset to lower-right, soft edge). Hand-painted cel-shaded game sprite, metallic armor with
+on ground (offset to lower-right, soft edge). WWII realistic game asset, high-detail 3D-rendered appearance, realistic texture, directional lighting from upper left, clean edges without black outline, NOT cel-shaded, metallic armor with
 rivets, classic arcade vertical scrolling shooter art style (like iFighter 2), 64x40 pixel canvas,
 PNG transparent background.
 </div>

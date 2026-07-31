@@ -124,7 +124,7 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 2rem 0; }
   <h1>飞虎队1945 — 非交互场景元素外包规范</h1>
   <p class="subtitle">地图背景 · 地形 · 建筑 · 基础设施 · 不可摧毁的场景装饰元素</p>
   <div class="meta">
-    版本 v1.6-SCENE-01 &nbsp;|&nbsp; 日期 2026-07-30 &nbsp;|&nbsp; 引擎 Godot 4.7 &nbsp;|&nbsp; 项目 FlyingTigers1945
+    版本 v1.6-SCENE-02 &nbsp;|&nbsp; 日期 2026-07-31 &nbsp;|&nbsp; 引擎 Godot 4.7 &nbsp;|&nbsp; 项目 FlyingTigers1945
   </div>
 </div>
 
@@ -174,10 +174,18 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 2rem 0; }
 <p>非交互场景元素是飞虎队1945关卡氛围的核心载体。它们随地图滚动出现但<strong>不可被摧毁</strong>（无 HP、无碰撞伤害），由 <code>MapObjectManager</code> 按 Y 坐标滚动生成。本规范统一规定其视角、渲染风格、色调与贴图原则，确保 12 个关卡视觉一致且外包可量产。</p>
 
 <h3><span class="num">1.1</span>视角与渲染风格</h3>
+
+<div class="callout info">
+  <div class="callout-title">核心美术方向：WWII Realistic Arcade（二战写实街机）</div>
+  借鉴《iFighter 2》的高清军事模型感——<strong>写实纹理</strong>、<strong>强方向光</strong>、<strong>高结构细节</strong>。不使用纯黑卡通描边，轮廓通过深色材质和明暗差形成。统一左上方主光源。详细美术方向参见 <code>aircraft-sprite-outsourcing-spec.html</code> §3.4 + §3C。
+</div>
+
 <ul>
   <li><strong>视角</strong>：纯 90° 垂直俯视（正交投影，无透视变形）。所有元素从正上方拍摄，不允许任何俯仰或侧倾。</li>
-  <li><strong>渲染风格</strong>：参照 <mark class="key">iFighter 2</mark> 的高清 2D 数字拼贴（HD 2D Photobashing）——地表写实低饱和度，地标建筑有材质细节，整体偏写实但保留游戏化的清晰轮廓。</li>
-  <li><strong>阴影</strong>：每个地标 PNG 需烘焙自上而下阴影（底部半透明黑色，向一侧偏移、边缘柔和），使其有"贴地"感。阴影烘焙进精灵图，不依赖引擎实时光照。</li>
+  <li><strong>渲染风格</strong>：参照 <mark class="key">iFighter 2</mark> 的高清 2D 数字拼贴（HD 2D Photobashing）——地表写实低饱和度，地标建筑有材质细节，整体偏写实但保留游戏化的清晰轮廓。<strong>不使用 cel-shaded 平涂风格</strong>。</li>
+  <li><strong>轮廓</strong>：不使用纯黑卡通描边，通过深色材质、阴影、明度差和结构边缘高光形成。</li>
+  <li><strong>光照</strong>：统一左上方主光源，右下方形成自然阴影。</li>
+  <li><strong>阴影</strong>：每个地标 PNG 需烘焙自上而下阴影（底部半透明黑色，向右下方偏移、边缘柔和），使其有"贴地"感。阴影烘焙进精灵图，不依赖引擎实时光照。</li>
   <li><strong>透明背景</strong>：所有地标交付为 PNG（RGBA），背景全透明；地表贴图不透明。</li>
 </ul>
 
@@ -746,6 +754,13 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 2rem 0; }
 
 <p>以下提示词模板供外包团队使用 AI 生图工具（Stable Diffusion / Midjourney）制作场景元素时参考。所有提示词遵循<strong>纯 90° 俯视 + 高清 2D 数字拼贴 + 透明背景</strong>三大原则，方括号 <code>[ ]</code> 内为需替换的变量。</p>
 
+<div class="callout info">
+  <div class="callout-title">提示词风格已更新（v1.6-OUT-04 同步）</div>
+  以下所有提示词模板已将原有的 <code>Hand-painted cel-shaded game sprite</code> 替换为 WWII Realistic Arcade 风格描述：<br>
+  <code>WWII realistic game asset, high-detail 3D-rendered appearance, realistic texture, directional lighting from upper left, clean edges without black outline, NOT cel-shaded</code><br>
+  这与飞机外包规范 §3.4 的 WWII Realistic Arcade 美术方向保持一致。<strong>外包团队直接使用以下模板即可，无需手动替换。</strong>
+</div>
+
 <h3><span class="num">9.1</span>场景素材通用模板</h3>
 
 <div class="prompt-block">
@@ -754,7 +769,7 @@ Top-down orthographic view (90° vertical, zero perspective) of [BUILDING/STRUCT
 viewed from directly above. [ERA AND REGION] architecture style. [MATERIAL AND COLOR].
 [KEY FEATURES visible from top: roof shape, courtyard, surrounding walls].
 Cast shadow on ground (offset slightly to one side, soft edge) for depth.
-Hand-painted cel-shaded game sprite, [TEXTURE: tile/wood/concrete/etc.] with weathering,
+WWII realistic game asset, high-detail 3D-rendered appearance, realistic texture, directional lighting from upper left, clean edges without black outline, NOT cel-shaded, [TEXTURE: tile/wood/concrete/etc.] with weathering,
 HD 2D photobashing art style (like iFighter 2 / Strikers 1945),
 [CANVAS SIZE] pixel canvas with element centered at [SPRITE SIZE] pixels,
 PNG transparent background.
@@ -769,7 +784,7 @@ house (Siheyuan style) in Yunnan/Hunan province, viewed from directly above. Gra
 roof on four sides forming a rectangular compound, white-washed courtyard walls visible at edges,
 small inner courtyard open in center. Earthy yellow soil ground visible around the house.
 Weathered and aged appearance, subtle moss on roof tiles. Cast shadow on ground (offset to
-lower-right, soft edge). Hand-painted cel-shaded game sprite, tile and plaster textures with
+lower-right, soft edge). WWII realistic game asset, high-detail 3D-rendered appearance, realistic texture, directional lighting from upper left, clean edges without black outline, NOT cel-shaded, tile and plaster textures with
 weathering, HD 2D photobashing art style (like iFighter 2), 128x128 pixel canvas with house
 centered at 96x96 pixels, PNG transparent background.
 </div>
@@ -780,8 +795,7 @@ Top-down orthographic view (90° vertical, zero perspective) of a Burmese Buddhi
 (Shwedagon-style golden stupa), viewed from directly above. Bell-shaped golden stupa with
 tapering spire (hti) at apex, concentric terraced base plated in gold leaf, surrounded by
 smaller satellite stupas at four corners. Gleaming gold and white surfaces catching tropical
-sunlight. Cast shadow on ground (offset to lower-right, soft edge). Hand-painted cel-shaded
-game sprite, gold leaf and white plaster textures, HD 2D photobashing art style (like iFighter 2),
+sunlight. Cast shadow on ground (offset to lower-right, soft edge). WWII realistic game asset, high-detail 3D-rendered appearance, realistic texture, directional lighting from upper left, clean edges without black outline, NOT cel-shaded, gold leaf and white plaster textures, HD 2D photobashing art style (like iFighter 2),
 128x160 pixel canvas with pagoda centered at 80x120 pixels, PNG transparent background.
 </div>
 
@@ -792,7 +806,7 @@ pontoon bridge half-constructed across a river, viewed from directly above. Wood
 oil barrels lashed together forming a partial bridge deck, rope lines connecting to both
 riverbanks. Only 50% of bridge width complete — right half shows assembled planks, left half
 shows scattered barrels and bare rope lines. Brown weathered wood, rusted barrels. Murky
-yellow-green river water visible between planks. Hand-painted cel-shaded game sprite, wood and
+yellow-green river water visible between planks. WWII realistic game asset, high-detail 3D-rendered appearance, realistic texture, directional lighting from upper left, clean edges without black outline, NOT cel-shaded, wood and
 metal textures, HD 2D photobashing art style (like iFighter 2), 128x64 pixel canvas with bridge
 centered at 96x48 pixels, PNG transparent background.
 </div>
@@ -803,8 +817,7 @@ Top-down orthographic view (90° vertical, zero perspective) of a Guilin karst p
 karst landform), viewed from directly above. Steep conical limestone peak rising sharply from
 flat ground, dense dark green subtropical vegetation clinging to upper slopes, exposed gray
 limestone rock on cliffs, mist clinging to base. Surrounding flat terrain with patches of
-farmland and water. Cast shadow on ground (offset to lower-right, soft edge). Hand-painted
-cel-shaded game sprite, limestone rock and jungle foliage textures, HD 2D photobashing art
+farmland and water. Cast shadow on ground (offset to lower-right, soft edge). WWII realistic game asset, high-detail 3D-rendered appearance, realistic texture, directional lighting from upper left, clean edges without black outline, NOT cel-shaded, limestone rock and jungle foliage textures, HD 2D photobashing art
 style (like iFighter 2), 160x160 pixel canvas with peak centered at 128x128 pixels,
 PNG transparent background.
 </div>
