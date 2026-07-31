@@ -80,10 +80,10 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 2rem 0; }
 
 <div class="cover">
   <div class="doc-type">Sprite Sizing Specification</div>
-  <h1>飞虎队1945 — 日军敌机精灵图比例尺寸规范</h1>
-  <p class="subtitle">基于真实二战飞机尺寸的比例缩放系统 · 9px/m 标准比例尺</p>
+  <h1>飞虎队1945 — 全机型精灵图比例尺寸规范</h1>
+  <p class="subtitle">基于真实二战飞机尺寸的比例缩放系统 · 9px/m 标准比例尺 · 涵盖日军敌机与美军玩家机</p>
   <div class="meta">
-    版本 v1.6-SIZE-01 &nbsp;|&nbsp; 日期 2026-07-29 &nbsp;|&nbsp; 引擎 Godot 4.7 &nbsp;|&nbsp; 项目 FlyingTigers1945
+    版本 v1.6-SIZE-02 &nbsp;|&nbsp; 日期 2026-07-31 &nbsp;|&nbsp; 引擎 Godot 4.7 &nbsp;|&nbsp; 项目 FlyingTigers1945
   </div>
 </div>
 
@@ -91,7 +91,7 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 2rem 0; }
   <h3>目录</h3>
   <ol>
     <li><a href="#sec1">比例缩放系统原理</a></li>
-    <li><a href="#sec2">完整尺寸对照表</a></li>
+    <li><a href="#sec2">完整尺寸对照表（敌机 + 玩家机）</a></li>
     <li><a href="#sec3">可视化对比</a></li>
     <li><a href="#sec4">CollisionShape2D 碰撞箱规格</a></li>
     <li><a href="#sec5">Boss 级别尺寸规格</a></li>
@@ -105,10 +105,10 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 2rem 0; }
 <h2 id="sec1"><span class="num">01</span>比例缩放系统原理</h2>
 
 <h3>1.1 核心问题</h3>
-<p>当前项目中所有敌机精灵图统一为 128×128 像素，无论真实飞机大小。这导致九七式重爆 Ki-21（翼展 22.5m）与九七式战斗机 Ki-27（翼展 11.3m）在游戏中视觉大小完全相同，失去了机型识别的层次感。</p>
+<p>当前项目中所有敌机精灵图统一为 128×128 像素，无论真实飞机大小。这导致九七式重爆 Ki-21（翼展 22.5m）与九七式战斗机 Ki-27（翼展 11.3m）在游戏中视觉大小完全相同，失去了机型识别的层次感。玩家机 P-40（翼展 11.38m）与敌机 A6M 零式（翼展 11.0m）真实尺寸相近，但后续解锁的 B-29 超级堡垒（翼展 43.06m）按原方案会与 P-40 同为 128×128，严重失真。</p>
 
 <h3>1.2 比例尺定义</h3>
-<p>采用<strong>统一比例尺 9 像素/米（9 px/m）</strong>，所有飞机按真实尺寸等比缩放。选择 9px/m 的依据：当前战斗机精灵图（如 Ki-27，翼展 11.3m）在 128px 画布中实际占用约 100px，换算比例约 8.8px/m，取整为 9px/m 后战斗机画布保持 128×128 不变，而大型轰炸机自然放大到 256×256。</p>
+<p>采用<strong>统一比例尺 9 像素/米（9 px/m）</strong>，所有飞机（敌机与玩家机）按真实尺寸等比缩放。选择 9px/m 的依据：当前战斗机精灵图（如 Ki-27，翼展 11.3m）在 128px 画布中实际占用约 100px，换算比例约 8.8px/m，取整为 9px/m 后战斗机画布保持 128×128 不变，而大型轰炸机自然放大到 256×256。玩家机 P-40（翼展 11.38m → 102px）与敌机 A6M 零式（翼展 11.0m → 99px）在该比例尺下几乎等宽，符合历史事实。</p>
 
 <div class="callout info">
   <div class="callout-title">比例尺换算公式</div>
@@ -118,18 +118,19 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 2rem 0; }
 </div>
 
 <h3>1.3 画布尺寸分层</h3>
-<p>画布取标准尺寸序列 {96, 128, 192, 256, 384} 中的最小容纳值。正方形画布便于图集打包和 GPU 纹理对齐。</p>
+<p>画布取标准尺寸序列 {96, 128, 192, 256, 384, 512} 中的最小容纳值。正方形画布便于图集打包和 GPU 纹理对齐。</p>
 
 <div class="table-wrap">
 <table>
 <thead>
-<tr><th>层级</th><th>画布尺寸</th><th>飞机类型</th><th>代表机型</th><th>视觉范围</th></tr>
+<tr><th>层级</th><th>画布尺寸</th><th>飞机类型</th><th>代表机型（敌机）</th><th>代表机型（玩家机）</th><th>视觉范围</th></tr>
 </thead>
 <tbody>
-<tr><td><span class="badge green">T2</span></td><td>128×128</td><td>战斗机/截击机</td><td>Ki-27, A6M, J7W, J8M</td><td>54~109 px</td></tr>
-<tr><td><span class="badge yellow">T3</span></td><td>192×192</td><td>重型战斗机/俯冲轰炸机/轻爆</td><td>D3A, Ki-45, Ki-48</td><td>92~158 px</td></tr>
-<tr><td><span class="badge orange">T4</span></td><td>256×256</td><td>中型/重型轰炸机</td><td>Ki-21, G3M, G4M</td><td>148~225 px</td></tr>
-<tr><td><span class="badge red">T5</span></td><td>384×384</td><td>超重型轰炸机</td><td>G8N 连山</td><td>206~288 px</td></tr>
+<tr><td><span class="badge green">T2</span></td><td>128×128</td><td>战斗机/截击机</td><td>Ki-27, A6M, J7W, J8M</td><td>P-40, P-47, P-51</td><td>54~112 px</td></tr>
+<tr><td><span class="badge yellow">T3</span></td><td>192×192</td><td>重型战斗机/俯冲轰炸机/轻爆</td><td>D3A, Ki-45, Ki-48</td><td>P-38</td><td>92~158 px</td></tr>
+<tr><td><span class="badge orange">T4</span></td><td>256×256</td><td>中型/重型轰炸机</td><td>Ki-21, G3M, G4M</td><td>B-25</td><td>148~225 px</td></tr>
+<tr><td><span class="badge red">T5</span></td><td>384×384</td><td>超重型轰炸机</td><td>G8N 连山</td><td>—</td><td>206~288 px</td></tr>
+<tr><td><span class="badge gray">T6</span></td><td>512×512</td><td>超重型战略轰炸机</td><td>—</td><td>B-29</td><td>272~388 px</td></tr>
 </tbody>
 </table>
 </div>
@@ -139,6 +140,8 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 2rem 0; }
 
 <!-- ==================== 2. 完整尺寸对照表 ==================== -->
 <h2 id="sec2"><span class="num">02</span>完整尺寸对照表</h2>
+
+<h3>2.1 日军敌机尺寸对照表</h3>
 
 <p>以下为全部 21 种日军机型的比例尺寸对照。数据来源：用户提供的 <code>emenyplanes.xlsx</code>。G8N 连山的尺寸数据已修正（详见 §7）。</p>
 
@@ -178,8 +181,42 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 2rem 0; }
 </div>
 
 <div class="callout">
-  <div class="callout-title">比例对比示例</div>
+  <div class="callout-title">敌机比例对比示例</div>
   最小机型 J8M 秋水（翼展 86px）与最大机型 G8N 连山（翼展 288px）的视觉宽度比为 <strong>1 : 3.35</strong>，真实翼展比为 9.5m : 32.0m = 1 : 3.37，比例高度一致。重型轰炸机 Ki-21（202px）是战斗机 Ki-27（102px）的 <strong>1.98 倍</strong>宽度，真实比为 22.5m : 11.3m = 1.99 倍。
+</div>
+
+<h3>2.2 玩家机（美军）尺寸对照表</h3>
+
+<p>以下为全部 6 种玩家机型的比例尺寸对照。数据来源：网络公开资料（aviation-history.com、armyaircorpsmuseum.org 等）。所有玩家机与敌机共用同一 9px/m 比例尺，确保战场上的敌我机型大小对比真实一致。</p>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+  <th>机型</th><th>场景标识</th><th>机身长(m)</th><th>翼展(m)</th>
+  <th>精灵图高(px)</th><th>精灵图宽(px)</th><th>画布尺寸</th>
+  <th>碰撞箱</th><th>游戏状态</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>P-40 战鹰</td><td><code>player_p40</code></td><td>9.66</td><td>11.38</td><td>87</td><td>102</td><td>128×128</td><td>28×28</td><td><span class="badge green">已实装</span></td></tr>
+<tr><td>P-51 野马</td><td><code>player_p51</code></td><td>9.82</td><td>11.28</td><td>88</td><td>102</td><td>128×128</td><td>28×28</td><td><span class="badge gray">未实装</span></td></tr>
+<tr><td>P-47 雷电</td><td><code>player_p47</code></td><td>11.00</td><td>12.42</td><td>99</td><td>112</td><td>128×128</td><td>28×28</td><td><span class="badge gray">未实装</span></td></tr>
+<tr><td>P-38 闪电</td><td><code>player_p38</code></td><td>11.53</td><td>15.85</td><td>104</td><td>143</td><td>192×192</td><td>40×40</td><td><span class="badge gray">未实装</span></td></tr>
+<tr><td>B-25 米切尔</td><td><code>player_b25</code></td><td>16.13</td><td>20.60</td><td>145</td><td>185</td><td>256×256</td><td>56×56</td><td><span class="badge gray">未实装</span></td></tr>
+<tr><td>B-29 超级堡垒</td><td><code>player_b29</code></td><td>30.18</td><td>43.06</td><td>272</td><td>388</td><td>512×512</td><td>100×100</td><td><span class="badge gray">未实装</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout info">
+  <div class="callout-title">玩家机与敌机的尺寸对照</div>
+  玩家主力 P-40 战鹰（翼展 102px）与敌机主力 A6M 零式（翼展 99px）几乎等宽，符合历史事实——两者都是单发战斗机，尺寸相近。而 B-29 超级堡垒（翼展 388px）是全游戏最大机型，翼展达 P-40 的 <strong>3.8 倍</strong>，真实比为 43.06m : 11.38m = 3.78 倍。B-25 米切尔（185px）与敌机 Ki-21 九七重爆（202px）同为中型轰炸机级别，尺寸接近。
+</div>
+
+<div class="callout warning">
+  <div class="callout-title">B-29 特殊说明</div>
+  B-29 超级堡垒翼展 43.06m，按 9px/m 计算精灵图宽 388px，超出 T5（384×384）画布容量，因此新增 <strong>T6 层级（512×512）</strong>。B-29 在游戏中作为最终关卡的玩家轰炸机使用，其巨大体型本身就是视觉震撼和游戏性的体现。但 B-29 的碰撞箱建议取视觉的 ~25%（100×100）而非 30%，以避免过大的受击面积影响游戏平衡。
 </div>
 
 <!-- ==================== 3. 可视化对比 ==================== -->
@@ -206,10 +243,11 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 2rem 0; }
 <tr><th>画布层级</th><th>画布尺寸</th><th>视觉范围</th><th>碰撞箱尺寸</th><th>碰撞箱占视觉比</th><th>适用机型</th></tr>
 </thead>
 <tbody>
-<tr><td><span class="badge green">T2</span></td><td>128×128</td><td>54~109 px</td><td><strong>28×28</strong></td><td>~26~35%</td><td>所有战斗机/截击机</td></tr>
-<tr><td><span class="badge yellow">T3</span></td><td>192×192</td><td>92~158 px</td><td><strong>40×40</strong></td><td>~25~30%</td><td>重型战斗机/俯冲轰炸机/轻爆</td></tr>
-<tr><td><span class="badge orange">T4</span></td><td>256×256</td><td>148~225 px</td><td><strong>56×56</strong></td><td>~25~30%</td><td>中型/重型轰炸机</td></tr>
-<tr><td><span class="badge red">T5</span></td><td>384×384</td><td>206~288 px</td><td><strong>80×80</strong></td><td>~28%</td><td>超重型轰炸机</td></tr>
+<tr><td><span class="badge green">T2</span></td><td>128×128</td><td>54~112 px</td><td><strong>28×28</strong></td><td>~25~35%</td><td>战斗机/截击机（敌：Ki-27, A6M, J7W 等 / 玩家：P-40, P-47, P-51）</td></tr>
+<tr><td><span class="badge yellow">T3</span></td><td>192×192</td><td>92~158 px</td><td><strong>40×40</strong></td><td>~25~30%</td><td>重型战斗机/俯冲轰炸机/轻爆（敌：D3A, Ki-45 等 / 玩家：P-38）</td></tr>
+<tr><td><span class="badge orange">T4</span></td><td>256×256</td><td>148~225 px</td><td><strong>56×56</strong></td><td>~25~30%</td><td>中型/重型轰炸机（敌：Ki-21, G3M 等 / 玩家：B-25）</td></tr>
+<tr><td><span class="badge red">T5</span></td><td>384×384</td><td>206~288 px</td><td><strong>80×80</strong></td><td>~28%</td><td>超重型轰炸机（敌：G8N 连山）</td></tr>
+<tr><td><span class="badge gray">T6</span></td><td>512×512</td><td>272~388 px</td><td><strong>100×100</strong></td><td>~26%</td><td>超重型战略轰炸机（玩家：B-29 超级堡垒）</td></tr>
 </tbody>
 </table>
 </div>
@@ -250,6 +288,8 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 2rem 0; }
 
 <p>根据本比例系统，外包设计需求文档（<code>aircraft-sprite-outsourcing-spec.html</code>）中各机型的画布尺寸需更新如下：</p>
 
+<h3>6.1 日军敌机画布规格</h3>
+
 <div class="table-wrap">
 <table>
 <thead>
@@ -261,6 +301,24 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 2rem 0; }
 <tr><td>D-03</td><td>J7W2 震电改·玄</td><td>256×256</td><td><strong>256×256</strong></td><td>176×202</td><td>不变</td></tr>
 <tr><td>D-04</td><td>J8M 秋水</td><td>128×128</td><td><strong>128×128</strong></td><td>54×86</td><td>不变，但绘制尺寸最小（54×86），画布内有大量留白</td></tr>
 <tr><td>D-05</td><td>A6M 零式</td><td>128×128</td><td><strong>128×128</strong></td><td>82×99</td><td>不变</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>6.2 美军玩家机画布规格（新增）</h3>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>编号</th><th>机型</th><th>画布尺寸</th><th>精灵图实际尺寸</th><th>碰撞箱</th><th>视图需求</th><th>用途</th></tr>
+</thead>
+<tbody>
+<tr><td>P-06</td><td>P-40 战鹰</td><td>128×128</td><td>87×102</td><td>28×28</td><td>正视 + 左倾 + 右倾</td><td>默认玩家机（全关卡）</td></tr>
+<tr><td>P-07</td><td>P-51 野马</td><td>128×128</td><td>88×102</td><td>28×28</td><td>正视 + 左倾 + 右倾</td><td>解锁玩家机</td></tr>
+<tr><td>P-08</td><td>P-47 雷电</td><td>128×128</td><td>99×112</td><td>28×28</td><td>正视 + 左倾 + 右倾</td><td>解锁玩家机</td></tr>
+<tr><td>P-09</td><td>P-38 闪电</td><td>192×192</td><td>104×143</td><td>40×40</td><td>正视 + 左倾 + 右倾</td><td>解锁玩家机（双尾桁）</td></tr>
+<tr><td>P-10</td><td>B-25 米切尔</td><td>256×256</td><td>145×185</td><td>56×56</td><td>正视 + 左倾 + 右倾</td><td>杜立特空袭等轰炸关</td></tr>
+<tr><td>P-11</td><td>B-29 超级堡垒</td><td>512×512</td><td>272×388</td><td>100×100</td><td>正视 + 左倾 + 右倾</td><td>最终关轰炸日本本土</td></tr>
 </tbody>
 </table>
 </div>
@@ -347,7 +405,7 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 2rem 0; }
 
 <div class="callout">
   <div class="callout-title">文档结束</div>
-  本规范为飞虎队1945项目日军敌机精灵图的比例尺寸标准。外包团队按此比例尺绘制飞机，Code 团队按此调整碰撞箱，即可实现各机型大小对比一致的视觉效果。比例尺 9px/m 为全局标准，Boss 级别使用 18px/m（2× 放大）。
+  本规范为飞虎队1945项目<strong>全机型</strong>（日军敌机 21 种 + 美军玩家机 6 种）精灵图的比例尺寸标准。外包团队按此比例尺绘制飞机，Code 团队按此调整碰撞箱，即可实现各机型大小对比一致的视觉效果。比例尺 9px/m 为全局标准，Boss 级别使用 18px/m（2× 放大），B-29 超级堡垒使用 T6（512×512）画布。
 </div>
 
 </div>

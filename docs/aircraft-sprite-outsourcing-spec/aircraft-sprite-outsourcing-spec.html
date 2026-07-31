@@ -306,10 +306,10 @@ hr {
 <!-- ==================== COVER ==================== -->
 <div class="cover">
   <div class="doc-type">Design Outsourcing Spec — Sprite Assets</div>
-  <h1>飞虎队1945 — 日军机精灵图外包设计需求文档</h1>
-  <p class="subtitle">J7W 震电三视图 / J8M 秋水三视图 / A6M 零式 / 滚筒翻滚动画素材</p>
+  <h1>飞虎队1945 — 全机型精灵图外包设计需求文档</h1>
+  <p class="subtitle">日军敌机21种（三视图/滚筒翻滚+倾斜转弯） + 美军玩家机6种（正视/倾斜转弯） · 9px/m 统一比例尺 · 四种飞行姿态全覆盖</p>
   <div class="meta">
-    版本 v1.6-OUT-01 &nbsp;|&nbsp; 日期 2026-07-29 &nbsp;|&nbsp; 引擎 Godot 4.7 &nbsp;|&nbsp; 项目 FlyingTigers1945
+    版本 v1.6-OUT-03 &nbsp;|&nbsp; 日期 2026-07-31 &nbsp;|&nbsp; 引擎 Godot 4.7 &nbsp;|&nbsp; 项目 FlyingTigers1945
   </div>
 </div>
 
@@ -320,14 +320,22 @@ hr {
     <li><a href="#sec1">项目背景与游戏上下文</a></li>
     <li><a href="#sec2">需求总览</a></li>
     <li><a href="#sec3">通用技术规格</a></li>
+    <li><a href="#sec3b">四种飞行姿态与素材需求总览</a></li>
     <li><a href="#sec4">滚筒翻滚动画原理</a></li>
     <li><a href="#sec5">J7W1 震电 — 杂兵级（绿色，三视图）</a></li>
     <li><a href="#sec6">J7W2 震电改 — Boss级（红色 + 黑色，各三视图）</a></li>
     <li><a href="#sec7">J8M 秋水 — 杂兵级（绿色，三视图）</a></li>
-    <li><a href="#sec8">A6M 零式 — H1关卡敌机（单视图）</a></li>
+    <li><a href="#sec8">A6M 零式 — H1关卡敌机（正视+倾斜转弯）</a></li>
+    <li><a href="#sec8b">其余敌机精灵图总需求（16种 · 比例尺扩展）</a></li>
     <li><a href="#sec9">涂装与色彩规范</a></li>
-    <li><a href="#sec10">交付物清单</a></li>
-    <li><a href="#sec11">Code 占位文件规范</a></li>
+    <li><a href="#sec10">敌机交付物清单</a></li>
+    <li><a href="#sec11">敌机 Code 占位文件规范</a></li>
+    <li><a href="#sec12">玩家机（美军）精灵图需求 — 倾斜转弯与比例尺</a></li>
+    <li><a href="#sec13">倾斜转弯（Banking）动画原理与三图需求</a></li>
+    <li><a href="#sec14">各玩家机详细规格</a></li>
+    <li><a href="#sec15">玩家机交付物清单</a></li>
+    <li><a href="#sec16">玩家机 Code 占位文件规范</a></li>
+    <li><a href="#sec17">AI 生图提示词模板</a></li>
   </ol>
 </div>
 
@@ -336,7 +344,12 @@ hr {
 
 <p>《飞虎队1945》（Flying Tigers 1945）是一款基于 Godot 4.7 引擎开发的纵向卷轴射击游戏（STG），以二战中国战场和太平洋战场为历史背景。玩家驾驶 P-40 战鹰战斗机，从昆明出发，历经中国战场各战役、驼峰航线、太平洋海战，最终轰炸日本本土。</p>
 
-<p>本文档针对<strong>日军侧飞机精灵图</strong>的外包制作，涉及 4 种机型、共 16 张精灵图。其中 J7W 震电和 J8M 秋水需要三视图（俯视/侧视/仰视）以实现<strong>滚筒翻滚动画</strong>，A6M 零式仅需标准俯视图。</p>
+<p>本文档针对<strong>全部飞机精灵图</strong>的外包制作，分两大板块：</p>
+<ul>
+  <li><strong>日军敌机</strong>（D-01 ~ D-21）：21 种机型。其中 J7W 震电和 J8M 秋水需要三视图（俯视/侧视/仰视）实现<strong>滚筒翻滚动画</strong>（姿态4）；轰炸机和大型机需要正视+左倾+右倾三图实现<strong>倾斜转弯</strong>（姿态2）；小型战斗机 Ki-27/Ki-43/A6M 需要倾斜图用于<strong>抛物线转弯</strong>（姿态3，复用姿态2素材）；其余战斗机仅需正视俯视图（姿态1）。</li>
+  <li><strong>美军玩家机</strong>（P-06 ~ P-11）：6 种机型、共 18 张精灵图。每种玩家机需要 3 张图（正视 + 左倾 + 右倾）以实现<strong>倾斜转弯（Banking）动画</strong>。</li>
+</ul>
+<p>所有机型共用<strong>统一比例尺 9 px/m</strong>，确保敌我机型大小对比真实一致。最小机型 J8M 秋水（翼展 86px）与最大敌机 G8N 连山（翼展 288px）的视觉宽度比为 1:3.35，真实比例高度一致。完整比例尺数据详见 <code>aircraft-sprite-sizing-spec.html</code>。</p>
 
 <div class="callout info">
   <div class="callout-title">游戏画面方向约定</div>
@@ -345,6 +358,8 @@ hr {
 
 <!-- ==================== 2. 需求总览 ==================== -->
 <h2 id="sec2"><span class="num">02</span>需求总览</h2>
+
+<h3>2.1 日军敌机需求</h3>
 
 <div class="table-wrap">
 <table>
@@ -406,14 +421,143 @@ hr {
   <td>A6M 零式</td>
   <td><span class="badge green">杂兵</span></td>
   <td>灰白色（海军涂装）</td>
-  <td>俯视（仅1张）</td>
-  <td>1</td>
+  <td>正视 / 左倾 / 右倾</td>
+  <td>3</td>
   <td>128×128</td>
-  <td>H1 驼峰航线拦截</td>
+  <td>H1 驼峰航线拦截 + 抛物线转弯</td>
 </tr>
 <tr>
-  <td colspan="6" style="text-align:right;font-weight:600;">合计</td>
-  <td colspan="2"><strong>16 张精灵图</strong>（13张三视图 + 3张单视图中的1张）</td>
+  <td>D-06~D-11</td>
+  <td>Ki-27/Ki-43/Ki-44/Ki-61/Ki-100/J2M 等</td>
+  <td><span class="badge green">杂兵</span></td>
+  <td>深橄榄绿/灰白</td>
+  <td>正视（+倾斜转弯）</td>
+  <td>1~3</td>
+  <td>128×128</td>
+  <td>各关战斗机（Ki-27/Ki-43 需倾斜图做抛物线转弯）</td>
+</tr>
+<tr>
+  <td>D-12~D-15</td>
+  <td>D3A/Ki-45/Ki-102/Ki-48</td>
+  <td><span class="badge green">杂兵</span></td>
+  <td>深橄榄绿</td>
+  <td>正视 / 左倾 / 右倾</td>
+  <td>3</td>
+  <td>192×192</td>
+  <td>俯冲轰炸机/重型战斗机/轻爆（T3层级）</td>
+</tr>
+<tr>
+  <td>D-16~D-20</td>
+  <td>Ki-49/Ki-21/Ki-67/G3M/G4M</td>
+  <td><span class="badge green">杂兵</span></td>
+  <td>深橄榄绿</td>
+  <td>正视 / 左倾 / 右倾</td>
+  <td>3</td>
+  <td>256×256</td>
+  <td>中型/重型轰炸机（T4层级）</td>
+</tr>
+<tr>
+  <td>D-21</td>
+  <td>G8N 连山</td>
+  <td><span class="badge green">杂兵</span></td>
+  <td>深橄榄绿</td>
+  <td>正视 / 左倾 / 右倾</td>
+  <td>3</td>
+  <td>384×384</td>
+  <td>超重型轰炸机（T5层级，最大敌机）</td>
+</tr>
+<tr>
+  <td colspan="6" style="text-align:right;font-weight:600;">敌机小计</td>
+  <td colspan="2"><strong>57 张精灵图</strong>（滚筒翻滚三视图12张 + 倾斜转弯/正视45张）</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<h3>2.2 美军玩家机需求（新增）</h3>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+  <th>编号</th>
+  <th>机型</th>
+  <th>角色</th>
+  <th>涂装</th>
+  <th>视图</th>
+  <th>数量</th>
+  <th>尺寸</th>
+  <th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>P-06</td>
+  <td>P-40 战鹰</td>
+  <td><span class="badge green">默认</span></td>
+  <td>飞虎队涂装（鲨鱼嘴）</td>
+  <td>正视 / 左倾 / 右倾</td>
+  <td>3</td>
+  <td>128×128</td>
+  <td>全关卡默认玩家机</td>
+</tr>
+<tr>
+  <td>P-07</td>
+  <td>P-51 野马</td>
+  <td><span class="badge green">解锁</span></td>
+  <td>银色机身+条纹</td>
+  <td>正视 / 左倾 / 右倾</td>
+  <td>3</td>
+  <td>128×128</td>
+  <td>解锁玩家机</td>
+</tr>
+<tr>
+  <td>P-08</td>
+  <td>P-47 雷电</td>
+  <td><span class="badge green">解锁</span></td>
+  <td>橄榄绿+白条纹</td>
+  <td>正视 / 左倾 / 右倾</td>
+  <td>3</td>
+  <td>128×128</td>
+  <td>解锁玩家机</td>
+</tr>
+<tr>
+  <td>P-09</td>
+  <td>P-38 闪电</td>
+  <td><span class="badge green">解锁</span></td>
+  <td>银色+双尾桁</td>
+  <td>正视 / 左倾 / 右倾</td>
+  <td>3</td>
+  <td>192×192</td>
+  <td>解锁玩家机（双尾桁）</td>
+</tr>
+<tr>
+  <td>P-10</td>
+  <td>B-25 米切尔</td>
+  <td><span class="badge green">轰炸</span></td>
+  <td>橄榄绿+星标</td>
+  <td>正视 / 左倾 / 右倾</td>
+  <td>3</td>
+  <td>256×256</td>
+  <td>杜立特空袭等轰炸关</td>
+</tr>
+<tr>
+  <td>P-11</td>
+  <td>B-29 超级堡垒</td>
+  <td><span class="badge green">轰炸</span></td>
+  <td>银色机身+星标</td>
+  <td>正视 / 左倾 / 右倾</td>
+  <td>3</td>
+  <td>512×512</td>
+  <td>最终关轰炸日本本土</td>
+</tr>
+<tr>
+  <td colspan="6" style="text-align:right;font-weight:600;">玩家机小计</td>
+  <td colspan="2"><strong>18 张精灵图</strong></td>
+</tr>
+<tr>
+  <td colspan="6" style="text-align:right;font-weight:600;">总计</td>
+  <td colspan="2"><strong>75 张精灵图</strong>（敌机 57 + 玩家机 18）</td>
 </tr>
 </tbody>
 </table>
@@ -445,9 +589,10 @@ hr {
 <tr><th>级别</th><th>画布尺寸</th><th>飞机实际绘制尺寸</th><th>说明</th></tr>
 </thead>
 <tbody>
-<tr><td>杂兵级（战斗机）</td><td>128×128 px</td><td>54~109 px（按 9px/m 比例尺）</td><td>飞机居中绘制，四周留白用于特效叠加</td></tr>
-<tr><td>杂兵级（轰炸机）</td><td>192×192 / 256×256 px</td><td>92~225 px（按 9px/m 比例尺）</td><td>大型飞机画布更大，自然形成视觉层次</td></tr>
+<tr><td>杂兵级（战斗机）</td><td>128×128 px</td><td>54~112 px（按 9px/m 比例尺）</td><td>敌机战斗机 + 玩家机 P-40/P-51/P-47。飞机居中绘制，四周留白用于特效叠加</td></tr>
+<tr><td>杂兵级（轰炸机）</td><td>192×192 / 256×256 px</td><td>92~225 px（按 9px/m 比例尺）</td><td>敌机轰炸机 + 玩家机 P-38(192) / B-25(256)。大型飞机画布更大，自然形成视觉层次</td></tr>
 <tr><td>Boss级</td><td>256×256 px</td><td>176×202 px（按 18px/m 比例尺，2× 放大）</td><td>Boss 使用 2 倍比例尺，体积更大</td></tr>
+<tr><td>超重型战略轰炸机</td><td>512×512 px</td><td>272×388 px（按 9px/m 比例尺）</td><td>仅玩家机 B-29 超级堡垒使用此画布（T6 层级）</td></tr>
 </tbody>
 </table>
 </div>
@@ -472,6 +617,62 @@ hr {
 <div class="callout warning">
   <div class="callout-title">关键约定</div>
   所有精灵图中，<strong>机头统一朝上</strong>（朝向画布顶部）。俯视图和仰视图的机头都朝上，侧视图的机头也朝上。这是为了滚筒翻滚动画在俯视→侧视→仰视切换时保持位置连贯。
+</div>
+
+<!-- ==================== 3B. 四种飞行姿态与素材需求总览 ==================== -->
+<h2 id="sec3b"><span class="num">3B</span>四种飞行姿态与素材需求总览</h2>
+
+<p>游戏中所有飞行单位共有四种飞行姿态，各自对应不同的精灵图需求。外包团队需根据下表确认每种机型的素材数量和类型。详细技术原理参见 <code>aircraft-bank-turn-spec.html</code>。</p>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+  <th>姿态</th><th>名称</th><th>描述</th><th>素材需求</th><th>适用机型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>1</strong></td>
+  <td>直线飞行<br><span class="badge gray">Straight</span></td>
+  <td>精灵图上下移动，机头朝上，无倾斜无翻滚</td>
+  <td>1 张标准俯视图</td>
+  <td><strong>所有飞机</strong>（玩家+敌机）</td>
+</tr>
+<tr>
+  <td><strong>2</strong></td>
+  <td>倾斜转弯<br><span class="badge green">Banking</span></td>
+  <td>飞机左右平移时机身倾斜~45°，一侧机翼抬升一侧下沉，机头保持朝上</td>
+  <td>3 张：正视 + 左倾 + 右倾</td>
+  <td><strong>玩家机全部</strong> + 敌方轰炸机/大型机</td>
+</tr>
+<tr>
+  <td><strong>3</strong></td>
+  <td>抛物线转弯<br><span class="badge yellow">Parabolic</span></td>
+  <td>小型战斗机从屏幕两侧横向飞入，弧线下转后俯冲。复用姿态2的倾斜图+路径旋转</td>
+  <td>复用姿态2素材（无额外需求）</td>
+  <td>敌机小型战斗机<br>Ki-27, Ki-43, A6M</td>
+</tr>
+<tr>
+  <td><strong>4</strong></td>
+  <td>滚筒翻滚<br><span class="badge red">Barrel Roll</span></td>
+  <td>飞机绕机身长轴360°自旋，依次显示机背→侧面→机腹</td>
+  <td>3 张：俯视 + 侧视 + 仰视</td>
+  <td>仅试验型截击机<br>J7W 震电, J8M 秋水</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout info">
+  <div class="callout-title">素材需求速查</div>
+  <ul>
+    <li><strong>姿态1（直线）</strong>：所有飞机都需要，是最基础的俯视图</li>
+    <li><strong>姿态2（倾斜转弯）</strong>：玩家机全部 + 敌方轰炸机/大型机 + 做抛物线转弯的小型战斗机</li>
+    <li><strong>姿态3（抛物线转弯）</strong>：不需要额外素材，复用姿态2的左/右倾图</li>
+    <li><strong>姿态4（滚筒翻滚）</strong>：仅 J7W 和 J8M，与姿态2互斥（同一时刻只显示一种）</li>
+  </ul>
+  玩家机只需姿态1和2；敌机轰炸机和大型机也需1和2；几乎所有飞机都要准备姿态1和2的素材。
 </div>
 
 <!-- ==================== 4. 滚筒翻滚动画原理 ==================== -->
@@ -817,7 +1018,7 @@ hr {
 </div>
 
 <!-- ==================== 8. A6M 零式 ==================== -->
-<h2 id="sec8"><span class="num">08</span>A6M 零式 — H1关卡敌机（单视图）</h2>
+<h2 id="sec8"><span class="num">08</span>A6M 零式 — H1关卡敌机（正视+倾斜转弯）</h2>
 
 <h3>8.1 历史原型</h3>
 <p>三菱 A6M 零式舰上战斗机（Zero Sen）是二战日本最著名的战斗机，以卓越的盘旋机动性和超长航程著称。在驼峰航线上，零式从缅甸密支那机场起飞拦截盟军 C-46/C-87 运输机。1944 年 5 月密支那机场被盟军收复后，驼峰航线上的零式拦截才停止。</p>
@@ -839,12 +1040,14 @@ hr {
 </table>
 </div>
 
-<h3>8.3 规格 — D-05（仅俯视图，无需三视图）</h3>
+<h3>8.3 规格 — D-05（正视 + 左倾 + 右倾，共3张）</h3>
+
+<p>A6M 零式在 H1 关卡中执行<strong>抛物线转弯</strong>（姿态3）——从屏幕两侧横向飞入，弧线下转后俯冲。抛物线转弯复用倾斜转弯（姿态2）的左/右倾精灵图，叠加 Curve2D 路径旋转实现。因此 A6M 需要正视 + 左倾 + 右倾共 3 张精灵图。</p>
 
 <div class="spec-block">
-<h4>俯视图 — D-05-TOP</h4>
+<h4>俯视/正视图 — D-05-NORMAL</h4>
 <p><strong>机头方向</strong>：朝上</p>
-<p><strong>尺寸</strong>：128×128 px</p>
+<p><strong>尺寸</strong>：128×128 px，按 9px/m 比例尺实际绘制 82×99px</p>
 <p><strong>布局</strong>（从上到下）：</p>
 <ol>
   <li>画布顶部：三叶螺旋桨（圆形轮廓+三叶叶片，在机头前方）</li>
@@ -858,17 +1061,164 @@ hr {
 </div>
 
 <div class="spec-block">
+<h4>左倾图 — D-05-LEFT</h4>
+<p><strong>机头方向</strong>：朝上（倾斜只影响翼展，不影响航向）</p>
+<p><strong>姿态</strong>：机身向左倾斜 ~45°，右侧机翼抬升，左侧机翼下沉</p>
+<p><strong>绘制要点</strong>：可同时看到机背顶部和机身右侧侧面。右侧机翼因抬升而反光增强（亮度提高），左侧机翼因下沉而变暗。机翼不会被拉长或压缩，而是因透视呈现倾斜视角。</p>
+</div>
+
+<div class="spec-block">
+<h4>右倾图 — D-05-RIGHT</h4>
+<p><strong>机头方向</strong>：朝上</p>
+<p><strong>姿态</strong>：镜像于左倾图。机身向右倾斜 ~45°，左侧机翼抬升，右侧机翼下沉</p>
+<p><strong>绘制要点</strong>：可同时看到机背顶部和机身左侧侧面。左侧机翼反光增强，右侧机翼变暗。</p>
+</div>
+
+<div class="spec-block">
 <h4>涂装规格</h4>
 <p><span class="color-swatch" style="background:#B8B8B0;"></span><strong>主色</strong>：灰白色（日本海军舰载机标准涂装，#B8B8B0 ~ #C8C8C0）</p>
 <p><span class="color-swatch" style="background:#4A5D3A;"></span><strong>辅色</strong>：深灰绿（#4A5D3A），用于机翼面板线、机身分段</p>
 <p><strong>日之丸</strong>：红色圆+白色边框，在主翼两面</p>
-<p><strong>不需要三视图</strong>：零式在 H1 关卡中执行俯冲突袭（dive 路径），不做滚筒翻滚动画，仅需 1 张俯视图。</p>
+<p><strong>不需要三视图</strong>：零式不做滚筒翻滚动画（姿态4），无需俯视/侧视/仰视三图。但需要倾斜转弯图（姿态2）用于抛物线转弯（姿态3）。</p>
 </div>
 
 <div class="figure">
   <img src="assets/a6m_zero_v14.png" alt="A6M 零式 v1.4 旧版精灵图" style="max-width:256px;">
   <figcaption>图 3：v1.4 旧版 A6M 零式精灵图（质量较低，需重制）</figcaption>
 </div>
+
+<!-- ==================== 8B. 其余敌机精灵图总需求 ==================== -->
+<h2 id="sec8b"><span class="num">8B</span>其余敌机精灵图总需求（16种 · 比例尺扩展）</h2>
+
+<p>除前文详述的 5 种特殊敌机（J7W1/J7W2×2/J8M/A6M）外，项目中还有 16 种日军敌机需要外包制作精灵图。所有机型按 <strong>9px/m 统一比例尺</strong>绘制，画布尺寸根据翼展/机身长度自动分层（T2=128, T3=192, T4=256, T5=384）。数据来源：用户提供的 <code>emenyplanes.xlsx</code>，已在 <code>aircraft-sprite-sizing-spec.html</code> 中完整记录。</p>
+
+<h3>8B.1 全机型精灵图需求总表</h3>
+
+<p>根据四种飞行姿态（详见 §3B），每种敌机的素材需求如下：</p>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+  <th>编号</th><th>机型</th><th>场景标识</th><th>机身长(m)</th><th>翼展(m)</th>
+  <th>绘制高(px)</th><th>绘制宽(px)</th><th>画布</th><th>姿态需求</th><th>精灵图数</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>D-06</td><td>Ki-27 九七战</td><td><code>enemy_ki27_fighter</code></td><td>7.5</td><td>11.3</td><td>68</td><td>102</td><td>128×128</td><td>1+2(抛物线)</td><td>3</td></tr>
+<tr><td>D-07</td><td>Ki-43 隼</td><td><code>enemy_ki43_hayabusa</code></td><td>8.9</td><td>10.8</td><td>80</td><td>97</td><td>128×128</td><td>1+2(抛物线)</td><td>3</td></tr>
+<tr><td>D-08</td><td>Ki-44 钟馗</td><td><code>enemy_ki44_shoki</code></td><td>8.9</td><td>9.5</td><td>80</td><td>86</td><td>128×128</td><td>1(直线)</td><td>1</td></tr>
+<tr><td>D-09</td><td>Ki-61 飞燕</td><td><code>enemy_ki61_hien</code></td><td>8.9</td><td>12.0</td><td>80</td><td>108</td><td>128×128</td><td>1(直线)</td><td>1</td></tr>
+<tr><td>D-10</td><td>Ki-100 五式战</td><td><code>enemy_ki100</code></td><td>8.9</td><td>12.0</td><td>80</td><td>108</td><td>128×128</td><td>1(直线)</td><td>1</td></tr>
+<tr><td>D-11</td><td>J2M 雷电</td><td><code>enemy_j2m_raiden</code></td><td>9.7</td><td>10.8</td><td>87</td><td>97</td><td>128×128</td><td>1(直线)</td><td>1</td></tr>
+<tr><td>D-12</td><td>Ki-84 疾风</td><td><code>enemy_ki84_hayate</code></td><td>9.9</td><td>11.2</td><td>89</td><td>101</td><td>128×128</td><td>1(直线)</td><td>1</td></tr>
+<tr><td>D-13</td><td>Ki-51 攻击机</td><td><code>enemy_ki51_sonia</code></td><td>9.2</td><td>12.1</td><td>83</td><td>109</td><td>128×128</td><td>1(直线)</td><td>1</td></tr>
+<tr><td>D-14</td><td>D3A 九九舰爆</td><td><code>enemy_d3a_val</code></td><td>10.2</td><td>14.3</td><td>92</td><td>129</td><td>192×192</td><td>1+2(倾斜)</td><td>3</td></tr>
+<tr><td>D-15</td><td>Ki-45 屠龙</td><td><code>enemy_ki45_toryu</code></td><td>11.0</td><td>15.0</td><td>99</td><td>135</td><td>192×192</td><td>1+2(倾斜)</td><td>3</td></tr>
+<tr><td>D-16</td><td>Ki-102 五式复座</td><td><code>enemy_ki102</code></td><td>11.5</td><td>15.6</td><td>104</td><td>140</td><td>192×192</td><td>1+2(倾斜)</td><td>3</td></tr>
+<tr><td>D-17</td><td>Ki-48 九九轻爆</td><td><code>enemy_ki48_lily</code></td><td>12.9</td><td>17.5</td><td>116</td><td>158</td><td>192×192</td><td>1+2(倾斜)</td><td>3</td></tr>
+<tr><td>D-18</td><td>Ki-49 百式重爆</td><td><code>enemy_ki49</code></td><td>16.8</td><td>20.4</td><td>151</td><td>184</td><td>256×256</td><td>1+2(倾斜)</td><td>3</td></tr>
+<tr><td>D-19</td><td>Ki-21 九七重爆</td><td><code>enemy_ki21_bomber</code></td><td>16.5</td><td>22.5</td><td>148</td><td>202</td><td>256×256</td><td>1+2(倾斜)</td><td>3</td></tr>
+<tr><td>D-20</td><td>Ki-67 飞龙</td><td><code>enemy_ki67</code></td><td>18.7</td><td>22.5</td><td>168</td><td>202</td><td>256×256</td><td>1+2(倾斜)</td><td>3</td></tr>
+<tr><td>D-21a</td><td>G3M 九六陆攻</td><td><code>enemy_g3m_nell</code></td><td>16.5</td><td>25.0</td><td>148</td><td>225</td><td>256×256</td><td>1+2(倾斜)</td><td>3</td></tr>
+<tr><td>D-21b</td><td>G4M 一式陆攻</td><td><code>enemy_g4m</code></td><td>20.0</td><td>25.0</td><td>180</td><td>225</td><td>256×256</td><td>1+2(倾斜)</td><td>3</td></tr>
+<tr><td>D-21c</td><td>G8N 连山</td><td><code>enemy_g8n</code></td><td>22.9</td><td>32.0</td><td>206</td><td>288</td><td>384×384</td><td>1+2(倾斜)</td><td>3</td></tr>
+<tr><td colspan="9" style="text-align:right;font-weight:600;">合计</td><td><strong>45 张</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout warning">
+  <div class="callout-title">比例尺绘制要求（重要）</div>
+  外包团队必须注意：同一 128×128 画布内，不同机型的<strong>实际绘制大小不同</strong>。例如 Ki-44 钟馗仅占 80×86 像素，而 Ki-84 疾风占 89×101 像素。飞机必须<strong>按 9px/m 比例尺绘制</strong>，居中放置在画布内，四周留白用于特效叠加。<strong>不得填满整个画布</strong>。这是保证游戏中大小对比一致的关键。
+</div>
+
+<h3>8B.2 按姿态需求分组说明</h3>
+
+<h4>组 A：仅正视俯视图（姿态1直线飞行，6种 × 1张 = 6张）</h4>
+<p>以下战斗机在游戏中仅执行直线飞行（从屏幕上方向下移动），不做倾斜转弯或抛物线转弯，因此仅需 1 张标准俯视图：</p>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>编号</th><th>机型</th><th>识别特征速查</th></tr>
+</thead>
+<tbody>
+<tr><td>D-08</td><td>Ki-44 钟馗</td><td>大翼展、机头三叶螺旋桨、单垂尾、座舱偏前。以高速爬升拦截著称</td></tr>
+<tr><td>D-09</td><td>Ki-61 飞燕</td><td>液冷直列发动机（机头尖细，非星形）、流线型机身、三叶螺旋桨</td></tr>
+<tr><td>D-10</td><td>Ki-100 五式战</td><td>Ki-61 换装星形发动机的改型，机头较粗（圆形截面）。与 Ki-61 机体相同但机头形状不同</td></tr>
+<tr><td>D-11</td><td>J2M 雷电</td><td>星形发动机、机头粗壮、座舱靠前、主翼根部有Root散热器 intake</td></tr>
+<tr><td>D-12</td><td>Ki-84 疾风</td><td>日本末期最优秀战斗机，常规布局、星形发动机、四叶螺旋桨、椭圆翼</td></tr>
+<tr><td>D-13</td><td>Ki-51 攻击机</td><td>双座对地攻击机，座舱偏后、主翼较大、固定起落架（可见整流罩）</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>组 B：正视+左倾+右倾（姿态1+2，用于抛物线转弯，2种 × 3张 = 6张）</h4>
+<p>以下小型敏捷战斗机从屏幕左右两侧横向飞入，执行抛物线转弯后俯冲。需要倾斜图（姿态2）用于弧线段的倾斜姿态显示：</p>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>编号</th><th>机型</th><th>识别特征速查</th><th>倾斜图用途</th></tr>
+</thead>
+<tbody>
+<tr><td>D-06</td><td>Ki-27 九七战</td><td>固定起落架（可见）、大翼展、纤细机身、日之丸在翼面。日本陆军早期主力战斗机</td><td>抛物线转弯：弧线段显示倾斜图+rotation旋转</td></tr>
+<tr><td>D-07</td><td>Ki-43 隼</td><td>可收放起落架、大翼展、纤细机身、三叶螺旋桨。Ki-27 后继机型，陆军最优秀战斗机之一</td><td>抛物线转弯：弧线段显示倾斜图+rotation旋转</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>组 C：正视+左倾+右倾（姿态1+2，轰炸机/大型机，9种 × 3张 = 27张）</h4>
+<p>以下轰炸机和大型机在游戏中有横向移动行为，需要倾斜转弯精灵图。大型机画布更大（T3=192, T4=256, T5=384），视觉上自然形成压迫感：</p>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>编号</th><th>机型</th><th>画布</th><th>识别特征速查</th><th>倾斜图要点</th></tr>
+</thead>
+<tbody>
+<tr><td>D-14</td><td>D3A 九九舰爆</td><td>192</td><td>俯冲轰炸机、固定起落架整流罩、倒鸥翼、双座</td><td>倒鸥翼在倾斜下不对称明显</td></tr>
+<tr><td>D-15</td><td>Ki-45 屠龙</td><td>192</td><td>双发重型战斗机、双尾桁、双座、机头尖锐</td><td>双尾桁在倾斜下一侧抬升一侧下沉</td></tr>
+<tr><td>D-16</td><td>Ki-102 五式复座</td><td>192</td><td>Ki-45 攻击机改型、双发、双座、机头有37mm机炮</td><td>同 Ki-45 双尾桁结构</td></tr>
+<tr><td>D-17</td><td>Ki-48 九九轻爆</td><td>192</td><td>双发轻轰炸机、流线型机身、双垂尾、玻璃机鼻</td><td>双发整流罩在倾斜下不对称</td></tr>
+<tr><td>D-18</td><td>Ki-49 百式重爆</td><td>256</td><td>双发重轰炸机、流线型机身、双垂尾、机背有炮塔</td><td>大型机体，倾斜透视变化明显</td></tr>
+<tr><td>D-19</td><td>Ki-21 九七重爆</td><td>256</td><td>双发重轰炸机、细长机身、双垂尾。日本陆军主力轰炸机</td><td>翼展202px，全T4最宽</td></tr>
+<tr><td>D-20</td><td>Ki-67 飞龙</td><td>256</td><td>双发中型轰炸机、流线型、双垂尾、机背/机腹炮塔</td><td>Ki-49 后继机型，外形相似</td></tr>
+<tr><td>D-21a</td><td>G3M 九六陆攻</td><td>256</td><td>双发陆上攻击机、细长机身、单垂尾、玻璃机鼻</td><td>翼展225px，T4层级最大</td></tr>
+<tr><td>D-21b</td><td>G4M 一式陆攻</td><td>256</td><td>双发陆上攻击机、流线型、单垂尾、机头玻璃舱。被称为"打火机"</td><td>机身180px，T4最长</td></tr>
+<tr><td>D-21c</td><td>G8N 连山</td><td>384</td><td>四发重型轰炸机、巨型翼展(288px)、双垂尾。全游戏最大敌机</td><td>T5层级，四发整流罩在倾斜下不对称最显著</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout info">
+  <div class="callout-title">G8N 连山特殊说明</div>
+  G8N 连山是全游戏<strong>最大敌机</strong>（翼展 288px，T5 画布 384×384），是 J8M 秋水（翼展 86px）的 <strong>3.35 倍</strong>。四台星形发动机在主翼前缘排列，倾斜转弯时一侧两台发动机抬升变亮、另一侧下沉变暗，视觉差异最为显著。连山在游戏中作为后期关卡的精英轰炸机出现，其巨大体型本身就是视觉震撼。
+</div>
+
+<h3>8B.3 倾斜转弯图绘制规范（适用于组 B 和组 C）</h3>
+
+<p>所有需要倾斜转弯（姿态2）的敌机，其左倾/右倾图的绘制规范与玩家机完全一致，详见 §13。核心要点：</p>
+<ul>
+  <li><strong>机头朝上</strong>：倾斜只影响翼展方向，不改变机头朝向</li>
+  <li><strong>~45° 滚转角</strong>：内弯翼下沉变短，外弯翼抬升变长——不对称是灵魂</li>
+  <li><strong>机身侧面部分可见</strong>：内弯侧露出部分机身轮廓</li>
+  <li><strong>光影不对称</strong>：外弯翼受光高光，内弯翼背光阴影</li>
+  <li><strong>左倾/右倾镜像</strong>：除光影方向相反外，结构和比例完全一致</li>
+  <li><strong>按比例尺绘制</strong>：正视图中翼展方向略窄（约70-80%），因透视前缩短</li>
+</ul>
+
+<h3>8B.4 涂装规范</h3>
+<p>所有日军敌机统一使用以下涂装（A6M 零式除外，零式使用海军灰白涂装）：</p>
+<ul>
+  <li><strong>主色</strong>：深橄榄绿（#4A5D3A ~ #6B7F5A），陆军标准涂装</li>
+  <li><strong>面板线</strong>：深灰绿（#3A4D2A），可见面板接缝和铆钉</li>
+  <li><strong>日之丸</strong>：红色圆（#D32F2F）+ 白色边框（2px），左右主翼各1个</li>
+  <li><strong>座舱</strong>：深色半透明（#1a2a1a），气泡形</li>
+  <li><strong>螺旋桨</strong>：深灰/黑色（#2a2a2a），三叶或四叶（视机型）</li>
+</ul>
+<p>A6M 零式及海军型飞机使用灰白涂装（#B8B8B0），详见 §9。</p>
 
 <!-- ==================== 9. 涂装规范 ==================== -->
 <h2 id="sec9"><span class="num">09</span>涂装与色彩规范</h2>
@@ -923,7 +1273,7 @@ hr {
 </ul>
 
 <!-- ==================== 10. 交付物清单 ==================== -->
-<h2 id="sec10"><span class="num">10</span>交付物清单</h2>
+<h2 id="sec10"><span class="num">10</span>敌机交付物清单</h2>
 
 <div class="table-wrap">
 <table>
@@ -943,7 +1293,51 @@ hr {
 <tr><td>D-04-TOP</td><td><code>enemy_j8m_shusui_top.png</code></td><td>J8M 秋水</td><td>俯视</td><td>128×128</td><td>PNG</td><td>深橄榄绿</td></tr>
 <tr><td>D-04-SIDE</td><td><code>enemy_j8m_shusui_side.png</code></td><td>J8M 秋水</td><td>侧视</td><td>128×128</td><td>PNG</td><td>深橄榄绿</td></tr>
 <tr><td>D-04-BOTTOM</td><td><code>enemy_j8m_shusui_bottom.png</code></td><td>J8M 秋水</td><td>仰视</td><td>128×128</td><td>PNG</td><td>深橄榄绿</td></tr>
-<tr><td>D-05-TOP</td><td><code>enemy_a6m_zero.png</code></td><td>A6M 零式</td><td>俯视</td><td>128×128</td><td>PNG</td><td>灰白海军</td></tr>
+<tr><td>D-05-NORMAL</td><td><code>enemy_a6m_zero_normal.png</code></td><td>A6M 零式</td><td>正视</td><td>128×128</td><td>PNG</td><td>灰白海军</td></tr>
+<tr><td>D-05-LEFT</td><td><code>enemy_a6m_zero_bank_left.png</code></td><td>A6M 零式</td><td>左倾</td><td>128×128</td><td>PNG</td><td>灰白海军</td></tr>
+<tr><td>D-05-RIGHT</td><td><code>enemy_a6m_zero_bank_right.png</code></td><td>A6M 零式</td><td>右倾</td><td>128×128</td><td>PNG</td><td>灰白海军</td></tr>
+<tr><td>D-06-NORMAL</td><td><code>enemy_ki27_fighter_normal.png</code></td><td>Ki-27 九七战</td><td>正视</td><td>128×128</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-06-LEFT</td><td><code>enemy_ki27_fighter_bank_left.png</code></td><td>Ki-27 九七战</td><td>左倾</td><td>128×128</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-06-RIGHT</td><td><code>enemy_ki27_fighter_bank_right.png</code></td><td>Ki-27 九七战</td><td>右倾</td><td>128×128</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-07-NORMAL</td><td><code>enemy_ki43_hayabusa_normal.png</code></td><td>Ki-43 隼</td><td>正视</td><td>128×128</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-07-LEFT</td><td><code>enemy_ki43_hayabusa_bank_left.png</code></td><td>Ki-43 隼</td><td>左倾</td><td>128×128</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-07-RIGHT</td><td><code>enemy_ki43_hayabusa_bank_right.png</code></td><td>Ki-43 隼</td><td>右倾</td><td>128×128</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-08</td><td><code>enemy_ki44_shoki.png</code></td><td>Ki-44 钟馗</td><td>正视</td><td>128×128</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-09</td><td><code>enemy_ki61_hien.png</code></td><td>Ki-61 飞燕</td><td>正视</td><td>128×128</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-10</td><td><code>enemy_ki100.png</code></td><td>Ki-100 五式战</td><td>正视</td><td>128×128</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-11</td><td><code>enemy_j2m_raiden.png</code></td><td>J2M 雷电</td><td>正视</td><td>128×128</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-12</td><td><code>enemy_ki84_hayate.png</code></td><td>Ki-84 疾风</td><td>正视</td><td>128×128</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-13</td><td><code>enemy_ki51_sonia.png</code></td><td>Ki-51 攻击机</td><td>正视</td><td>128×128</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-14-NORMAL</td><td><code>enemy_d3a_val_normal.png</code></td><td>D3A 九九舰爆</td><td>正视</td><td>192×192</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-14-LEFT</td><td><code>enemy_d3a_val_bank_left.png</code></td><td>D3A 九九舰爆</td><td>左倾</td><td>192×192</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-14-RIGHT</td><td><code>enemy_d3a_val_bank_right.png</code></td><td>D3A 九九舰爆</td><td>右倾</td><td>192×192</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-15-NORMAL</td><td><code>enemy_ki45_toryu_normal.png</code></td><td>Ki-45 屠龙</td><td>正视</td><td>192×192</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-15-LEFT</td><td><code>enemy_ki45_toryu_bank_left.png</code></td><td>Ki-45 屠龙</td><td>左倾</td><td>192×192</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-15-RIGHT</td><td><code>enemy_ki45_toryu_bank_right.png</code></td><td>Ki-45 屠龙</td><td>右倾</td><td>192×192</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-16-NORMAL</td><td><code>enemy_ki102_normal.png</code></td><td>Ki-102 五式复座</td><td>正视</td><td>192×192</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-16-LEFT</td><td><code>enemy_ki102_bank_left.png</code></td><td>Ki-102 五式复座</td><td>左倾</td><td>192×192</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-16-RIGHT</td><td><code>enemy_ki102_bank_right.png</code></td><td>Ki-102 五式复座</td><td>右倾</td><td>192×192</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-17-NORMAL</td><td><code>enemy_ki48_lily_normal.png</code></td><td>Ki-48 九九轻爆</td><td>正视</td><td>192×192</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-17-LEFT</td><td><code>enemy_ki48_lily_bank_left.png</code></td><td>Ki-48 九九轻爆</td><td>左倾</td><td>192×192</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-17-RIGHT</td><td><code>enemy_ki48_lily_bank_right.png</code></td><td>Ki-48 九九轻爆</td><td>右倾</td><td>192×192</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-18-NORMAL</td><td><code>enemy_ki49_normal.png</code></td><td>Ki-49 百式重爆</td><td>正视</td><td>256×256</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-18-LEFT</td><td><code>enemy_ki49_bank_left.png</code></td><td>Ki-49 百式重爆</td><td>左倾</td><td>256×256</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-18-RIGHT</td><td><code>enemy_ki49_bank_right.png</code></td><td>Ki-49 百式重爆</td><td>右倾</td><td>256×256</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-19-NORMAL</td><td><code>enemy_ki21_bomber_normal.png</code></td><td>Ki-21 九七重爆</td><td>正视</td><td>256×256</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-19-LEFT</td><td><code>enemy_ki21_bomber_bank_left.png</code></td><td>Ki-21 九七重爆</td><td>左倾</td><td>256×256</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-19-RIGHT</td><td><code>enemy_ki21_bomber_bank_right.png</code></td><td>Ki-21 九七重爆</td><td>右倾</td><td>256×256</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-20-NORMAL</td><td><code>enemy_ki67_normal.png</code></td><td>Ki-67 飞龙</td><td>正视</td><td>256×256</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-20-LEFT</td><td><code>enemy_ki67_bank_left.png</code></td><td>Ki-67 飞龙</td><td>左倾</td><td>256×256</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-20-RIGHT</td><td><code>enemy_ki67_bank_right.png</code></td><td>Ki-67 飞龙</td><td>右倾</td><td>256×256</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-21a-NORMAL</td><td><code>enemy_g3m_nell_normal.png</code></td><td>G3M 九六陆攻</td><td>正视</td><td>256×256</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-21a-LEFT</td><td><code>enemy_g3m_nell_bank_left.png</code></td><td>G3M 九六陆攻</td><td>左倾</td><td>256×256</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-21a-RIGHT</td><td><code>enemy_g3m_nell_bank_right.png</code></td><td>G3M 九六陆攻</td><td>右倾</td><td>256×256</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-21b-NORMAL</td><td><code>enemy_g4m_normal.png</code></td><td>G4M 一式陆攻</td><td>正视</td><td>256×256</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-21b-LEFT</td><td><code>enemy_g4m_bank_left.png</code></td><td>G4M 一式陆攻</td><td>左倾</td><td>256×256</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-21b-RIGHT</td><td><code>enemy_g4m_bank_right.png</code></td><td>G4M 一式陆攻</td><td>右倾</td><td>256×256</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-21c-NORMAL</td><td><code>enemy_g8n_normal.png</code></td><td>G8N 连山</td><td>正视</td><td>384×384</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-21c-LEFT</td><td><code>enemy_g8n_bank_left.png</code></td><td>G8N 连山</td><td>左倾</td><td>384×384</td><td>PNG</td><td>深橄榄绿</td></tr>
+<tr><td>D-21c-RIGHT</td><td><code>enemy_g8n_bank_right.png</code></td><td>G8N 连山</td><td>右倾</td><td>384×384</td><td>PNG</td><td>深橄榄绿</td></tr>
 </tbody>
 </table>
 </div>
@@ -982,7 +1376,7 @@ hr {
 </ul>
 
 <!-- ==================== 11. Code 占位文件 ==================== -->
-<h2 id="sec11"><span class="num">11</span>Code 占位文件规范</h2>
+<h2 id="sec11"><span class="num">11</span>敌机 Code 占位文件规范</h2>
 
 <p>在外包素材交付之前，Code 团队需要创建以下占位文件和场景结构，确保素材到位后可直接替换使用。</p>
 
@@ -1086,11 +1480,536 @@ _enemy_scene_map["j8m_shusui"] = "res://scenes/enemies/enemy_j8m_shusui.tscn"</c
   <li>使用占位图时游戏可正常运行，翻滚动画逻辑正确（三图切换可见）</li>
 </ul>
 
+<!-- ==================== 12. 玩家机精灵图需求 ==================== -->
+<h2 id="sec12"><span class="num">12</span>玩家机（美军）精灵图需求 — 倾斜转弯与比例尺</h2>
+
+<p>本章节为<strong>美军玩家机</strong>精灵图的外包制作需求。玩家机与日军敌机共用 9px/m 统一比例尺，但动画需求不同——敌机部分机型需要三视图（俯视/侧视/仰视）实现<strong>滚筒翻滚</strong>，而玩家机需要正视+左倾+右倾三图实现<strong>倾斜转弯（Banking）</strong>。</p>
+
+<div class="callout info">
+  <div class="callout-title">比例尺要求（与敌机统一）</div>
+  所有玩家机必须按<strong>统一比例尺 9 px/m</strong>绘制，不得填满整个画布。例如 P-40 战鹰（翼展 11.38m）占 102px 宽，B-29 超级堡垒（翼展 43.06m）占 388px 宽——两者在同一比例尺下大小差异达 3.8 倍，这正是比例系统的核心价值。完整比例尺数据详见 <code>aircraft-sprite-sizing-spec.html</code> §2.2。
+</div>
+
+<h3>12.1 玩家机尺寸速查表</h3>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>编号</th><th>机型</th><th>机身长(m)</th><th>翼展(m)</th><th>精灵图高(px)</th><th>精灵图宽(px)</th><th>画布尺寸</th><th>碰撞箱</th></tr>
+</thead>
+<tbody>
+<tr><td>P-06</td><td>P-40 战鹰</td><td>9.66</td><td>11.38</td><td>87</td><td>102</td><td>128×128</td><td>28×28</td></tr>
+<tr><td>P-07</td><td>P-51 野马</td><td>9.82</td><td>11.28</td><td>88</td><td>102</td><td>128×128</td><td>28×28</td></tr>
+<tr><td>P-08</td><td>P-47 雷电</td><td>11.00</td><td>12.42</td><td>99</td><td>112</td><td>128×128</td><td>28×28</td></tr>
+<tr><td>P-09</td><td>P-38 闪电</td><td>11.53</td><td>15.85</td><td>104</td><td>143</td><td>192×192</td><td>40×40</td></tr>
+<tr><td>P-10</td><td>B-25 米切尔</td><td>16.13</td><td>20.60</td><td>145</td><td>185</td><td>256×256</td><td>56×56</td></tr>
+<tr><td>P-11</td><td>B-29 超级堡垒</td><td>30.18</td><td>43.06</td><td>272</td><td>388</td><td>512×512</td><td>100×100</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- ==================== 13. 倾斜转弯动画原理 ==================== -->
+<h2 id="sec13"><span class="num">13</span>倾斜转弯（Banking）动画原理与三图需求</h2>
+
+<p>玩家飞机在屏幕上左右移动时，不是机头调转东西方向，而是<strong>平移</strong>——机身整体向左或右移动，同时机身会倾斜（一侧机翼抬升，一侧机翼下沉），机头方向仍保持朝上。这称为<strong>倾斜转弯（Banking）</strong>。</p>
+
+<h3>13.1 倾斜转弯 vs 滚筒翻滚 — 核心区别</h3>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>对比项</th><th>倾斜转弯（Banking）</th><th>滚筒翻滚（Barrel Roll）</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>适用对象</strong></td><td>玩家机 + 敌方轰炸机/大型机</td><td>仅 J7W 震电、J8M 秋水（试验型截击机）</td></tr>
+<tr><td><strong>动画类型</strong></td><td>状态切换（3 帧离散）</td><td>连续旋转（360° 循环）</td></tr>
+<tr><td><strong>素材需求</strong></td><td>3 张：正视 + 左倾 + 右倾</td><td>3 张：俯视 + 侧视 + 仰视</td></tr>
+<tr><td><strong>倾斜角度</strong></td><td>固定 ~45°（仅左/右两个状态）</td><td>0° → 90° → 180° → 270° → 360°（连续）</td></tr>
+<tr><td><strong>视觉效果</strong></td><td>看到机背 + 一侧机翼的侧面</td><td>依次看到机背 → 机身侧面 → 机腹 → 回到机背</td></tr>
+<tr><td><strong>代码实现</strong></td><td>Sprite 状态切换 + scale.x 微调</td><td>Sprite 切换 + scale.x = cos(θ) 缩放</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>13.2 三张图各自的职责</h3>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>视图</th><th>显示时机</th><th>内容</th><th>绘制要点</th></tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>正视（NORMAL）</strong></td>
+  <td>直飞或纵向移动时</td>
+  <td>机背完全朝上，完整翼展+机身</td>
+  <td>标准俯视图，与敌机俯视图绘制方式相同。十字形布局，机翼水平展开</td>
+</tr>
+<tr>
+  <td><strong>左倾（BANK_LEFT）</strong></td>
+  <td>玩家向左移动时</td>
+  <td>机身向左倾斜 ~45°，右侧机翼抬升，左侧机翼下沉</td>
+  <td>可同时看到机背顶部和机身右侧侧面。右侧机翼因抬升而反光增强（亮度提高），左侧机翼因下沉而变暗。机翼<strong>不是被拉长</strong>，而是因透视而呈现倾斜视角</td>
+</tr>
+<tr>
+  <td><strong>右倾（BANK_RIGHT）</strong></td>
+  <td>玩家向右移动时</td>
+  <td>机身向右倾斜 ~45°，左侧机翼抬升，右侧机翼下沉</td>
+  <td>镜像于左倾图。可同时看到机背顶部和机身左侧侧面。左侧机翼反光增强，右侧机翼变暗</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout warning">
+  <div class="callout-title">倾斜转弯图最容易画错的地方</div>
+  左倾/右倾图<strong>不是</strong>将正视图简单地旋转 45°。旋转会导致机头偏离向上方向。正确的做法是：机头仍朝上，但机身整体有 ~45° 的<strong>滚转角</strong>——你可以想象相机固定在正上方，飞机向左/右倾斜了 45°。此时你看到的是机背的大部分 + 一侧机翼的侧面轮廓。机翼因倾斜而出现<strong>反光变化</strong>（抬升侧变亮，下沉侧变暗），但机翼<strong>不会被拉伸或压缩</strong>。
+</div>
+
+<h3>13.3 三图对齐要求</h3>
+<ul>
+  <li>三张图的<strong>飞机中心点</strong>必须在画布正中心</li>
+  <li>三张图的<strong>机身长度</strong>完全一致（机头到尾部的像素距离相同）</li>
+  <li>左倾和右倾图为镜像关系，除光影方向相反外，结构和比例完全一致</li>
+  <li>正视图的翼展最宽；左/右倾图因透视关系，翼展方向会略窄（约 70-80%）</li>
+  <li>机头朝向：三张图均朝上</li>
+</ul>
+
+<!-- ==================== 14. 各玩家机详细规格 ==================== -->
+<h2 id="sec14"><span class="num">14</span>各玩家机详细规格</h2>
+
+<h3>14.1 P-40 战鹰 — P-06（默认玩家机）</h3>
+
+<div class="spec-block">
+<h4>历史原型</h4>
+<p>柯蒂斯 P-40 战鹰是飞虎队（AVG）的主力战斗机。1941-1942 年间，陈纳德率领的飞虎队驾驶 P-40 在中国战场创造了辉煌战绩。其标志性的鲨鱼嘴涂装已成为飞虎队的象征。</p>
+</div>
+
+<div class="spec-block">
+<h4>识别特征</h4>
+<table>
+<thead><tr><th>特征</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>鲨鱼嘴涂装</td><td>机头发动机罩前端绘有大白色鲨鱼牙齿和眼睛——这是飞虎队的标志</td></tr>
+<tr><td>大散热器</td><td>机鼻下方有大型散热器进气口，是 P-40 最显著的外形特征</td></tr>
+<tr><td> Allison V-12 发动机</td><td>直列液冷发动机，机头较尖长</td></tr>
+<tr><td>气泡座舱</td><td>水滴形座舱罩靠前</td></tr>
+<tr><td>平直翼</td><td>主翼为平直翼，略带圆弧翼尖</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="spec-block">
+<h4>涂装规格</h4>
+<p><span class="color-swatch" style="background:#5C6B4A;"></span><strong>主色</strong>：橄榄褐（Olive Drab, #5C6B4A ~ #6B7F5A），上表面</p>
+<p><span class="color-swatch" style="background:#A0A498;"></span><strong>下表面</strong>：中性灰（Neutral Gray, #A0A498）</p>
+<p><span class="color-swatch" style="background:#F5F5F0;"></span><strong>鲨鱼嘴</strong>：白色牙齿 + 黑色描边 + 红色眼睛</p>
+<p><strong>徽记</strong>：蓝底白星美军星标（机翼上下两面）</p>
+</div>
+
+<h3>14.2 P-51 野马 — P-07</h3>
+
+<div class="spec-block">
+<h4>历史原型</h4>
+<p>北美 P-51 野马是二战最优秀的战斗机之一，搭载劳斯莱斯梅林发动机后具备超强高空性能和超长航程，为 B-29 护航轰炸日本本土立下赫赫战功。</p>
+</div>
+
+<div class="spec-block">
+<h4>识别特征</h4>
+<table>
+<thead><tr><th>特征</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>层流翼</td><td>采用层流翼型，翼面更光滑——俯视图中机翼前缘较为平直圆润</td></tr>
+<tr><td>气泡座舱</td><td>全视野水滴形座舱罩，是 P-51D 的标志</td></tr>
+<tr><td>四叶螺旋桨</td><td>机头前方四叶螺旋桨（P-40 为三叶）</td></tr>
+<tr><td>背鳍</td><td>座舱后方有小型背鳍延伸到垂直尾翼</td></tr>
+<tr><td>梅林发动机</td><td>机头较尖，下方散热器位于翼根后方</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="spec-block">
+<h4>涂装规格</h4>
+<p><span class="color-swatch" style="background:#C8C8C0;"></span><strong>主色</strong>：自然铝/银色（Natural Aluminum, #C8C8C0 ~ #D8D8D0）</p>
+<p><span class="color-swatch" style="background:#1a1a1a;"></span><strong>条纹</strong>：黑白 invasion stripes（机翼和机身中部）</p>
+<p><strong>徽记</strong>：蓝底白星美军星标</p>
+</div>
+
+<h3>14.3 P-47 雷电 — P-08</h3>
+
+<div class="spec-block">
+<h4>历史原型</h4>
+<p>共和 P-47 雷电是二战中最大、最重的单发战斗机，以皮实耐打和俯冲速度著称。搭载巨型 R-2800 双排星形发动机，机头粗壮。</p>
+</div>
+
+<div class="spec-block">
+<h4>识别特征</h4>
+<table>
+<thead><tr><th>特征</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>巨型星形发动机</td><td>机头非常粗壮，圆形截面——俯视图中机头部分宽大</td></tr>
+<tr><td>气泡座舱</td><td>座舱位置偏后</td></tr>
+<tr><td>四叶螺旋桨</td><td>大型四叶螺旋桨</td></tr>
+<tr><td>椭圆翼</td><td>主翼为椭圆翼型，翼展较宽</td></tr>
+<tr><td>体型大</td><td>在 128×128 画布中占 99×112px，是 T2 层级中最大的机型</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="spec-block">
+<h4>涂装规格</h4>
+<p><span class="color-swatch" style="background:#5C6B4A;"></span><strong>主色</strong>：橄榄褐（Olive Drab, #5C6B4A）</p>
+<p><span class="color-swatch" style="background:#F5F5F0;"></span><strong>条纹</strong>：白色引擎罩条纹 + 尾翼条纹</p>
+<p><strong>徽记</strong>：蓝底白星美军星标</p>
+</div>
+
+<h3>14.4 P-38 闪电 — P-09（双尾桁）</h3>
+
+<div class="spec-block">
+<h4>历史原型</h4>
+<p>洛克希德 P-38 闪电是二战中最独特的战斗机——双尾桁布局，中央短舱容纳驾驶舱和武器。1943 年 4 月 18 日，P-38 在南太平洋击落山本五十六座机，成为传奇。</p>
+</div>
+
+<div class="spec-block">
+<h4>识别特征（极其重要）</h4>
+<table>
+<thead><tr><th>特征</th><th>说明</th><th>俯视图表现</th></tr></thead>
+<tbody>
+<tr><td><strong>双尾桁</strong></td><td>两条尾桁从主翼延伸到后方，末端各有一个垂直尾翼</td><td>俯视图中可见两条平行细长结构从主翼向后延伸</td></tr>
+<tr><td><strong>中央短舱</strong></td><td>驾驶舱和武器集中在机翼中央前方的短舱中</td><td>机翼中央前方有一个水滴形短舱</td></tr>
+<tr><td><strong>双发动机</strong></td><td>两台 Allison V-12 发动机分别安装在两条尾桁前端</td><td>主翼两侧前缘各有一个发动机整流罩</td></tr>
+<tr><td>无传统机身</td><td>没有常规的单机身结构</td><td>整体呈 Y 型或十字型，与所有其他机型截然不同</td></tr>
+<tr><td>前三点起落架</td><td>机鼻有前起落架</td><td>短舱前端可见</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout warning">
+  <div class="callout-title">P-38 是最容易认错的机型</div>
+  画师容易将 P-38 画成常规单机身战斗机。P-38 的核心特征是<strong>双尾桁 + 中央短舱</strong>——没有连续的单机身。俯视图中应呈现 Y 形：前方是中央短舱（驾驶舱），两侧主翼上各有一个发动机，两条尾桁向后延伸到双垂尾。左倾/右倾图中，倾斜后一侧尾桁抬升，另一侧下沉，整体 Y 形结构发生透视变形。
+</div>
+
+<div class="spec-block">
+<h4>涂装规格</h4>
+<p><span class="color-swatch" style="background:#C8C8C0;"></span><strong>主色</strong>：自然铝/银色（#C8C8C0）</p>
+<p><span class="color-swatch" style="background:#3A4A3A;"></span><strong>上表面</strong>：橄榄绿（#3A4A3A），部分型号上表面涂伪装色</p>
+<p><strong>徽记</strong>：蓝底白星美军星标（主翼 + 短舱侧面）</p>
+</div>
+
+<h3>14.5 B-25 米切尔 — P-10（中型轰炸机）</h3>
+
+<div class="spec-block">
+<h4>历史原型</h4>
+<p>北美 B-25 米切尔是二战中最著名的中型轰炸机。1942 年 4 月 18 日，杜立特中校率 16 架 B-25 从大黄蜂号航母起飞轰炸东京，极大地鼓舞了盟军士气。</p>
+</div>
+
+<div class="spec-block">
+<h4>识别特征</h4>
+<table>
+<thead><tr><th>特征</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>双发动机</td><td>两台 Wright R-2600 星形发动机安装在主翼上</td></tr>
+<tr><td>玻璃机鼻</td><td>机头为透明玻璃舱（轰炸瞄准窗），后期型号有固态机鼻</td></tr>
+<tr><td>鸥翼</td><td>主翼为鸥翼型（gull wing），翼根有下反角</td></tr>
+<tr><td> dorsal turret</td><td>机背有炮塔（俯视图中可见圆形突起）</td></tr>
+<tr><td>双垂尾</td><td>双垂直尾翼</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="spec-block">
+<h4>涂装规格</h4>
+<p><span class="color-swatch" style="background:#5C6B4A;"></span><strong>主色</strong>：橄榄褐（Olive Drab, #5C6B4A）</p>
+<p><strong>徽记</strong>：蓝底白星美军星标（机翼 + 机身两侧）</p>
+</div>
+
+<h3>14.6 B-29 超级堡垒 — P-11（超重型战略轰炸机）</h3>
+
+<div class="spec-block">
+<h4>历史原型</h4>
+<p>波音 B-29 超级堡垒是二战中最先进的战略轰炸机，配备增压座舱、雷达火控系统。1945 年 8 月，B-29 在广岛和长崎投下原子弹，加速了日本投降。</p>
+</div>
+
+<div class="spec-block">
+<h4>识别特征</h4>
+<table>
+<thead><tr><th>特征</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>四发动机</td><td>四台 Wright R-3350 星形发动机，主翼前缘四个大型整流罩</td></tr>
+<tr><td>巨型翼展</td><td>翼展 43.06m，是全游戏最大机型——在 512×512 画布中占 388px 宽</td></tr>
+<tr><td>增压机身</td><td>机身圆润流畅，流线型设计</td></tr>
+<tr><td>机背/机腹炮塔</td><td>多个遥控炮塔分布在机身上下</td></tr>
+<tr><td>大型机鼻</td><td>机鼻为玻璃轰炸瞄准舱</td></tr>
+<tr><td>双垂尾</td><td>大型双垂直尾翼</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout info">
+  <div class="callout-title">B-29 特殊说明</div>
+  B-29 使用 <strong>T6 层级（512×512）</strong>画布，是全游戏唯一使用此层级的机型。其翼展 388px 是 P-40（102px）的 3.8 倍，在画面中占据极大空间。B-29 的倾斜转弯图需要特别注意双尾桁和四发动机在倾斜视角下的透视变化——一侧的两台发动机和尾翼抬升变亮，另一侧下沉变暗。
+</div>
+
+<div class="spec-block">
+<h4>涂装规格</h4>
+<p><span class="color-swatch" style="background:#C8C8C0;"></span><strong>主色</strong>：自然铝/银色（Natural Aluminum, #C8C8C0 ~ #D8D8D0）</p>
+<p><strong>徽记</strong>：蓝底白星美军星标（机翼 + 机身两侧）</p>
+</div>
+
+<!-- ==================== 15. 玩家机交付物清单 ==================== -->
+<h2 id="sec15"><span class="num">15</span>玩家机交付物清单</h2>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>编号</th><th>文件名</th><th>机型</th><th>视图</th><th>尺寸</th><th>格式</th><th>涂装</th></tr>
+</thead>
+<tbody>
+<tr><td>P-06-NORMAL</td><td><code>player_p40_normal.png</code></td><td>P-40 战鹰</td><td>正视</td><td>128×128</td><td>PNG</td><td>飞虎队（鲨鱼嘴）</td></tr>
+<tr><td>P-06-LEFT</td><td><code>player_p40_bank_left.png</code></td><td>P-40 战鹰</td><td>左倾</td><td>128×128</td><td>PNG</td><td>飞虎队（鲨鱼嘴）</td></tr>
+<tr><td>P-06-RIGHT</td><td><code>player_p40_bank_right.png</code></td><td>P-40 战鹰</td><td>右倾</td><td>128×128</td><td>PNG</td><td>飞虎队（鲨鱼嘴）</td></tr>
+<tr><td>P-07-NORMAL</td><td><code>player_p51_normal.png</code></td><td>P-51 野马</td><td>正视</td><td>128×128</td><td>PNG</td><td>银色+条纹</td></tr>
+<tr><td>P-07-LEFT</td><td><code>player_p51_bank_left.png</code></td><td>P-51 野马</td><td>左倾</td><td>128×128</td><td>PNG</td><td>银色+条纹</td></tr>
+<tr><td>P-07-RIGHT</td><td><code>player_p51_bank_right.png</code></td><td>P-51 野马</td><td>右倾</td><td>128×128</td><td>PNG</td><td>银色+条纹</td></tr>
+<tr><td>P-08-NORMAL</td><td><code>player_p47_normal.png</code></td><td>P-47 雷电</td><td>正视</td><td>128×128</td><td>PNG</td><td>橄榄绿+白条纹</td></tr>
+<tr><td>P-08-LEFT</td><td><code>player_p47_bank_left.png</code></td><td>P-47 雷电</td><td>左倾</td><td>128×128</td><td>PNG</td><td>橄榄绿+白条纹</td></tr>
+<tr><td>P-08-RIGHT</td><td><code>player_p47_bank_right.png</code></td><td>P-47 雷电</td><td>右倾</td><td>128×128</td><td>PNG</td><td>橄榄绿+白条纹</td></tr>
+<tr><td>P-09-NORMAL</td><td><code>player_p38_normal.png</code></td><td>P-38 闪电</td><td>正视</td><td>192×192</td><td>PNG</td><td>银色+双尾桁</td></tr>
+<tr><td>P-09-LEFT</td><td><code>player_p38_bank_left.png</code></td><td>P-38 闪电</td><td>左倾</td><td>192×192</td><td>PNG</td><td>银色+双尾桁</td></tr>
+<tr><td>P-09-RIGHT</td><td><code>player_p38_bank_right.png</code></td><td>P-38 闪电</td><td>右倾</td><td>192×192</td><td>PNG</td><td>银色+双尾桁</td></tr>
+<tr><td>P-10-NORMAL</td><td><code>player_b25_normal.png</code></td><td>B-25 米切尔</td><td>正视</td><td>256×256</td><td>PNG</td><td>橄榄绿+星标</td></tr>
+<tr><td>P-10-LEFT</td><td><code>player_b25_bank_left.png</code></td><td>B-25 米切尔</td><td>左倾</td><td>256×256</td><td>PNG</td><td>橄榄绿+星标</td></tr>
+<tr><td>P-10-RIGHT</td><td><code>player_b25_bank_right.png</code></td><td>B-25 米切尔</td><td>右倾</td><td>256×256</td><td>PNG</td><td>橄榄绿+星标</td></tr>
+<tr><td>P-11-NORMAL</td><td><code>player_b29_normal.png</code></td><td>B-29 超级堡垒</td><td>正视</td><td>512×512</td><td>PNG</td><td>银色+星标</td></tr>
+<tr><td>P-11-LEFT</td><td><code>player_b29_bank_left.png</code></td><td>B-29 超级堡垒</td><td>左倾</td><td>512×512</td><td>PNG</td><td>银色+星标</td></tr>
+<tr><td>P-11-RIGHT</td><td><code>player_b29_bank_right.png</code></td><td>B-29 超级堡垒</td><td>右倾</td><td>512×512</td><td>PNG</td><td>银色+星标</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>15.1 交付目录结构</h3>
+
+<pre><code>FlyingTigers1945_sync/
+├── assets/sprites/
+│   └── player/
+│       ├── player_p40_normal.png           ← P-06-NORMAL
+│       ├── player_p40_bank_left.png        ← P-06-LEFT
+│       ├── player_p40_bank_right.png       ← P-06-RIGHT
+│       ├── player_p51_normal.png           ← P-07-NORMAL
+│       ├── player_p51_bank_left.png        ← P-07-LEFT
+│       ├── player_p51_bank_right.png       ← P-07-RIGHT
+│       ├── player_p47_normal.png           ← P-08-NORMAL
+│       ├── player_p47_bank_left.png        ← P-08-LEFT
+│       ├── player_p47_bank_right.png       ← P-08-RIGHT
+│       ├── player_p38_normal.png           ← P-09-NORMAL
+│       ├── player_p38_bank_left.png        ← P-09-LEFT
+│       ├── player_p38_bank_right.png       ← P-09-RIGHT
+│       ├── player_b25_normal.png           ← P-10-NORMAL
+│       ├── player_b25_bank_left.png        ← P-10-LEFT
+│       ├── player_b25_bank_right.png       ← P-10-RIGHT
+│       ├── player_b29_normal.png           ← P-11-NORMAL
+│       ├── player_b29_bank_left.png        ← P-11-LEFT
+│       └── player_b29_bank_right.png       ← P-11-RIGHT</code></pre>
+
+<h3>15.2 验收标准</h3>
+<ul>
+  <li>所有文件为 PNG 格式，32 位 RGBA，透明背景</li>
+  <li>文件名严格匹配上表（区分大小写）</li>
+  <li>各机型画布尺寸正确：P-40/P-51/P-47 = 128×128，P-38 = 192×192，B-25 = 256×256，B-29 = 512×512</li>
+  <li>飞机按 9px/m 比例尺绘制，<strong>不填满画布</strong>——P-40 占 87×102px，B-29 占 272×388px</li>
+  <li>同机型三张图（正视/左倾/右倾）的比例、涂装风格一致</li>
+  <li>左倾和右倾图为镜像关系，光影方向相反</li>
+  <li>P-40 正视图必须包含鲨鱼嘴涂装</li>
+  <li>P-38 三视图正确体现双尾桁 + 中央短舱布局</li>
+  <li>B-29 四发动机清晰可见</li>
+  <li>所有美军机型使用蓝底白星徽记（非日之丸）</li>
+</ul>
+
+<!-- ==================== 16. 玩家机 Code 占位文件 ==================== -->
+<h2 id="sec16"><span class="num">16</span>玩家机 Code 占位文件规范</h2>
+
+<p>在外包素材交付之前，Code 团队需要创建以下占位文件和场景结构。</p>
+
+<h3>16.1 需创建的占位精灵图文件</h3>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>占位文件路径</th><th>尺寸</th><th>占位内容</th></tr>
+</thead>
+<tbody>
+<tr><td><code>assets/sprites/player/player_p40_normal.png</code></td><td>128×128</td><td>灰绿矩形+"P40 NORMAL"</td></tr>
+<tr><td><code>assets/sprites/player/player_p40_bank_left.png</code></td><td>128×128</td><td>灰绿矩形+"P40 LEFT"</td></tr>
+<tr><td><code>assets/sprites/player/player_p40_bank_right.png</code></td><td>128×128</td><td>灰绿矩形+"P40 RIGHT"</td></tr>
+<tr><td><code>assets/sprites/player/player_p51_normal.png</code></td><td>128×128</td><td>银色矩形+"P51 NORMAL"</td></tr>
+<tr><td><code>assets/sprites/player/player_p51_bank_left.png</code></td><td>128×128</td><td>银色矩形+"P51 LEFT"</td></tr>
+<tr><td><code>assets/sprites/player/player_p51_bank_right.png</code></td><td>128×128</td><td>银色矩形+"P51 RIGHT"</td></tr>
+<tr><td><code>assets/sprites/player/player_p47_normal.png</code></td><td>128×128</td><td>绿矩形+"P47 NORMAL"</td></tr>
+<tr><td><code>assets/sprites/player/player_p47_bank_left.png</code></td><td>128×128</td><td>绿矩形+"P47 LEFT"</td></tr>
+<tr><td><code>assets/sprites/player/player_p47_bank_right.png</code></td><td>128×128</td><td>绿矩形+"P47 RIGHT"</td></tr>
+<tr><td><code>assets/sprites/player/player_p38_normal.png</code></td><td>192×192</td><td>银色矩形+"P38 NORMAL"</td></tr>
+<tr><td><code>assets/sprites/player/player_p38_bank_left.png</code></td><td>192×192</td><td>银色矩形+"P38 LEFT"</td></tr>
+<tr><td><code>assets/sprites/player/player_p38_bank_right.png</code></td><td>192×192</td><td>银色矩形+"P38 RIGHT"</td></tr>
+<tr><td><code>assets/sprites/player/player_b25_normal.png</code></td><td>256×256</td><td>绿矩形+"B25 NORMAL"</td></tr>
+<tr><td><code>assets/sprites/player/player_b25_bank_left.png</code></td><td>256×256</td><td>绿矩形+"B25 LEFT"</td></tr>
+<tr><td><code>assets/sprites/player/player_b25_bank_right.png</code></td><td>256×256</td><td>绿矩形+"B25 RIGHT"</td></tr>
+<tr><td><code>assets/sprites/player/player_b29_normal.png</code></td><td>512×512</td><td>银色矩形+"B29 NORMAL"</td></tr>
+<tr><td><code>assets/sprites/player/player_b29_bank_left.png</code></td><td>512×512</td><td>银色矩形+"B29 LEFT"</td></tr>
+<tr><td><code>assets/sprites/player/player_b29_bank_right.png</code></td><td>512×512</td><td>银色矩形+"B29 RIGHT"</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>16.2 玩家机场景结构（以 P-40 为例）</h3>
+
+<p>当前 <code>scenes/player/player.tscn</code> 仅有 1 个 Sprite2D 节点，需改造为 3 个 Sprite2D 节点以支持倾斜转弯动画：</p>
+
+<pre><code>Player (CharacterBody2D, script: player.gd)
+├── SpriteNormal  (Sprite2D, player_p40_normal.png,    visible=true)
+├── SpriteLeft    (Sprite2D, player_p40_bank_left.png,  visible=false)
+├── SpriteRight   (Sprite2D, player_p40_bank_right.png, visible=false)
+├── CollisionShape2D (RectangleShape2D 28×28)
+└── EngineTrail   (CPUParticles2D)  ← 引擎尾焰</code></pre>
+
+<p>玩家机切换逻辑由 <code>player.gd</code> 中的 <code>_update_bank_sprite()</code> 方法实现：</p>
+<pre><code># 根据水平移动方向切换 banking 精灵图
+func _update_bank_sprite(move_x: float) -> void:
+    if move_x < -bank_threshold:
+        sprite_normal.visible = false
+        sprite_left.visible = true
+        sprite_right.visible = false
+    elif move_x > bank_threshold:
+        sprite_normal.visible = false
+        sprite_left.visible = false
+        sprite_right.visible = true
+    else:
+        sprite_normal.visible = true
+        sprite_left.visible = false
+        sprite_right.visible = false</code></pre>
+
+<h3>16.3 多机型切换系统</h3>
+
+<p>玩家机精灵图路径需支持运行时切换（解锁不同机型时）。建议在 <code>player.gd</code> 中添加机型配置：</p>
+
+<pre><code># 玩家机配置表
+const PLAYER_AIRCRAFT = {
+    "p40": {
+        "normal": "res://assets/sprites/player/player_p40_normal.png",
+        "left":   "res://assets/sprites/player/player_p40_bank_left.png",
+        "right":  "res://assets/sprites/player/player_p40_bank_right.png",
+        "collision_size": Vector2(28, 28),
+        "speed": 320,
+    },
+    "p51": {
+        "normal": "res://assets/sprites/player/player_p51_normal.png",
+        "left":   "res://assets/sprites/player/player_p51_bank_left.png",
+        "right":  "res://assets/sprites/player/player_p51_bank_right.png",
+        "collision_size": Vector2(28, 28),
+        "speed": 340,
+    },
+    # ... 其他机型同理
+}</code></pre>
+
+<h3>16.4 玩家机 Code 任务验收标准</h3>
+<ul>
+  <li>18 个占位 PNG 文件已创建到 <code>assets/sprites/player/</code> 目录，尺寸正确</li>
+  <li><code>player.tscn</code> 已改造为 3 个 Sprite2D 节点结构（Normal/Left/Right）</li>
+  <li><code>player.gd</code> 中 <code>_update_bank_sprite()</code> 方法已实现，左右移动时正确切换精灵图</li>
+  <li>多机型配置表 <code>PLAYER_AIRCRAFT</code> 已创建，支持运行时切换机型</li>
+  <li>使用占位图时游戏可正常运行，倾斜转弯动画逻辑正确（移动方向改变时精灵图切换可见）</li>
+  <li>碰撞箱尺寸按各机型层级设置（T2=28×28, T3=40×40, T4=56×56, T6=100×100）</li>
+</ul>
+
+<!-- ==================== 17. AI 生图提示词模板 ==================== -->
+<h2 id="sec17"><span class="num">17</span>AI 生图提示词模板</h2>
+
+<p>以下为外包团队可用的 AI 生图提示词模板，用于生成各机型的参考图。AI 生成的图片仅作为<strong>视觉风格和构图的参考</strong>，必须由专业画师重新绘制为高质量 PNG 透明背景精灵图。</p>
+
+<h3>17.1 敌机正视俯视图通用提示词</h3>
+
+<div class="spec-block">
+<h4>模板（替换 {机型} 和 {特征}）</h4>
+<p style="font-family:'Geist Mono',monospace;font-size:0.82rem;color:var(--code-ink);background:var(--code-bg);padding:0.8rem;border-radius:4px;line-height:1.6;">
+Top-down view of a WW2 Japanese {机型} aircraft, pure 90° overhead angle, nose pointing up.<br>
+Key features: {特征}.<br>
+Painting: deep olive green (#4A5D3A) with visible panel lines and rivets.<br>
+Red hinomaru (rising sun) markings on both wings.<br>
+Dark semi-transparent bubble canopy.<br>
+Style: cel-shaded illustration, clean black outline, metallic skin texture.<br>
+Transparent background, centered in frame, 128×128 pixel canvas equivalent.<br>
+Historical accuracy: 1940s Imperial Japanese Army Air Service livery.
+</p>
+</div>
+
+<h3>17.2 倾斜转弯图（左倾）通用提示词</h3>
+
+<div class="spec-block">
+<h4>模板</h4>
+<p style="font-family:'Geist Mono',monospace;font-size:0.82rem;color:var(--code-ink);background:var(--code-bg);padding:0.8rem;border-radius:4px;line-height:1.6;">
+Top-down view of a WW2 {机型} aircraft banking LEFT at 45° roll angle.<br>
+Nose still pointing up — only the wings tilt, NOT the heading.<br>
+Right wing RAISED and BRIGHTENED (catching light), left wing LOWERED and DARKENED.<br>
+Asymmetric: right wing appears longer/fuller, left wing appears shorter due to perspective.<br>
+Right side of fuselage partially visible (not flat top-down anymore).<br>
+Key features visible: {特征}.<br>
+Style: cel-shaded, clean outline, metallic texture, transparent background.
+</p>
+</div>
+
+<h3>17.3 玩家机正视俯视图通用提示词</h3>
+
+<div class="spec-block">
+<h4>模板（以 P-40 为例）</h4>
+<p style="font-family:'Geist Mono',monospace;font-size:0.82rem;color:var(--code-ink);background:var(--code-bg);padding:0.8rem;border-radius:4px;line-height:1.6;">
+Top-down view of a WW2 Curtiss P-40 Warhawk fighter, pure 90° overhead angle, nose pointing up.<br>
+Key features: shark mouth nose art (white teeth, red eyes), large radiator intake under nose,<br>
+Allison V-12 inline engine (pointed nose), bubble canopy forward, straight wings with rounded tips.<br>
+Painting: Olive Drab (#5C6B4A) upper surface, Neutral Gray (#A0A498) lower surface.<br>
+USAAF blue-circle white-star insignia on both wings.<br>
+Style: cel-shaded illustration like Striker 1945 / Raiden arcade games.<br>
+Transparent background, centered, 128×128 canvas, actual sprite ~87×102px (9px/m scale).
+</p>
+</div>
+
+<h3>17.4 滚筒翻滚三视图通用提示词</h3>
+
+<div class="spec-block">
+<h4>俯视图模板</h4>
+<p style="font-family:'Geist Mono',monospace;font-size:0.82rem;color:var(--code-ink);background:var(--code-bg);padding:0.8rem;border-radius:4px;line-height:1.6;">
+Top-down view of {机型}, pure 90° overhead, nose up. Shows full wingspan and fuselage back.<br>
+{特征}. Red hinomaru on wings. Dark canopy. Olive green livery.
+</p>
+<h4>侧视图模板</h4>
+<p style="font-family:'Geist Mono',monospace;font-size:0.82rem;color:var(--code-ink);background:var(--code-bg);padding:0.8rem;border-radius:4px;line-height:1.6;">
+EXTREME narrow side silhouette of {机型} — wings rotated to face camera directly.<br>
+Width is only 1/6 to 1/8 of the top view width. Same height as top view.<br>
+Wings appear as a thin horizontal line. Shows fuselage side profile only.<br>
+Nose pointing UP. This is NOT a ground-side-view, it's the moment of barrel roll at 90°.
+</p>
+<h4>仰视图模板</h4>
+<p style="font-family:'Geist Mono',monospace;font-size:0.82rem;color:var(--code-ink);background:var(--code-bg);padding:0.8rem;border-radius:4px;line-height:1.6;">
+Bottom-up view of {机型}, nose up. Mirror of top view but shows belly details:<br>
+landing gear doors, cooling vents, exhaust ports, wing-mounted weapons.<br>
+Same proportions and wingspan as top view. Red hinomaru on wing undersides.
+</p>
+</div>
+
+<div class="callout info">
+  <div class="callout-title">AI 生图使用建议</div>
+  <ul>
+    <li>AI 生图仅作为<strong>构图参考</strong>，不能直接作为游戏素材使用</li>
+    <li>AI 生成的 JPG 图片需由画师<strong>重新绘制为 PNG 透明背景</strong></li>
+    <li>AI 图常出现的问题：比例不准、细节缺失、侧视图宽度错误（容易画成地面侧视图而非翻滚90°视角）</li>
+    <li>建议对每种机型生成 3~5 张参考图，挑选最佳构图后由画师精绘</li>
+    <li>生成后需与 <code>aircraft-sprite-sizing-spec.html</code> 中的尺寸数据对照检查比例</li>
+  </ul>
+</div>
+
 <hr>
 
 <div class="callout">
   <div class="callout-title">文档结束</div>
-  本文档为飞虎队1945项目日军机精灵图外包制作的完整设计需求。如有疑问请联系项目组。素材交付后替换占位文件即可，无需修改场景结构和代码逻辑。
+  本文档为飞虎队1945项目<strong>全机型</strong>精灵图外包制作的完整设计需求，涵盖<strong>日军敌机21种</strong>（D-01~D-21c，57张精灵图）和<strong>美军玩家机6种</strong>（P-06~P-11，18张精灵图），共计<strong>75张精灵图</strong>。敌机中 J7W 震电和 J8M 秋水需要三视图实现滚筒翻滚动画（姿态4）；轰炸机和大型机需要正视+倾斜转弯三图（姿态1+2）；Ki-27/Ki-43/A6M 需要倾斜图用于抛物线转弯（姿态3）；其余战斗机仅需正视俯视图（姿态1）。所有机型共用 9px/m 统一比例尺，最小 J8M 秋水（86px翼展）到最大 G8N 连山（288px翼展）比例真实一致。素材交付后替换占位文件即可，无需修改场景结构和代码逻辑。
 </div>
 
 </div>

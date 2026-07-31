@@ -96,7 +96,7 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 2rem 0; }
   <h1>飞虎队1945 — 飞行单位倾斜转弯精灵图规范</h1>
   <p class="subtitle">横向飞行转弯时的机翼倾斜姿态 · 代码改造方案 · AI 生图提示词</p>
   <div class="meta">
-    版本 v1.6-BANK-01 &nbsp;|&nbsp; 日期 2026-07-29 &nbsp;|&nbsp; 引擎 Godot 4.7 &nbsp;|&nbsp; 项目 FlyingTigers1945
+    版本 v1.6-BANK-02 &nbsp;|&nbsp; 日期 2026-07-31 &nbsp;|&nbsp; 引擎 Godot 4.7 &nbsp;|&nbsp; 项目 FlyingTigers1945
   </div>
 </div>
 
@@ -127,8 +127,10 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 2rem 0; }
 <div class="toc">
   <h3>目录</h3>
   <ol>
+    <li><a href="#sec0">四种飞行姿态总览</a></li>
     <li><a href="#sec1">设计原理：倾斜转弯 vs 滚筒翻滚</a></li>
     <li><a href="#sec2">参考图分析与姿态拆解</a></li>
+    <li><a href="#sec2b">抛物线转弯（Parabolic Turn）</a></li>
     <li><a href="#sec3">代码改造方案</a></li>
     <li><a href="#sec4">精灵图节点结构</a></li>
     <li><a href="#sec5">各机型 AI 生图提示词</a></li>
@@ -136,6 +138,66 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 2rem 0; }
     <li><a href="#sec7">Code 实施任务</a></li>
     <li><a href="#sec8">验收标准</a></li>
   </ol>
+</div>
+
+<!-- ==================== 0. 四种飞行姿态总览 ==================== -->
+<h2 id="sec0"><span class="num">00</span>四种飞行姿态总览</h2>
+
+<p>游戏中所有飞行单位共有四种飞行姿态，各自对应不同的精灵图需求和代码实现方式。在深入倾斜转弯细节之前，先明确这四种姿态的区别和适用范围。</p>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+  <th>编号</th><th>姿态名称</th><th>描述</th><th>素材需求</th><th>代码实现</th><th>适用机型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>1</strong></td>
+  <td>直线飞行<br><span class="badge gray">Straight</span></td>
+  <td>精灵图在屏幕上上下移动。机头朝上（敌机旋转 180° 后机头朝下）。无倾斜、无翻滚。</td>
+  <td>1 张标准俯视图</td>
+  <td>Sprite2D 直接使用，无额外处理</td>
+  <td><strong>所有飞机</strong>（玩家+敌机）</td>
+</tr>
+<tr>
+  <td><strong>2</strong></td>
+  <td>倾斜转弯（平移）<br><span class="badge green">Banking</span></td>
+  <td>飞机左右平移，机身倾斜 ~45°（一侧机翼抬升，一侧下沉），机头方向保持朝上。看到机背 + 一侧机翼侧面。</td>
+  <td>3 张：正视 + 左倾 + 右倾</td>
+  <td>Sprite 状态切换（根据移动方向）</td>
+  <td><strong>玩家机全部</strong> + 敌方轰炸机/大型机</td>
+</tr>
+<tr>
+  <td><strong>3</strong></td>
+  <td>抛物线转弯<br><span class="badge yellow">Parabolic</span></td>
+  <td>小型敏捷战斗机从屏幕左右两侧横向飞入，沿弧线向下转弯后朝玩家俯冲。机头方向从水平逐渐转为向下，机身伴随倾斜姿态。</td>
+  <td>复用姿态 2 的倾斜图 + Curve2D 路径旋转</td>
+  <td>倾斜 Sprite + rotation 跟随 Curve2D 切线方向</td>
+  <td>敌机小型战斗机<br>Ki-27, Ki-43, A6M</td>
+</tr>
+<tr>
+  <td><strong>4</strong></td>
+  <td>滚筒翻滚<br><span class="badge red">Barrel Roll</span></td>
+  <td>飞机绕机身长轴 360° 连续自旋，机翼左右翻滚。依次显示机背 → 机身侧面 → 机腹 → 回到机背。</td>
+  <td>3 张：俯视 + 侧视 + 仰视</td>
+  <td>Sprite 切换 + scale.x = cos(θ) 缩放</td>
+  <td>仅试验型截击机<br>J7W 震电, J8M 秋水</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout info">
+  <div class="callout-title">四种姿态的关系</div>
+  <ul>
+    <li><strong>姿态 1（直线）</strong>是所有飞机的基础，所有机型都需要。</li>
+    <li><strong>姿态 2（倾斜转弯）</strong>是玩家机和大部分敌机的通用需求——只要有左右平移就需要。</li>
+    <li><strong>姿态 3（抛物线转弯）</strong>是姿态 2 的扩展应用——在倾斜图的基础上增加路径旋转，<strong>不需要额外素材</strong>。</li>
+    <li><strong>姿态 4（滚筒翻滚）</strong>是少数试验机型的特殊动画，与姿态 2/3 互斥（同一时刻只显示一种）。</li>
+  </ul>
+  玩家机只需实现姿态 1 和 2；敌机轰炸机和大型机也需实现 1 和 2；几乎所有飞机都要准备姿态 1 和 2 的素材。姿态 3 和 4 仅针对特定敌机。
 </div>
 
 <!-- ==================== 1. 设计原理 ==================== -->
@@ -218,6 +280,113 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 2rem 0; }
   <li><strong>不对称是灵魂</strong>：左右翼的长度、明暗必须不同，这是区分倾斜图和平飞图的关键</li>
   <li><strong>机身侧面部分可见</strong>：内弯侧的机身轮廓部分露出（不再是纯平面俯视）</li>
 </ol>
+
+<!-- ==================== 2b. 抛物线转弯 ==================== -->
+<h2 id="sec2b"><span class="num">2B</span>抛物线转弯（Parabolic Turn）</h2>
+
+<p>抛物线转弯是<strong>姿态 2（倾斜转弯）的扩展应用</strong>，针对 Ki-27 九七战、Ki-43 隼、A6M 零式等小型敏捷战斗机。这些飞机从屏幕左右两侧横向飞入，沿弧线向下转弯后朝玩家俯冲，整体飞行轨迹呈抛物线形。此姿态<strong>不需要额外素材</strong>——复用倾斜转弯的左/右倾精灵图，叠加 Curve2D 路径旋转即可实现。</p>
+
+<h3>2b.1 飞行轨迹描述</h3>
+
+<p>参考经典街机射击游戏（如 Striker 1945），小型战斗机编队从屏幕两侧横向飞入，执行抛物线转弯后向下俯冲：</p>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>阶段</th><th>从右侧进入（示例）</th><th>从左侧进入（镜像）</th><th>机头方向</th><th>显示精灵图</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>阶段 1：横向进入</strong></td><td>从屏幕右侧边缘水平飞入，机头朝左（西）</td><td>从屏幕左侧边缘水平飞入，机头朝右（东）</td><td>水平向左/右</td><td>左倾图（右侧进入时向左转）</td></tr>
+<tr><td><strong>阶段 2：弧线下转</strong></td><td>机头从朝左逐渐偏转向左下（西南方向），机翼有抬升和沉降</td><td>机头从朝右逐渐偏转向右下（东南方向），机翼有抬升和沉降</td><td>左下/右下（45°~60°）</td><td>左倾图 + rotation 旋转</td></tr>
+<tr><td><strong>阶段 3：向下俯冲</strong></td><td>机头转为朝下（南），向玩家方向俯冲</td><td>机头转为朝下（南），向玩家方向俯冲</td><td>正下方（南）</td><td>恢复正视俯视图</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout warning">
+  <div class="callout-title">方向修正说明</div>
+  飞机从右侧进入屏幕时，机头朝<strong>左</strong>飞，然后向下转向。机头应先向<strong>左下方向（西南方向）</strong>偏转，机翼有抬升和沉降。最后机头向下（向南）。<br><br>
+  即：右侧进入 → 机头朝西 → 西南偏转 → 朝南俯冲<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;左侧进入 → 机头朝东 → 东南偏转 → 朝南俯冲<br><br>
+  <strong>不是</strong>直接从水平转为垂直向下，而是经过一个弧线过渡，机身在弧线段呈现倾斜姿态（一侧机翼抬升，一侧下沉）。
+</div>
+
+<h3>2b.2 与纯倾斜转弯的区别</h3>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>对比项</th><th>纯倾斜转弯（姿态 2）</th><th>抛物线转弯（姿态 3）</th></tr>
+</thead>
+<tbody>
+<tr><td>机头方向</td><td>始终朝上（画布顶部）</td><td>随路径切线方向旋转（水平 → 斜下 → 向下）</td></tr>
+<tr><td>飞行轨迹</td><td>水平直线移动</td><td>弧线（Curve2D 路径）</td></tr>
+<tr><td>精灵图</td><td>正视 / 左倾 / 右倾 三态切换</td><td>弧线段使用倾斜图 + rotation；直线段使用正视俯视图</td></tr>
+<tr><td>代码实现</td><td>状态切换（3 帧离散）</td><td>Curve2D 路径跟随 + rotation = tangent_angle + 倾斜图切换</td></tr>
+<tr><td>素材需求</td><td>需要独立的左倾/右倾图</td><td><strong>复用</strong>姿态 2 的倾斜图，无需额外素材</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>2b.3 代码实现要点</h3>
+
+<p>抛物线转弯的代码实现复用倾斜精灵图，叠加 Curve2D 路径旋转：</p>
+
+<pre><code># 抛物线转弯：沿 Curve2D 路径移动 + 旋转 + 倾斜图切换
+func _process_parabolic_turn(delta: float) -> void:
+    # 1. 沿 Curve2D 路径前进
+    path_progress += path_speed * delta
+    var pos: Vector2 = curve.sample_baked(path_progress)
+    global_position = pos
+
+    # 2. 根据路径切线方向计算机头朝向
+    var tangent: Vector2 = curve.sample_baked_tangent(path_progress)
+    var angle_deg: float = rad_to_deg(tangent.angle())
+
+    # 3. 根据航向切换精灵图
+    # 弧线段（水平 → 斜下）：显示倾斜图
+    # 垂直俯冲段（朝下）：恢复正视俯视图
+    if abs(angle_deg - 90.0) < 30.0:
+        # 接近垂直向下 → 恢复正视
+        sprite_normal.visible = true
+        sprite_bank_left.visible = false
+        sprite_bank_right.visible = false
+        rotation = deg_to_rad(180.0)  # 敌机机头朝下
+    else:
+        # 弧线段 → 显示倾斜图
+        sprite_normal.visible = false
+        if enter_from_right:
+            sprite_bank_left.visible = true   # 右侧进入→向左转→左倾
+            sprite_bank_right.visible = false
+        else:
+            sprite_bank_left.visible = false
+            sprite_bank_right.visible = true  # 左侧进入→向右转→右倾
+        rotation = deg_to_rad(angle_deg - 90.0)  # 旋转使机头跟随路径</code></pre>
+
+<div class="callout info">
+  <div class="callout-title">关键要点</div>
+  <ul>
+    <li>抛物线转弯的精灵图就是倾斜转弯的左/右倾图——<strong>不需要为抛物线转弯单独制作素材</strong></li>
+    <li>旋转角度由 Curve2D 路径的切线方向决定，飞机机头自然跟随弧线方向</li>
+    <li>当路径切线接近垂直向下（~90°）时，切换回正视俯视图，因为此时飞机已经在俯冲，不再需要倾斜姿态</li>
+    <li>抛物线转弯增加了与玩家碰撞的风险——飞机从侧面飞入后弧线向下俯冲，路径会穿过玩家活动区域</li>
+  </ul>
+</div>
+
+<h3>2b.4 适用机型与关卡配置</h3>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>机型</th><th>适用关卡</th><th>进入方向</th><th>说明</th></tr>
+</thead>
+<tbody>
+<tr><td>Ki-27 九七战</td><td>L01~L03</td><td>左/右交替</td><td>早期关卡主力战斗机，编队抛物线俯冲</td></tr>
+<tr><td>Ki-43 隼</td><td>L04~L06</td><td>左/右交替</td><td>中期关卡，更快的俯冲速度</td></tr>
+<tr><td>A6M 零式</td><td>H1, L07~L10</td><td>左/右交替</td><td>高性能战斗机，弧线半径更小、更灵活</td></tr>
+</tbody>
+</table>
+</div>
 
 <!-- ==================== 3. 代码改造方案 ==================== -->
 <h2 id="sec3"><span class="num">03</span>代码改造方案</h2>
